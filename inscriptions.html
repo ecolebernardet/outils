@@ -64,8 +64,8 @@
 
         <div id="listeContainer"></div>
 
-        <div class="max-w-md mx-auto flex gap-4 mt-12 pt-6 border-t border-zinc-900 mb-20">
-            <button onclick="toutEffacer()" class="btn-nav bg-rose-600 text-white shadow-md">Vider la liste</button>
+        <div class="max-w-md mx-auto flex gap-4 mt-5 mb-20">
+            <button onclick="toutEffacer()" class="btn-nav bg-rose-600 text-white shadow-md">RàZ de la liste</button>
             <a href="index.html" class="btn-nav bg-green-500 text-green-950 flex items-center justify-center no-underline shadow-md">Accueil</a>
         </div>
     </div>
@@ -73,14 +73,12 @@
     <script>
         let eleves = JSON.parse(localStorage.getItem('maListeEleves')) || [];
 
-        // Fonction pour formater : Prénom (Initiale Maj) NOM (Tout Maj)
         function formaterIdentite(prenom, nom) {
             const p = prenom.trim();
             const n = nom.trim().toUpperCase();
             return p.charAt(0).toUpperCase() + p.slice(1).toLowerCase() + " " + n;
         }
 
-        // --- AJOUT MANUEL ---
         document.getElementById('eleveForm').addEventListener('submit', (e) => {
             e.preventDefault();
             const saisie = document.getElementById('nomComplet').value.trim().split(" ");
@@ -99,7 +97,6 @@
             e.target.reset();
         });
 
-        // --- IMPORTATION ---
         document.getElementById('fileInput').addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (!file) return;

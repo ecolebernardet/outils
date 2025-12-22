@@ -4,153 +4,119 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Tirage au Sort</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+        
         :root {
             --primary: #ff637e;
             --bg: #000000;
             --text: #ffffff;
             --card-bg: #222222;
-            --btn-home: #71bd7b;
-            --home-text: #052e16;
-        }
-
-        * {
-            -webkit-tap-highlight-color: transparent;
-            outline: none;
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-family: 'Inter', sans-serif;
             background-color: var(--bg);
             color: var(--text);
             margin: 0;
+            padding: 10px;
             display: flex;
             flex-direction: column;
-            min-height: 100vh;
             align-items: center;
-            padding: 20px;
-            box-sizing: border-box;
-            touch-action: manipulation;
+        }
+
+        .bg-m { background: #dbeafe; color: #1e3a8a; } 
+        .bg-f { background: #fce7f3; color: #831843; } 
+        
+        .level-section { 
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        .level-title {
+            text-align: center;
+            font-size: 10px;
+            font-weight: 900;
+            color: #555;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 10px;
+        }
+
+        .student-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 5px;
+            width: 100%;
+        }
+
+        .student-item {
+            padding: 8px 2px;
+            border-radius: 10px;
+            font-size: 0.55rem;
+            font-weight: 700;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+            text-transform: capitalize;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* MODIFICATION : Fond plus foncé pour les tirés */
+        .drawn {
+            background: #2a2a2a !important; /* Plus sombre pour s'effacer */
+            color: #777777 !important; /* Texte gris plus discret */
+            text-decoration: line-through;
+            opacity: 0.7;
+            border-color: #333;
         }
 
         .card {
             background: var(--card-bg);
             width: 100%;
             max-width: 400px;
-            border-radius: 50px;
-            padding: 10px;
+            border-radius: 2rem;
+            padding: 15px;
             text-align: center;
-            box-sizing: border-box;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
 
         #result-container {
-            height: 70px;
+            height: 60px;
             display: flex;
             align-items: center;
             justify-content: center;
             background: #ffffff;
             border-radius: 50px;
-            margin: 10px 0;
+            margin-bottom: 15px;
             border: 2px solid #333;
-            overflow: hidden;
         }
 
         #result-display {
-            font-size: 1.5rem;
+            font-size: 1.4rem;
             font-weight: 800;
             color: var(--primary);
-            padding: 0 5px;
         }
 
         .main-btn {
-            width: 80%;
+            width: 100%;
             background: var(--primary);
             color: white;
-            border: none;
-            padding: 15px;
-            font-size: 1rem;
-            font-weight: 600;
+            padding: 14px;
+            font-size: 10px;
+            font-weight: 800;
             border-radius: 50px;
-            cursor: pointer;
-            -webkit-appearance: none;
+            text-transform: uppercase;
         }
 
-        .stats { margin-top: 10px; font-weight: 500; color: #aaa; font-size: 0.7rem; text-transform: uppercase; }
-
-        .list-section {
-            width: 100%;
-            max-width: 450px;
-            margin-top: 15px;
-            text-align: center;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .student-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr); 
-            gap: 6px;
-            padding: 0;
-            margin-bottom: 15px;
-            list-style: none;
-            width: 100%;
-        }
-
-        .student-item {
-            background: #222;
-            color: #eee;
-            padding: 8px 5px;
-            border-radius: 50px;
-            font-size: 0.65rem; 
-            border: 1px solid #333;
-            text-align: center;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            font-weight: 600;
-        }
-
-        .drawn {
-            background: #111;
-            color: #444;
-            text-decoration: line-through;
-            border-color: transparent;
-        }
-
-        .reset-link {
-            width: 50%;
-            background: #ec003f;
-            color: #fce7f3;
-            border: none;
-            padding: 15px 20px;
-            font-size: 0.75rem;
-            font-weight: bold;
-            border-radius: 50px;
-            cursor: pointer;
-            margin-bottom: 20px;
-        }
-
-        .home-btn {
-            width: 50%;
-            background: var(--btn-home);
-            color: var(--home-text);
-            border: none;
-            padding: 15px;
-            font-size: 12px;
-            font-weight: 600;
-            border-radius: 50px;
-            cursor: pointer;
-            margin-bottom: 30px;
-        }
-
-        .main-btn:active, .home-btn:active, .reset-link:active, .student-item:active { 
-            transform: scale(0.95); 
-        }
-        
-        .main-btn:disabled { background: #333; color: #888; }
+        /* Styles Boutons du bas */
+        .btn-nav { font-weight: 800; padding: 14px; border-radius: 50px; font-size: 9px; cursor: pointer; border: none; flex: 1; }
+        .stats { margin-top: 8px; font-size: 0.6rem; color: #aaa; text-transform: uppercase; font-weight: 600; }
     </style>
 </head>
 <body>
@@ -159,123 +125,127 @@
         <div id="result-container">
             <div id="result-display">PRÊT</div>
         </div>
-        
-        <button id="draw-btn" class="main-btn" onclick="drawName()">TIRER UN PRÉNOM</button>
-        
+        <button id="draw-btn" class="main-btn" onclick="drawName()">Tirer un prénom</button>
         <div class="stats" id="counter">--</div>
     </div>
 
-    <div class="list-section">
-        <p style="font-size: 0.7rem; color: #666; margin-bottom: 10px; text-transform: uppercase; font-weight: bold;">Cliquer pour barrer/remettre</p>
-        <ul id="student-list-ui" class="student-grid"></ul>
-        
-        <button class="reset-link" onclick="resetDrawing()">RàZ du tirage</button>
-        
-        <button onclick="window.location.href='index.html'" class="home-btn">Accueil</button>
+    <div class="w-full max-w-2xl">
+        <div id="listeContainer"></div>
+
+        <div class="max-w-md mx-auto flex gap-3 mt-8 mb-10">
+            <button class="btn-nav bg-red-500 text-rose-100" onclick="resetDrawing()">RàZ Tirage</button>
+            <button onclick="window.location.href='index.html'" class="btn-nav bg-[#71bd7b] text-green-950">Accueil</button>
+        </div>
     </div>
 
     <script>
-        // FONCTION DE NETTOYAGE DES PRÉNOMS
         function formatName(fullName) {
             const parts = fullName.trim().split(" ");
-            const firstName = parts[0].charAt(0).toUpperCase() + parts[0].slice(1).toLowerCase();
-            const lastName = parts.slice(1).join(" ").toUpperCase();
-            return firstName + " " + lastName;
+            return parts[0].charAt(0).toUpperCase() + parts[0].slice(1).toLowerCase();
         }
 
-        // CHARGEMENT DE LA LISTE DEPUIS L'INSCRIPTION
-        const rawData = JSON.parse(localStorage.getItem('maListeEleves')) || [];
-        // On nettoie les noms dès le début et on trie par ordre alphabétique
-        const ALL_NAMES = rawData.map(el => formatName(el.identite)).sort();
-
-        // État du tirage (noms restants)
-        let remaining = JSON.parse(localStorage.getItem('remainingStudents')) || [...ALL_NAMES];
+        let rawData = JSON.parse(localStorage.getItem('maListeEleves')) || [];
+        let remaining = JSON.parse(localStorage.getItem('remainingStudents')) || rawData.map(el => el.id);
 
         function saveState() {
             localStorage.setItem('remainingStudents', JSON.stringify(remaining));
         }
 
-        function toggleStudent(name) {
-            if (remaining.includes(name)) {
-                remaining = remaining.filter(n => n !== name);
-            } else {
-                remaining.push(name);
-            }
-            saveState();
-            updateUI();
-        }
+        function renderList() {
+            const container = document.getElementById('listeContainer');
+            container.innerHTML = "";
 
-        function updateUI() {
-            const listUI = document.getElementById('student-list-ui');
-            const counter = document.getElementById('counter');
-            const btn = document.getElementById('draw-btn');
-
-            listUI.innerHTML = ''; 
-            
-            if (ALL_NAMES.length === 0) {
-                listUI.innerHTML = '<p style="grid-column: span 3; color: #555; font-size: 0.8rem;">Aucun élève inscrit</p>';
-                btn.disabled = true;
-                return;
-            }
-
-            ALL_NAMES.forEach(n => {
-                const isDrawn = !remaining.includes(n);
-                const li = document.createElement('li');
-                li.className = `student-item ${isDrawn ? 'drawn' : ''}`;
-                li.innerText = n;
-                li.onclick = () => toggleStudent(n);
-                listUI.appendChild(li);
+            const groupes = {};
+            rawData.forEach(el => {
+                const niv = el.niveau.toUpperCase();
+                if (!groupes[niv]) groupes[niv] = [];
+                groupes[niv].push(el);
             });
 
-            counter.innerText = `${remaining.length} restant${remaining.length > 1 ? 's' : ''} / ${ALL_NAMES.length}`;
+            const nomsNiveaux = Object.keys(groupes).sort();
 
-            if (remaining.length === 0) {
+            nomsNiveaux.forEach(niv => {
+                const section = document.createElement('div');
+                section.className = "level-section";
+                section.innerHTML = `<div class="level-title">${niv}</div>`;
+                
+                const grid = document.createElement('div');
+                grid.className = "student-grid";
+
+                groupes[niv].sort((a,b) => a.identite.localeCompare(b.identite)).forEach(el => {
+                    const isDrawn = !remaining.includes(el.id);
+                    const item = document.createElement('div');
+                    item.className = `student-item bg-${el.sexe} ${isDrawn ? 'drawn' : ''}`;
+                    item.innerText = formatName(el.identite);
+                    item.onclick = () => toggleStudent(el.id);
+                    grid.appendChild(item);
+                });
+                
+                section.appendChild(grid);
+                container.appendChild(section);
+            });
+
+            const total = rawData.length;
+            const restants = remaining.length;
+            document.getElementById('counter').innerText = `${restants} restant${restants > 1 ? 's' : ''} / ${total}`;
+            
+            const btn = document.getElementById('draw-btn');
+            if (restants === 0) {
                 btn.disabled = true;
-                btn.innerText = "SESSION TERMINÉE";
+                btn.innerText = "Session terminée";
+                btn.style.opacity = "0.5";
             } else {
                 btn.disabled = false;
-                btn.innerText = "TIRER UN PRÉNOM";
+                btn.innerText = "Tirer un prénom";
+                btn.style.opacity = "1";
             }
+        }
+
+        function toggleStudent(id) {
+            if (remaining.includes(id)) {
+                remaining = remaining.filter(item => item !== id);
+            } else {
+                remaining.push(id);
+            }
+            saveState();
+            renderList();
         }
 
         function drawName() {
             if (remaining.length === 0) return;
-
             const display = document.getElementById('result-display');
             const btn = document.getElementById('draw-btn');
             btn.disabled = true;
 
             let iterations = 0;
             const interval = setInterval(() => {
-                const randomName = remaining[Math.floor(Math.random() * remaining.length)];
-                display.innerText = randomName;
+                const randomIndex = Math.floor(Math.random() * remaining.length);
+                const tempStudent = rawData.find(s => s.id === remaining[randomIndex]);
+                display.innerText = formatName(tempStudent.identite);
                 iterations++;
 
-                if (iterations > 15) {
+                if (iterations > 12) {
                     clearInterval(interval);
                     const finalIndex = Math.floor(Math.random() * remaining.length);
-                    const winner = remaining.splice(finalIndex, 1)[0];
-                    
-                    display.innerText = winner;
-                    display.style.color = "#ff637e";
-                    
+                    const winnerId = remaining.splice(finalIndex, 1)[0];
+                    const winner = rawData.find(s => s.id === winnerId);
+                    display.innerText = formatName(winner.identite);
                     saveState();
-                    updateUI();
+                    renderList();
                 }
-            }, 50);
+            }, 60);
         }
 
         function resetDrawing() {
             if(confirm("Remettre tous les élèves en jeu ?")) {
-                remaining = [...ALL_NAMES];
+                remaining = rawData.map(el => el.id);
                 localStorage.removeItem('remainingStudents');
                 document.getElementById('result-display').innerText = "PRÊT";
-                updateUI();
+                renderList();
             }
         }
 
-        // Initialisation au chargement
-        updateUI();
+        renderList();
     </script>
 </body>
 </html>

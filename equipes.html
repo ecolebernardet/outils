@@ -4,7 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Générateur d'Équipes</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+        
         :root {
             --primary: #ff637e;
             --bg: #000000;
@@ -14,12 +17,10 @@
             --home-text: #052e16;
             --blue-light: #40c4ff;
             --pink: #ff80ab;
-            --yellow: #facc15;
-            --green: #4ade80;
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-family: 'Inter', sans-serif;
             background-color: var(--bg);
             color: var(--text);
             margin: 0;
@@ -27,112 +28,99 @@
             flex-direction: column;
             align-items: center;
             padding: 10px;
-            box-sizing: border-box;
+            min-height: 100vh;
         }
 
-        h1 { font-size: 1rem; text-transform: uppercase; font-weight: 800; margin: 5px 0; }
+        h1 { font-size: 1.2rem; text-transform: uppercase; font-weight: 900; margin: 15px 0; letter-spacing: -0.05em; }
 
         .section-title { 
-            font-size: 0.65rem; color: #666; margin: 12px 0 6px 0; 
-            text-transform: uppercase; font-weight: bold; width: 100%; text-align: center;
+            font-size: 10px; color: #555; margin: 15px 0 10px 0; 
+            text-transform: uppercase; font-weight: 900; letter-spacing: 2px;
+            width: 100%; text-align: center;
         }
 
-        /* GRILLE D'APPEL (5 COLONNES) */
+        /* GRILLE D'APPEL */
+        .bg-m { background: #dbeafe; color: #1e3a8a; } 
+        .bg-f { background: #fce7f3; color: #831843; } 
+        
+        .level-section { width: 100%; max-width: 500px; margin: 0 auto 20px auto; }
+        
         .student-grid {
             display: grid;
             grid-template-columns: repeat(5, 1fr); 
-            gap: 4px;
-            padding: 0;
-            margin-bottom: 12px;
-            list-style: none;
+            gap: 5px;
             width: 100%;
-            max-width: 500px;
         }
 
         .student-item {
-            background: #222;
-            color: #eee;
-            padding: 6px 2px;
-            border-radius: 4px;
-            font-size: 0.58rem; 
-            border: 1px solid #333;
+            padding: 8px 2px;
+            border-radius: 10px;
+            font-size: 0.55rem;
+            font-weight: 700;
             text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+            text-transform: capitalize;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            cursor: pointer;
-            font-weight: 600;
         }
 
         .absent {
-            background: #111 !important;
-            color: #444 !important;
+            background: #2a2a2a !important;
+            color: #777777 !important;
             text-decoration: line-through;
-            border-color: transparent !important;
+            opacity: 0.7;
+            border-color: #333;
         }
 
-        /* CONFIGURATION */
+        /* CONFIGURATION ÉQUIPES */
         .selector-grid { display: flex; justify-content: center; gap: 5px; margin-bottom: 12px; flex-wrap: wrap; }
         .num-btn { 
-            background: #333; color: #fff; border: 1px solid #555; 
-            width: 32px; height: 32px; border-radius: 50%; 
-            cursor: pointer; font-weight: bold; font-size: 0.8rem;
+            background: #222; color: #fff; border: 1px solid #444; 
+            width: 34px; height: 34px; border-radius: 50%; 
+            cursor: pointer; font-weight: 800; font-size: 0.8rem;
         }
-        .num-btn.active { background: var(--primary); border-color: #fff; }
+        .num-btn.active { background: var(--primary); border-color: #fff; transform: scale(1.1); }
 
         .generate-btn { 
             width: 90%; max-width: 300px; background: var(--primary); color: white; 
-            border: none; padding: 12px; font-size: 0.9rem; font-weight: 800; 
+            border: none; padding: 14px; font-size: 10px; font-weight: 900; 
             border-radius: 50px; cursor: pointer; text-transform: uppercase;
-            margin-bottom: 20px;
+            margin: 10px 0 20px 0;
         }
 
-        /* RÉSULTATS DES ÉQUIPES */
+        /* RÉSULTATS */
         .grid-teams { 
             display: grid; 
             grid-template-columns: 1fr 1fr; 
-            gap: 12px; 
+            gap: 10px; 
             width: 100%; 
-            max-width: 500px;
+            max-width: 500px; 
+            margin: 0 auto;
         }
-        .team-card { 
-            border-radius: 12px; 
-            padding: 12px 10px; 
-            background: var(--card-bg); 
-            border: 1px solid #333; 
-        }
-        .team-header { 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            border-bottom: 1px solid #333; 
-            margin-bottom: 10px; 
-            padding-bottom: 6px; 
-        }
+        .team-card { border-radius: 1.5rem; padding: 12px; background: var(--card-bg); border: 1px solid #222; margin-bottom: 5px; }
+        .team-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333; margin-bottom: 8px; padding-bottom: 5px; }
+        .team-title { font-weight: 900; color: #fff; font-size: 0.65rem; text-transform: uppercase; }
+        .team-stats { font-size: 0.55rem; color: #666; font-weight: 700; }
         
-        .team-title { font-weight: 800; color: #ffffff; font-size: 0.7rem; text-transform: uppercase; }
-        .team-stats { font-size: 0.6rem; color: #888; font-weight: 600; }
-        
-        /* ESPACEMENT DES ÉLÈVES RÉGLÉ À 6PX */
-        .student-row { 
-            margin-bottom: 6px; 
-            display: flex; 
-            align-items: center; 
-            font-size: 0.85rem; 
-            font-weight: 700; 
-        }
-        .student-row:last-child { margin-bottom: 0; }
-
+        .student-row { margin-bottom: 4px; display: flex; align-items: center; font-size: 0.75rem; font-weight: 800; }
+        .tag { font-size: 0.5rem; font-weight: 900; margin-right: 6px; padding: 2px 4px; border-radius: 4px; background: #333; color: #aaa; }
         .name-f { color: var(--pink); } 
         .name-g { color: var(--blue-light); } 
-        
-        .tag { font-size: 0.6rem; font-weight: 900; margin-right: 8px; min-width: 30px; text-align: center; }
-        .tag-ce2 { color: var(--yellow); } 
-        .tag-cm2 { color: var(--green); } 
 
-        .bottom-nav { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; max-width: 400px; margin-top: 25px; margin-bottom: 20px;}
-        .btn-nav { font-weight: 800; padding: 14px; border-radius: 50px; font-size: 10px; text-align: center; text-transform: uppercase; text-decoration: none; border: none; cursor: pointer; }
-        .btn-raz { background-color: #ec003f; color: #fff; }
+        /* MODIFICATION : Marges pour éviter la barre système du téléphone */
+        .bottom-nav { 
+            display: flex; 
+            gap: 12px; 
+            width: 100%; 
+            max-width: 400px; 
+            margin-top: 30px; 
+            padding-bottom: 80px; /* Espace généreux en bas */
+        }
+        .btn-nav { font-weight: 800; padding: 14px; border-radius: 50px; font-size: 9px; text-align: center; border: none; cursor: pointer; flex: 1; text-transform: uppercase; }
+        .btn-raz { background-color: #c10007; color: #ffffff; }
         .btn-home { background-color: var(--btn-home); color: var(--home-text); }
         
         button:active { transform: scale(0.95); }
@@ -142,10 +130,10 @@
 
     <h1>Équipes</h1>
     
-    <p class="section-title">1. Appel (cliquer pour rayer)</p>
-    <ul id="attendance-grid" class="student-grid"></ul>
+    <p class="section-title">Présents ou absents ?</p>
+    <div id="attendance-container" class="w-full max-w-2xl flex flex-col items-center"></div>
 
-    <p class="section-title">2. Nombre d'équipes</p>
+    <p class="section-title">Nombre d'équipes</p>
     <div class="selector-grid">
         <button class="num-btn" onclick="selectNum(2)">2</button>
         <button class="num-btn" onclick="selectNum(3)">3</button>
@@ -170,30 +158,42 @@
     let ALL_STUDENTS = JSON.parse(localStorage.getItem('maListeEleves')) || [];
     let absents = new Set(); 
 
-    function getOnlyFirstName(fullName) {
-        return fullName.trim().split(" ")[0];
-    }
-
-    function formatNameFull(fullName) {
-        const parts = fullName.trim().split(" ");
-        if (parts.length === 0) return "";
-        const firstName = parts[0].charAt(0).toUpperCase() + parts[0].slice(1).toLowerCase();
-        const lastName = parts.slice(1).join(" ").toUpperCase();
-        return firstName + " " + lastName;
+    function formatFirstName(fullName) {
+        const p = fullName.trim().split(" ");
+        return p[0].charAt(0).toUpperCase() + p[0].slice(1).toLowerCase();
     }
 
     function renderAttendance() {
-        const grid = document.getElementById('attendance-grid');
-        grid.innerHTML = '';
-        const sorted = [...ALL_STUDENTS].sort((a, b) => a.identite.localeCompare(b.identite));
-        
-        sorted.forEach(s => {
-            const li = document.createElement('li');
-            const isAbsent = absents.has(s.identite);
-            li.className = `student-item ${isAbsent ? 'absent' : ''}`;
-            li.innerText = getOnlyFirstName(s.identite);
-            li.onclick = () => toggleAbsent(s.identite);
-            grid.appendChild(li);
+        const container = document.getElementById('attendance-container');
+        container.innerHTML = '';
+
+        const groupes = {};
+        ALL_STUDENTS.forEach(el => {
+            const niv = el.niveau.toUpperCase();
+            if (!groupes[niv]) groupes[niv] = [];
+            groupes[niv].push(el);
+        });
+
+        const nomsNiveaux = Object.keys(groupes).sort();
+
+        nomsNiveaux.forEach(niv => {
+            const section = document.createElement('div');
+            section.className = "level-section";
+            section.innerHTML = `<div class="text-center text-[9px] font-black text-zinc-600 mb-2 uppercase tracking-widest">${niv}</div>`;
+            
+            const grid = document.createElement('div');
+            grid.className = "student-grid";
+
+            groupes[niv].sort((a,b) => a.identite.localeCompare(b.identite)).forEach(el => {
+                const isAbsent = absents.has(el.id);
+                const item = document.createElement('div');
+                item.className = `student-item bg-${el.sexe} ${isAbsent ? 'absent' : ''}`;
+                item.innerText = formatFirstName(el.identite);
+                item.onclick = () => toggleAbsent(el.id);
+                grid.appendChild(item);
+            });
+            section.appendChild(grid);
+            container.appendChild(section);
         });
     }
 
@@ -219,7 +219,7 @@
     }
 
     function generateTeams() {
-        const presents = ALL_STUDENTS.filter(s => !absents.has(s.identite));
+        const presents = ALL_STUDENTS.filter(s => !absents.has(s.id));
         if (presents.length === 0) return alert("Tous les élèves sont absents !");
 
         let teams = Array.from({ length: selectedNumTeams }, () => []);
@@ -239,11 +239,7 @@
         Object.values(groups).forEach(g => { pool = pool.concat(shuffle([...g])); });
 
         pool.forEach((student, index) => {
-            teams[index % selectedNumTeams].push({
-                name: formatNameFull(student.identite),
-                level: student.niveau.toUpperCase(),
-                gender: student.sexe.toUpperCase()
-            });
+            teams[index % selectedNumTeams].push(student);
         });
 
         renderTeams(teams);
@@ -255,17 +251,17 @@
 
         teams.forEach((team, index) => {
             if (team.length === 0) return;
-            team.sort((a, b) => a.level.localeCompare(b.level));
-            const countF = team.filter(s => s.gender === 'F').length;
-            const countG = team.filter(s => s.gender === 'M' || s.gender === 'G').length;
+            team.sort((a, b) => a.niveau.localeCompare(b.niveau));
+            const countF = team.filter(s => s.sexe.toLowerCase() === 'f').length;
+            const countG = team.filter(s => s.sexe.toLowerCase() !== 'f').length;
             
             let card = document.createElement('div');
             card.className = 'team-card';
             
             let studentsHTML = team.map(s => `
                 <div class="student-row">
-                    <span class="tag ${s.level.includes('CE2') ? 'tag-ce2' : 'tag-cm2'}">${s.level.includes('CE2') ? 'CE2' : 'CM2'}</span>
-                    <span class="${s.gender === 'F' ? 'name-f' : 'name-g'}">${s.name}</span>
+                    <span class="tag">${s.niveau.toUpperCase()}</span>
+                    <span class="${s.sexe.toLowerCase() === 'f' ? 'name-f' : 'name-g'}">${formatFirstName(s.identite)}</span>
                 </div>`).join('');
             
             card.innerHTML = `
@@ -277,6 +273,9 @@
             `;
             resultsDiv.appendChild(card);
         });
+        
+        // Scroll automatique vers le bas pour voir les résultats
+        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
     }
 
     function resetAll() {

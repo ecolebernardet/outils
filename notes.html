@@ -29,7 +29,7 @@
             box-shadow: 0 4px 15px rgba(0,0,0,0.4); 
         }
 
-        .create-note-box textarea, #searchInput { 
+        .create-note-box textarea { 
             width: 100%; 
             background: transparent; 
             border: none; 
@@ -39,6 +39,21 @@
             font-size: 16px; 
             min-height: 40px; 
         }
+
+        /* RECHERCHE VISIBLE SUR FOND NOIR */
+        #searchInput { 
+            width: 100%; 
+            background: #1e1e1e; /* Fond légèrement plus clair que le body */
+            border: 1px solid #555; /* Bordure grise bien visible */
+            border-radius: 12px;
+            padding: 12px 16px;
+            margin-bottom: 16px;
+            color: white; 
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        #searchInput:focus { border-color: #ff5a98; }
         
         .color-dot { 
             width: 24px; 
@@ -76,7 +91,6 @@
         }
         .note-card.dark-note { color: #ffffff; }
         
-        /* TAILLE DE POLICE À 11PX ICI */
         .note-card-content { 
             font-size: 11px; 
             font-weight: 500; 
@@ -131,8 +145,7 @@
             </div>
         </div>
 
-        <input type="text" id="searchInput" placeholder="Rechercher une note..." onkeyup="renderNotes()" 
-               class="w-full bg-[#1a1a1a] border border-[#3a3a3a] rounded-xl px-4 py-3 mb-4 text-white outline-none focus:border-rose-400 text-sm">
+        <input type="text" id="searchInput" placeholder="Rechercher une note..." onkeyup="renderNotes()">
 
         <div id="notesGrid" class="note-grid mb-6"></div>
 
