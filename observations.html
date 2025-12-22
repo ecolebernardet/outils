@@ -3,62 +3,72 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Observations - Gestion Fichiers</title>
+    <title>Observations - Copier/Coller</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
-        :root { --primary: #ff637e; --bg-dark: #000000; --card-bg: #1a1a1a; --blue-light: #40c4ff; --pink: #ff80ab; }
+        :root { --primary: #ff637e; --bg-dark: #000000; --card-bg: #1a1a1a; }
         body { 
             font-family: 'Inter', sans-serif; 
             background: var(--bg-dark); 
-            margin: 0; padding: 8px; 
+            margin: 0; padding: 10px; 
             min-height: 100vh; color: white;
         }
-        .columns-container { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; max-width: 100%x; margin: 0 auto; }
+        .columns-container { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; max-width: 500px; margin: 0 auto; }
         .student-item { 
-            padding: 6px 10px; display: flex; justify-content: space-between; align-items: center; 
-            cursor: pointer; border-radius: 50px; margin-bottom: 2px; transition: all 0.2s;
+            padding: 5px 11px; display: flex; justify-content: space-between; align-items: center; 
+            cursor: pointer; border-radius: 50px; margin-bottom: 3px; transition: all 0.2s;
         }
         .bg-m { background: #dbeafe; color: #1e3a8a; } 
         .bg-f { background: #fce7f3; color: #831843; } 
         .is-absent { opacity: 0.3 !important; background: #333 !important; color: #777 !important; text-decoration: line-through; }
-        .student-name { font-weight: 700; font-size: 0.7rem; }
+        .student-name { font-weight: 800; font-size: 0.7rem; line-height: 1.2; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         
-        /* Modales */
         .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(4px); }
-        .modal-content { background: #1a1a1a; padding: 20px; border-radius: 20px; width: 90%; max-width: 350px; border: 1px solid #333; }
+        .modal-content { background: #1a1a1a; padding: 20px; border-radius: 20px; width: 92%; max-width: 400px; border: 1px solid #333; }
+        
         textarea { 
-            width: 100%; margin: 15px 0; padding: 12px; border-radius: 12px; border: 1px solid #333; 
-            font-size: 0.9rem; resize: none; background: #000; color: #fff; outline: none; 
+            width: 100%; margin: 10px 0; padding: 12px; border-radius: 12px; border: 1px solid #333; 
+            font-size: 0.8rem; resize: none; background: #000; color: #fff; outline: none; font-family: monospace;
         }
         .btns { display: flex; gap: 10px; }
         .modal-btn { flex: 1; padding: 14px; border: none; border-radius: 50px; font-weight: 900; cursor: pointer; text-transform: uppercase; font-size: 10px; }
         .btn-save { background: var(--primary); color: white; }
         .btn-cancel { background: #333; color: #ccc; }
 
-        .bottom-nav { width: 100%; max-width: 500px; margin: 15px auto 0; padding-bottom: 30px; }
-        .nav-btn { font-weight: 900; border-radius: 50px; font-size: 11px; padding: 11px; border: none; }
+        .bottom-nav { width: 100%; max-width: 500px; margin: 25px auto 0; padding-bottom: 40px; }
+        .nav-btn { font-weight: 900; border-radius: 50px; font-size: 10px; padding: 12px; border: none; flex: 1; }
     </style>
 </head>
 <body>
 
     <div id="listeContainer" class="columns-container"></div>
 
-    <footer class="bottom-nav px-2">
-        <div class="grid grid-cols-3 gap-2">
-            <button onclick="exportToFile()" class="nav-btn bg-zinc-800 text-white">export .txt 👆</button>
-            <button onclick="importFromFile()" class="nav-btn bg-zinc-800 text-white">import .txt 👇</button>
-            <button onclick="window.location.href='index.html'" class="nav-btn bg-[#71bd7b] text-green-950">Accueil</button>
-        </div>
+    <footer class="bottom-nav px-2 flex gap-2">
+        <button onclick="openIOModal('export')" class="nav-btn bg-zinc-800 text-white">Exporter 📤</button>
+        <button onclick="openIOModal('import')" class="nav-btn bg-zinc-800 text-white">Importer 📥</button>
+        <button onclick="window.location.href='index.html'" class="nav-btn bg-[#71bd7b] text-green-950">Accueil</button>
     </footer>
 
     <div id="modal" class="modal-overlay">
         <div class="modal-content">
             <h2 id="modalTitle" style="margin:0; font-size: 1.1rem; font-weight: 800; color: #fff;">Élève</h2>
-            <textarea id="commentInput" rows="8" placeholder="Écrire une observation..."></textarea>
+            <textarea id="commentInput" rows="8" style="font-family: 'Inter';"></textarea>
             <div class="btns">
-                <button class="modal-btn btn-cancel" onclick="closeModal()">Fermer</button>
+                <button class="modal-btn btn-cancel" onclick="closeAllModals()">Fermer</button>
                 <button class="modal-btn btn-save" onclick="saveData()">Enregistrer</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="ioModal" class="modal-overlay">
+        <div class="modal-content">
+            <h2 id="ioTitle" style="margin:0; font-size: 1.1rem; font-weight: 800; color: #fff;">Titre</h2>
+            <p id="ioInstructions" class="text-[10px] text-zinc-500 mt-2 mb-2 uppercase font-bold"></p>
+            <textarea id="ioTextArea" rows="10" placeholder="Collez le code ici..."></textarea>
+            <div class="btns">
+                <button class="modal-btn btn-cancel" onclick="closeAllModals()">Annuler</button>
+                <button id="ioActionBtn" class="modal-btn btn-save">Copier</button>
             </div>
         </div>
     </div>
@@ -66,16 +76,15 @@
     <script>
         let elevesInscrits = JSON.parse(localStorage.getItem('maListeEleves')) || [];
         let savedComments = JSON.parse(localStorage.getItem('studentObservations')) || {};
-        let savedAbsents = JSON.parse(localStorage.getItem('absentsList')) || [];
-        let absents = new Set(savedAbsents);
+        let absents = new Set(JSON.parse(localStorage.getItem('absentsList')) || []);
         let currentStudentId = "";
 
         function formatName(str) {
             const parts = str.trim().split(' ');
             if (parts.length === 0) return str;
-            const firstPart = parts[0].charAt(0).toUpperCase() + parts[0].slice(1).toLowerCase();
-            const otherParts = parts.slice(1).join(' ').toUpperCase();
-            return (firstPart + ' ' + otherParts).trim();
+            const first = parts[0].charAt(0).toUpperCase() + parts[0].slice(1).toLowerCase();
+            const last = parts.slice(1).join(' ').toUpperCase();
+            return (first + ' ' + last).trim();
         }
 
         function renderList() {
@@ -85,89 +94,101 @@
                 container.innerHTML = `<div class="col-span-2 text-center p-10 text-zinc-500 text-[10px] font-bold uppercase">Aucun élève chargé.</div>`;
                 return;
             }
-
             const groupes = {};
             elevesInscrits.forEach(el => {
                 const niv = el.niveau.toUpperCase();
                 if (!groupes[niv]) groupes[niv] = [];
                 groupes[niv].push(el);
             });
-
             Object.keys(groupes).sort().forEach(niv => {
                 const col = document.createElement('div');
                 const colorTitle = (niv.includes('CE2')) ? 'text-amber-400' : 'text-emerald-400';
-                col.innerHTML = `<h2 class="${colorTitle} text-[10px] font-black uppercase text-center mb-1">${niv}</h2>`;
+                col.innerHTML = `<h2 class="${colorTitle} text-[10px] font-black uppercase text-center mb-3">${niv}</h2>`;
                 const ul = document.createElement('ul');
                 ul.className = "student-list";
-                
                 groupes[niv].sort((a,b) => a.identite.localeCompare(b.identite)).forEach(el => {
                     const comment = savedComments[el.id] || "";
-                    const isAbs = absents.has(el.id);
                     const li = document.createElement('li');
-                    li.className = `student-item ${el.sexe === 'f' ? 'bg-f' : 'bg-m'} ${isAbs ? 'is-absent' : ''}`;
-                    const displayName = formatName(el.identite);
-                    li.innerHTML = `<span class="student-name">${displayName}</span><span>${comment.trim() ? '📝' : '＋'}</span>`;
-                    li.onclick = () => openModal(el.id, displayName);
+                    li.className = `student-item ${el.sexe === 'f' ? 'bg-f' : 'bg-m'} ${absents.has(el.id) ? 'is-absent' : ''}`;
+                    li.innerHTML = `<span class="student-name">${formatName(el.identite)}</span><span>${comment.trim() ? '📝' : '＋'}</span>`;
+                    li.onclick = () => openCommentModal(el.id, formatName(el.identite));
                     ul.appendChild(li);
                 });
                 col.appendChild(ul); container.appendChild(col);
             });
         }
 
-        function openModal(id, nom) {
+        function openCommentModal(id, nom) {
             currentStudentId = id;
             document.getElementById('modalTitle').innerText = nom;
             document.getElementById('commentInput').value = savedComments[id] || "";
             document.getElementById('modal').style.display = 'flex';
         }
 
-        function closeModal() { document.getElementById('modal').style.display = 'none'; }
+        function closeAllModals() {
+            document.getElementById('modal').style.display = 'none';
+            document.getElementById('ioModal').style.display = 'none';
+        }
 
         function saveData() {
             const val = document.getElementById('commentInput').value;
             if(val.trim() === "") delete savedComments[currentStudentId];
             else savedComments[currentStudentId] = val;
             localStorage.setItem('studentObservations', JSON.stringify(savedComments));
-            closeModal(); renderList();
+            closeAllModals(); renderList();
         }
 
-        // --- EXPORT VERS FICHIER .TXT ---
-        function exportToFile() {
-            if (Object.keys(savedComments).length === 0) return alert("Rien à exporter.");
-            
-            const dataStr = JSON.stringify(savedComments, null, 2);
-            const date = new Date().toLocaleDateString('fr-FR').replace(/\//g, '-');
-            const blob = new Blob([dataStr], { type: 'text/plain' });
-            const link = document.createElement('a');
-            
-            link.href = URL.createObjectURL(blob);
-            link.download = `observations-${date}.txt`;
-            link.click();
-            URL.revokeObjectURL(link.href);
-        }
+        // --- GESTION IMPORT / EXPORT PAR COPIER-COLLER ---
+        function openIOModal(mode) {
+            const modal = document.getElementById('ioModal');
+            const title = document.getElementById('ioTitle');
+            const instr = document.getElementById('ioInstructions');
+            const area = document.getElementById('ioTextArea');
+            const btn = document.getElementById('ioActionBtn');
 
-        // --- IMPORT DEPUIS FICHIER .TXT ---
-        function importFromFile() {
-            const input = document.createElement('input');
-            input.type = 'file';
-            input.accept = '.txt';
+            modal.style.display = 'flex';
 
-            input.onchange = e => {
-                const file = e.target.files[0];
-                const reader = new FileReader();
-                reader.onload = event => {
+            if (mode === 'export') {
+                title.innerText = "Exporter les notes";
+                instr.innerText = "Copiez ce code et gardez-le précieusement :";
+                // On transforme les IDs en Noms dans l'export pour plus de sécurité lors de l'import
+                let exportData = {};
+                for(let id in savedComments) {
+                    let student = elevesInscrits.find(e => e.id === id);
+                    let key = student ? student.identite : id;
+                    exportData[key] = savedComments[id];
+                }
+                area.value = JSON.stringify(exportData, null, 2);
+                btn.innerText = "Copier le code";
+                btn.onclick = () => {
+                    area.select();
+                    document.execCommand('copy');
+                    btn.innerText = "Copié ! ✅";
+                    setTimeout(() => closeAllModals(), 800);
+                };
+            } else {
+                title.innerText = "Importer des notes";
+                instr.innerText = "Collez le code reçu précédemment ici :";
+                area.value = "";
+                btn.innerText = "Valider l'importation";
+                btn.onclick = () => {
                     try {
-                        const importedData = JSON.parse(event.target.result);
-                        if (confirm("Remplacer les observations actuelles par celles du fichier ?")) {
-                            savedComments = importedData;
+                        const imported = JSON.parse(area.value);
+                        if(confirm("Écraser les notes actuelles par celles-ci ?")) {
+                            let newComments = {};
+                            for(let key in imported) {
+                                // On cherche si la clé est un nom ou un ID
+                                let student = elevesInscrits.find(e => e.identite.toUpperCase() === key.toUpperCase() || e.id === key);
+                                if(student) newComments[student.id] = imported[key];
+                            }
+                            savedComments = newComments;
                             localStorage.setItem('studentObservations', JSON.stringify(savedComments));
                             renderList();
+                            closeAllModals();
                         }
-                    } catch (err) { alert("Erreur : Fichier invalide."); }
+                    } catch(e) { alert("Code invalide. Vérifiez que vous avez bien tout copié."); }
                 };
-                reader.readAsText(file);
-            };
-            input.click();
+            }
         }
 
         window.onload = renderList;
