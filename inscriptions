@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Inscriptions - Gestion Classe</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+        body { font-family: 'Inter', sans-serif; background: #000; color: #eee; padding: 10px; margin: 0; }
+        
+        .card-input { display: none; }
+        .card-label {
+            display: flex; align-items: center; justify-content: center;
+            background: #1a1a1a; border: 2px solid #333;
+            padding: 12px 5px; border-radius: 1rem; cursor: pointer;
+            font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
+            transition: all 0.2s;
+        }
+        .card-input:checked + .card-label { background: #fff; border-color: #fff; color: #000; transform: scale(0.98); }
+
+        /* Colonnes sans bordures */
+        .level-column { background: rgba(24, 24, 27, 0.6); border: none; border-radius: 1.5rem; padding: 12px; height: fit-content; }
+
+        .bg-m { background: #dbeafe; color: #1e3a8a; } 
+        .bg-f { background: #fce7f3; color: #831843; } 
+        
+        .student-item { padding: 8px 12px; border-radius: 1rem; display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+        .btn-nav { font-weight: 800; padding: 14px 4px; border-radius: 50px; font-size: 10px; text-align: center; text-transform: uppercase; border: none; cursor: pointer; flex: 1; }
+    </style>
+</head>
+<body>
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-center text-xl font-black uppercase my-6 tracking-tighter">Inscriptions</h1>
+        
+        <div class="max-w-md mx-auto bg-zinc-900 border border-zinc-800 rounded-[2rem] p-5 mb-10 shadow-2xl">
+            <form id="eleveForm" class="flex flex-col gap-5">
+                <input type="text" id="nomComplet" placeholder="Prénom NOM" 
+                    class="bg-black border border-zinc-700 text-white rounded-xl p-4 outline-none focus:border-white" required>
+                
+                <div class="grid grid-cols-2 gap-3">
+                    <label><input type="radio" name="sexe" value="m" class="card-input" checked><div class="card-label">Garçon</div></label>
+                    <label><input type="radio" name="sexe" value="f" class="card-input"><div class="card-label">Fille</div></label>
+                </div>
+
+                <div class="grid grid-cols-3 gap-2">
+                    <label><input type="radio" name="niveau" value="CP" class="card-input"><div class="card-label">CP</div></label>
+                    <label><input type="radio" name="niveau" value="CE1" class="card-input"><div class="card-label">CE1</div></label>
+                    <label><input type="radio" name="niveau" value="CE2" class="card-input" checked><div class="card-label">CE2</div></label>
+                    <label><input type="radio" name="niveau" value="CM1" class="card-input"><div class="card-label">CM1</div></label>
+                    <label><input type="radio" name="niveau" value="CM2" class="card-input"><div class="card-label">CM2</div></label>
+                    <label><input type="radio" name="niveau" value="AUTRE" class="card-input"><div class="card-label">Autre</div></label>
+                </div>
+
+                <button type="submit" class="bg-pink-500 text-white font-black py-4 rounded-full uppercase text-sm active:scale-95 transition-transform">Enregistrer</button>
+
+                <div class="mt-2 pt-4 border-t border-zinc-800 text-center">
+                    <label class="text-[9px] font-bold text-zinc-500 uppercase block mb-2">Importer liste .txt (Prénom;NOM;sexe;niveau)</label>
+                    <input type="file" id="fileInput" accept=".txt,.csv" class="text-[10px] text-zinc-600">
+                </div>
+            </form>
+        </div>
+
+        <div id="listeContainer"></div>
+
+        <div class="max-w-md mx-auto flex gap-4 mt-12 pt-6 border-t border-zinc-900">
+            <button onclick="toutEffacer()" class="btn-nav bg-rose-600 text-white shadow-md">Vider la liste</button>
+            <a href="index.html" class="btn-nav bg-green-500 text-green-950 flex items-center justify-center no-underline shadow-md">Accueil</a>
+        </div>
+    </div>
+
+    <script>
+        let eleves = JSON.parse(localStorage.getItem('maListeEleves')) || [];
+
+        function formaterIdentite(prenom, nom) {
+            const p = prenom.trim();
+            const n = nom.trim().toUpperCase();
+            return p.charAt(0).toUpperCase() + p.slice(1).toLowerCase() + " " + n;
+        }
+
+        document.getElementById('eleveForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const saisie = document.getElementById('nomComplet').value.trim().split(" ");
+            const prenom = saisie[0] || "";
+            const nom = saisie.slice(1).join(" ") || "";
+            const sexe = document.querySelector('input[name="sexe"]:checked').value;
+            const niveau = document.querySelector('input[name="niveau"]:checked').value;
+            
+            eleves.push({ id: Date.now(), identite: formaterIdentite(prenom, nom), sexe, niveau });
+            sauvegarder();
+            e.target.reset();
+        });
+
+        document.getElementById('fileInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const lignes = e.target.result.split(/\r?\n/);
+                lignes.forEach(l => {
+                    const clean = l.trim();
+                    if (!clean) return;
+                    const p = clean.split(';'); 
+                    if(p.length >= 4) {
+                        eleves.push({
+                            id: Date.now() + Math.random(),
+                            identite: formaterIdentite(p[0], p[1]),
+                            sexe: p[2].trim().toLowerCase(),
+                            niveau: p[3].trim().toUpperCase()
+                        });
+                    }
+                });
+                sauvegarder();
+            };
+            reader.readAsText(file);
+        });
+
+        function sauvegarder() {
+            localStorage.setItem('maListeEleves', JSON.stringify(eleves));
+            render();
+        }
+
+        function render() {
+            const container = document.getElementById('listeContainer');
+            container.innerHTML = "";
+            if (eleves.length === 0) return;
+
+            const groupes = {};
+            eleves.forEach(el => {
+                const niv = el.niveau.toUpperCase();
+                if (!groupes[niv]) groupes[niv] = [];
+                groupes[niv].push(el);
+            });
+
+            const nomsNiveaux = Object.keys(groupes).sort();
+            
+            if (nomsNiveaux.length === 2) {
+                container.className = "grid grid-cols-2 gap-4 items-start";
+            } else {
+                container.className = "flex flex-col gap-6 max-w-md mx-auto";
+            }
+
+            nomsNiveaux.forEach(niv => {
+                const col = document.createElement('div');
+                col.className = "level-column";
+                // Suppression de border-b et ajout de padding-bottom simple
+                col.innerHTML = `<h3 class="text-[10px] font-black text-zinc-500 uppercase mb-4 text-center tracking-widest pb-1">${niv} — ${groupes[niv].length} élèves</h3>`;
+                
+                const list = document.createElement('div');
+                groupes[niv].sort((a,b) => a.identite.localeCompare(b.identite)).forEach(el => {
+                    list.innerHTML += `
+                        <div class="student-item bg-${el.sexe}">
+                            <span class="text-[10px] font-bold truncate pr-2">${el.identite}</span>
+                            <button onclick="supprimer(${el.id})" class="text-lg opacity-40 hover:opacity-100">&times;</button>
+                        </div>`;
+                });
+                col.appendChild(list);
+                container.appendChild(col);
+            });
+        }
+
+        function supprimer(id) { eleves = eleves.filter(e => e.id !== id); sauvegarder(); }
+        function toutEffacer() { if(confirm("Supprimer toute la liste ?")) { eleves = []; sauvegarder(); } }
+
+        render();
+    </script>
+</body>
+</html>
