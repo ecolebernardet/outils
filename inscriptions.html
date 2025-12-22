@@ -19,9 +19,10 @@
         }
         .card-input:checked + .card-label { background: #fff; border-color: #fff; color: #000; transform: scale(0.98); }
 
-        /* Colonnes sans bordures */
+        /* Colonnes de niveaux sans bordures */
         .level-column { background: rgba(24, 24, 27, 0.6); border: none; border-radius: 1.5rem; padding: 12px; height: fit-content; }
 
+        /* Couleurs élèves */
         .bg-m { background: #dbeafe; color: #1e3a8a; } 
         .bg-f { background: #fce7f3; color: #831843; } 
         
@@ -63,7 +64,7 @@
 
         <div id="listeContainer"></div>
 
-        <div class="max-w-md mx-auto flex gap-4 mt-12 pt-6 border-t border-zinc-900">
+        <div class="max-w-md mx-auto flex gap-4 mt-12 pt-6 border-t border-zinc-900 mb-20">
             <button onclick="toutEffacer()" class="btn-nav bg-rose-600 text-white shadow-md">Vider la liste</button>
             <a href="index.html" class="btn-nav bg-green-500 text-green-950 flex items-center justify-center no-underline shadow-md">Accueil</a>
         </div>
@@ -72,12 +73,14 @@
     <script>
         let eleves = JSON.parse(localStorage.getItem('maListeEleves')) || [];
 
+        // Fonction pour formater : Prénom (Initiale Maj) NOM (Tout Maj)
         function formaterIdentite(prenom, nom) {
             const p = prenom.trim();
             const n = nom.trim().toUpperCase();
             return p.charAt(0).toUpperCase() + p.slice(1).toLowerCase() + " " + n;
         }
 
+        // --- AJOUT MANUEL ---
         document.getElementById('eleveForm').addEventListener('submit', (e) => {
             e.preventDefault();
             const saisie = document.getElementById('nomComplet').value.trim().split(" ");
@@ -86,11 +89,17 @@
             const sexe = document.querySelector('input[name="sexe"]:checked').value;
             const niveau = document.querySelector('input[name="niveau"]:checked').value;
             
-            eleves.push({ id: Date.now(), identite: formaterIdentite(prenom, nom), sexe, niveau });
+            eleves.push({ 
+                id: Date.now(), 
+                identite: formaterIdentite(prenom, nom), 
+                sexe, 
+                niveau 
+            });
             sauvegarder();
             e.target.reset();
         });
 
+        // --- IMPORTATION ---
         document.getElementById('fileInput').addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (!file) return;
@@ -143,8 +152,7 @@
             nomsNiveaux.forEach(niv => {
                 const col = document.createElement('div');
                 col.className = "level-column";
-                // Suppression de border-b et ajout de padding-bottom simple
-                col.innerHTML = `<h3 class="text-[10px] font-black text-zinc-500 uppercase mb-4 text-center tracking-widest pb-1">${niv} — ${groupes[niv].length} élèves</h3>`;
+                col.innerHTML = `<h3 class="text-[10px] font-black text-zinc-500 uppercase mb-4 text-center tracking-widest pb-1">${niv} — ${groupes[niv].length}</h3>`;
                 
                 const list = document.createElement('div');
                 groupes[niv].sort((a,b) => a.identite.localeCompare(b.identite)).forEach(el => {

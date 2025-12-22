@@ -56,11 +56,10 @@
         }
 
         #result-display {
-            font-size: 1.8rem;
+            font-size: 1.5rem;
             font-weight: 800;
             color: var(--primary);
             padding: 0 5px;
-            text-transform: uppercase;
         }
 
         .main-btn {
@@ -76,7 +75,7 @@
             -webkit-appearance: none;
         }
 
-        .stats { margin-top: 10px; font-weight: 500; color: #aaa; font-size: 0.7rem; }
+        .stats { margin-top: 10px; font-weight: 500; color: #aaa; font-size: 0.7rem; text-transform: uppercase; }
 
         .list-section {
             width: 100%;
@@ -90,7 +89,7 @@
 
         .student-grid {
             display: grid;
-            grid-template-columns: repeat(4, 1fr); 
+            grid-template-columns: repeat(3, 1fr); 
             gap: 6px;
             padding: 0;
             margin-bottom: 15px;
@@ -101,9 +100,9 @@
         .student-item {
             background: #222;
             color: #eee;
-            padding: 6px 5px;
+            padding: 8px 5px;
             border-radius: 50px;
-            font-size: 0.75rem; 
+            font-size: 0.65rem; 
             border: 1px solid #333;
             text-align: center;
             white-space: nowrap;
@@ -111,6 +110,7 @@
             text-overflow: ellipsis;
             cursor: pointer;
             transition: all 0.2s ease;
+            font-weight: 600;
         }
 
         .drawn {
@@ -122,7 +122,6 @@
 
         .reset-link {
             width: 50%;
-            max-width: 300px;
             background: #ec003f;
             color: #fce7f3;
             border: none;
@@ -132,12 +131,10 @@
             border-radius: 50px;
             cursor: pointer;
             margin-bottom: 20px;
-            -webkit-appearance: none;
         }
 
         .home-btn {
             width: 50%;
-            max-width: 300px;
             background: var(--btn-home);
             color: var(--home-text);
             border: none;
@@ -146,24 +143,21 @@
             font-weight: 600;
             border-radius: 50px;
             cursor: pointer;
-            letter-spacing: 0.05em;
             margin-bottom: 30px;
-            -webkit-appearance: none;
         }
 
         .main-btn:active, .home-btn:active, .reset-link:active, .student-item:active { 
             transform: scale(0.95); 
-            opacity: 0.9;
         }
         
-        .main-btn:disabled { background: #333; box-shadow: none; color: #888; }
+        .main-btn:disabled { background: #333; color: #888; }
     </style>
 </head>
 <body>
 
     <div class="card">
         <div id="result-container">
-            <div id="result-display">Prêt</div>
+            <div id="result-display">PRÊT</div>
         </div>
         
         <button id="draw-btn" class="main-btn" onclick="drawName()">TIRER UN PRÉNOM</button>
@@ -172,52 +166,29 @@
     </div>
 
     <div class="list-section">
-        <p style="font-size: 0.7rem; color: #666; margin-bottom: 10px;">Tapez sur un nom pour le barrer ou le remettre</p>
+        <p style="font-size: 0.7rem; color: #666; margin-bottom: 10px; text-transform: uppercase; font-weight: bold;">Cliquer pour barrer/remettre</p>
         <ul id="student-list-ui" class="student-grid"></ul>
         
-        <button class="reset-link" onclick="resetDrawing()">RàZ</button>
+        <button class="reset-link" onclick="resetDrawing()">RàZ du tirage</button>
         
         <button onclick="window.location.href='index.html'" class="home-btn">Accueil</button>
     </div>
 
     <script>
-        // --- DONNÉES INTÉGRÉES ---
-        const rawData =
-`Aliya NYCOLLIN-YAHIAOUI,f,ce2
-Ariane PEGUET,f,ce2
-Eden BRUNO,g,ce2
-Elowan BRULÉ,g,ce2
-Galise ROCHAS,f,ce2
-Jean PAGANO,g,ce2
-Maëlys HUGOT,f,ce2
-Matteo VERNAY,g,ce2
-Milan HOSGUL,g,ce2
-Noa CONNAC,f,ce2
-Sirine ZERAÏBI,f,ce2
-Soline LE COADIC,f,ce2
-Timéo SIMEONE,g,ce2
-Victor BESSON,g,ce2
-Zélie THILLIEZ,f,ce2
-Célina IKHLEF,f,cm2
-Félix DUBOIS,g,cm2
-Lila BÂABÂA,f,cm2
-Madeline BLANC,f,cm2
-Marouane BENALI,g,cm2
-Maxime ALONSO,g,cm2
-Mayline ALVAREZ,f,cm2
-Nino ROUX,g,cm2
-Nolan BOUTARIC,g,cm2
-Roumaïssa BASSI,f,cm2`;
+        // FONCTION DE NETTOYAGE DES PRÉNOMS
+        function formatName(fullName) {
+            const parts = fullName.trim().split(" ");
+            const firstName = parts[0].charAt(0).toUpperCase() + parts[0].slice(1).toLowerCase();
+            const lastName = parts.slice(1).join(" ").toUpperCase();
+            return firstName + " " + lastName;
+        }
 
-        // Extraction des prénoms et tri alphabétique
-        const ALL_NAMES = rawData.split('\n')
-            .filter(line => line.trim() !== "")
-            .map(line => {
-                const fullName = line.split(',')[0].trim();
-                return fullName.split(' ')[0]; // On ne garde que le prénom
-            })
-            .sort((a, b) => a.localeCompare(b, 'fr'));
+        // CHARGEMENT DE LA LISTE DEPUIS L'INSCRIPTION
+        const rawData = JSON.parse(localStorage.getItem('maListeEleves')) || [];
+        // On nettoie les noms dès le début et on trie par ordre alphabétique
+        const ALL_NAMES = rawData.map(el => formatName(el.identite)).sort();
 
+        // État du tirage (noms restants)
         let remaining = JSON.parse(localStorage.getItem('remainingStudents')) || [...ALL_NAMES];
 
         function saveState() {
@@ -241,6 +212,12 @@ Roumaïssa BASSI,f,cm2`;
 
             listUI.innerHTML = ''; 
             
+            if (ALL_NAMES.length === 0) {
+                listUI.innerHTML = '<p style="grid-column: span 3; color: #555; font-size: 0.8rem;">Aucun élève inscrit</p>';
+                btn.disabled = true;
+                return;
+            }
+
             ALL_NAMES.forEach(n => {
                 const isDrawn = !remaining.includes(n);
                 const li = document.createElement('li');
@@ -250,7 +227,7 @@ Roumaïssa BASSI,f,cm2`;
                 listUI.appendChild(li);
             });
 
-            counter.innerText = `${remaining.length} élève${remaining.length > 1 ? 's' : ''} restant${remaining.length > 1 ? 's' : ''}`;
+            counter.innerText = `${remaining.length} restant${remaining.length > 1 ? 's' : ''} / ${ALL_NAMES.length}`;
 
             if (remaining.length === 0) {
                 btn.disabled = true;
@@ -274,7 +251,7 @@ Roumaïssa BASSI,f,cm2`;
                 display.innerText = randomName;
                 iterations++;
 
-                if (iterations > 12) {
+                if (iterations > 15) {
                     clearInterval(interval);
                     const finalIndex = Math.floor(Math.random() * remaining.length);
                     const winner = remaining.splice(finalIndex, 1)[0];
@@ -285,19 +262,19 @@ Roumaïssa BASSI,f,cm2`;
                     saveState();
                     updateUI();
                 }
-            }, 60);
+            }, 50);
         }
 
         function resetDrawing() {
-            if(confirm("Réinitialiser le tirage ?")) {
+            if(confirm("Remettre tous les élèves en jeu ?")) {
                 remaining = [...ALL_NAMES];
                 localStorage.removeItem('remainingStudents');
-                document.getElementById('result-display').innerText = "Prêt";
+                document.getElementById('result-display').innerText = "PRÊT";
                 updateUI();
             }
         }
 
-        // Initialisation
+        // Initialisation au chargement
         updateUI();
     </script>
 </body>

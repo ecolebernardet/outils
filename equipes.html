@@ -4,78 +4,148 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Générateur d'Équipes</title>
-    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-        body { font-family: 'Inter', sans-serif; background-color: #111; color: #eee; margin: 0; display: flex; justify-content: center; }
-        
-        h1 { text-align: center; font-size: 1.1rem; margin-top: 10px; margin-bottom: 15px; color: #fff; font-weight: 700; }
-        
-        .label { text-align: center; font-size: 0.7rem; color: #888; margin-bottom: 8px; display: block; letter-spacing: 0.05em; }
-        
-        .selector-grid { display: flex; justify-content: center; gap: 6px; margin-bottom: 15px; flex-wrap: wrap; }
-        .num-btn { 
-            background: #444; 
-            color: #fff; 
-            border: 1px solid #888; 
-            width: 30px; 
-            height: 30px; 
-            border-radius: 50%; 
-            cursor: pointer; 
-            font-weight: bold; 
-            font-size: 0.9rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s ease;
+        :root {
+            --primary: #ff637e;
+            --bg: #000000;
+            --text: #ffffff;
+            --card-bg: #1a1a1a;
+            --btn-home: #71bd7b;
+            --home-text: #052e16;
+            --blue-light: #40c4ff;
+            --pink: #ff80ab;
+            --yellow: #facc15;
+            --green: #4ade80;
         }
-        .num-btn.active { background: #ff637e; border-color: #ffffff; transform: scale(1.1); box-shadow: 0 0 10px rgba(255, 99, 126, 0.4); }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+
+        h1 { font-size: 1rem; text-transform: uppercase; font-weight: 800; margin: 5px 0; }
+
+        .section-title { 
+            font-size: 0.65rem; color: #666; margin: 12px 0 6px 0; 
+            text-transform: uppercase; font-weight: bold; width: 100%; text-align: center;
+        }
+
+        /* GRILLE D'APPEL (5 COLONNES) */
+        .student-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr); 
+            gap: 4px;
+            padding: 0;
+            margin-bottom: 12px;
+            list-style: none;
+            width: 100%;
+            max-width: 500px;
+        }
+
+        .student-item {
+            background: #222;
+            color: #eee;
+            padding: 6px 2px;
+            border-radius: 4px;
+            font-size: 0.58rem; 
+            border: 1px solid #333;
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .absent {
+            background: #111 !important;
+            color: #444 !important;
+            text-decoration: line-through;
+            border-color: transparent !important;
+        }
+
+        /* CONFIGURATION */
+        .selector-grid { display: flex; justify-content: center; gap: 5px; margin-bottom: 12px; flex-wrap: wrap; }
+        .num-btn { 
+            background: #333; color: #fff; border: 1px solid #555; 
+            width: 32px; height: 32px; border-radius: 50%; 
+            cursor: pointer; font-weight: bold; font-size: 0.8rem;
+        }
+        .num-btn.active { background: var(--primary); border-color: #fff; }
 
         .generate-btn { 
-            background-color: #ff637e; 
-            color: white; 
-            border: none; 
-            padding: 10px; 
-            border-radius: 50px; 
-            cursor: pointer; 
-            font-weight: bold; 
-            font-size: 1rem; 
-            width: 73%; 
-            display: block; 
-            margin: 0 auto 15px auto;
-            transition: transform 0.1s; 
-            text-align: center;
+            width: 90%; max-width: 300px; background: var(--primary); color: white; 
+            border: none; padding: 12px; font-size: 0.9rem; font-weight: 800; 
+            border-radius: 50px; cursor: pointer; text-transform: uppercase;
+            margin-bottom: 20px;
         }
-        .generate-btn:active { transform: scale(0.96); }
-        
-        .grid-teams { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .team-card { border-radius: 5px; padding: 5px; background: #333333; }
-        .team-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #666; margin-bottom: 8px; padding-bottom: 4px; }
-        .team-title { font-weight: bold; color: #ffd230; font-size: 0.8rem; }
-        .team-stats { font-size: 0.7rem; color: #aaa; font-weight: 500; }
-        
-        .student { margin-bottom: 4px; display: flex; justify-content: start; font-size: 0.85rem; align-items: center; }
-        .symbol { margin-left: 5px; font-weight: 600; }
-        .female { margin-right: 5px; color: #ff80ab; }
-        .male { margin-right: 5px; color: #40c4ff; }
-        
-        .tag { font-size: 0.55rem; padding: 1px 4px; border-radius: 4px; font-weight: bold; margin-right: 6px; text-transform: uppercase; }
-        .ce2 { background: #ffccd3; color: #111; }
-        .cm2 { background: #74d4ff; color: #111; }
 
-        .bottom-nav { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 20px; padding-bottom: 20px; }
-        .btn-nav { font-weight: 600; padding: 12px; border-radius: 50px; font-size: 10px; letter-spacing: 0.05em; transition: transform 0.1s; text-align: center; border: none; cursor: pointer; }
-        .btn-nav:active { transform: scale(0.95); }
-        .btn-raz { background-color: #e11d48; color: #fff1f2; }
-        .btn-home { background-color: #71bd7b; color: #052e16; text-decoration: none; display: flex; align-items: center; justify-content: center; }
+        /* RÉSULTATS DES ÉQUIPES */
+        .grid-teams { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 12px; 
+            width: 100%; 
+            max-width: 500px;
+        }
+        .team-card { 
+            border-radius: 12px; 
+            padding: 12px 10px; 
+            background: var(--card-bg); 
+            border: 1px solid #333; 
+        }
+        .team-header { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            border-bottom: 1px solid #333; 
+            margin-bottom: 10px; 
+            padding-bottom: 6px; 
+        }
+        
+        .team-title { font-weight: 800; color: #ffffff; font-size: 0.7rem; text-transform: uppercase; }
+        .team-stats { font-size: 0.6rem; color: #888; font-weight: 600; }
+        
+        /* ESPACEMENT DES ÉLÈVES RÉGLÉ À 6PX */
+        .student-row { 
+            margin-bottom: 6px; 
+            display: flex; 
+            align-items: center; 
+            font-size: 0.85rem; 
+            font-weight: 700; 
+        }
+        .student-row:last-child { margin-bottom: 0; }
+
+        .name-f { color: var(--pink); } 
+        .name-g { color: var(--blue-light); } 
+        
+        .tag { font-size: 0.6rem; font-weight: 900; margin-right: 8px; min-width: 30px; text-align: center; }
+        .tag-ce2 { color: var(--yellow); } 
+        .tag-cm2 { color: var(--green); } 
+
+        .bottom-nav { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; max-width: 400px; margin-top: 25px; margin-bottom: 20px;}
+        .btn-nav { font-weight: 800; padding: 14px; border-radius: 50px; font-size: 10px; text-align: center; text-transform: uppercase; text-decoration: none; border: none; cursor: pointer; }
+        .btn-raz { background-color: #ec003f; color: #fff; }
+        .btn-home { background-color: var(--btn-home); color: var(--home-text); }
+        
+        button:active { transform: scale(0.95); }
     </style>
 </head>
 <body>
 
-<div class="container w-full max-w-xl px-4">
-    <h1>Groupes CE2/CM2</h1>
+    <h1>Équipes</h1>
     
-    <span class="label">Nombre d'équipes</span>
+    <p class="section-title">1. Appel (cliquer pour rayer)</p>
+    <ul id="attendance-grid" class="student-grid"></ul>
+
+    <p class="section-title">2. Nombre d'équipes</p>
     <div class="selector-grid">
         <button class="num-btn" onclick="selectNum(2)">2</button>
         <button class="num-btn" onclick="selectNum(3)">3</button>
@@ -86,79 +156,58 @@
         <button class="num-btn" onclick="selectNum(8)">8</button>
     </div>
 
-    <button class="generate-btn" onclick="generateTeams()">MÉLANGER & GÉNÉRER</button>
+    <button class="generate-btn" onclick="generateTeams()">Générer les groupes</button>
 
     <div id="results" class="grid-teams"></div>
 
     <div class="bottom-nav">
-        <button onclick="resetDisplay()" class="btn-nav btn-raz">RàZ</button>
-        <a href="index.html" class="btn-nav btn-home">Accueil</a>
+        <button onclick="resetAll()" class="btn-nav btn-raz">RàZ Équipes</button>
+        <button onclick="window.location.href='index.html'" class="btn-nav btn-home">Accueil</button>
     </div>
-</div>
 
 <script>
-    // --- DONNÉES INTÉGRÉES ---
-    const rawData = `Aliya NYCOLLIN-YAHIAOUI,f,ce2
-Ariane PEGUET,f,ce2
-Eden BRUNO,g,ce2
-Elowan BRULÉ,g,ce2
-Galise ROCHAS,f,ce2
-Jean PAGANO,g,ce2
-Maëlys HUGOT,f,ce2
-Matteo VERNAY,g,ce2
-Milan HOSGUL,g,ce2
-Noa CONNAC,f,ce2
-Sirine ZERAÏBI,f,ce2
-Soline LE COADIC,f,ce2
-Timéo SIMEONE,g,ce2
-Victor BESSON,g,ce2
-Zélie THILLIEZ,f,ce2
-Célina IKHLEF,f,cm2
-Félix DUBOIS,g,cm2
-Lila BÂABÂA,f,cm2
-Madeline BLANC,f,cm2
-Marouane BENALI,g,cm2
-Maxime ALONSO,g,cm2
-Mayline ALVAREZ,f,cm2
-Nino ROUX,g,cm2
-Nolan BOUTARIC,g,cm2
-Roumaïssa BASSI,f,cm2`;
-
     let selectedNumTeams = 4;
+    let ALL_STUDENTS = JSON.parse(localStorage.getItem('maListeEleves')) || [];
+    let absents = new Set(); 
 
-    function getStudentsObject() {
-        const obj = { ce2_f: [], ce2_g: [], cm2_f: [], cm2_g: [] };
-        rawData.split('\n').filter(l => l.trim() !== "").forEach(line => {
-            const [name, gender, grade] = line.split(',');
-            const key = `${grade.trim().toLowerCase()}_${gender.trim().toLowerCase()}`;
-            if (obj[key]) {
-                const firstName = name.trim().split(' ')[0];
-                obj[key].push(firstName);
-            }
-        });
-        return obj;
+    function getOnlyFirstName(fullName) {
+        return fullName.trim().split(" ")[0];
     }
 
-    window.onload = function() {
-        const savedTeams = localStorage.getItem('lastTeams');
-        const savedNum = localStorage.getItem('numTeams');
-        if (savedNum) selectNum(parseInt(savedNum));
-        if (savedTeams) renderTeams(JSON.parse(savedTeams));
-    };
+    function formatNameFull(fullName) {
+        const parts = fullName.trim().split(" ");
+        if (parts.length === 0) return "";
+        const firstName = parts[0].charAt(0).toUpperCase() + parts[0].slice(1).toLowerCase();
+        const lastName = parts.slice(1).join(" ").toUpperCase();
+        return firstName + " " + lastName;
+    }
+
+    function renderAttendance() {
+        const grid = document.getElementById('attendance-grid');
+        grid.innerHTML = '';
+        const sorted = [...ALL_STUDENTS].sort((a, b) => a.identite.localeCompare(b.identite));
+        
+        sorted.forEach(s => {
+            const li = document.createElement('li');
+            const isAbsent = absents.has(s.identite);
+            li.className = `student-item ${isAbsent ? 'absent' : ''}`;
+            li.innerText = getOnlyFirstName(s.identite);
+            li.onclick = () => toggleAbsent(s.identite);
+            grid.appendChild(li);
+        });
+    }
+
+    function toggleAbsent(id) {
+        if (absents.has(id)) absents.delete(id);
+        else absents.add(id);
+        renderAttendance();
+    }
 
     function selectNum(n) {
         selectedNumTeams = n;
-        localStorage.setItem('numTeams', n);
         document.querySelectorAll('.num-btn').forEach(btn => {
             btn.classList.toggle('active', parseInt(btn.innerText) === n);
         });
-    }
-
-    function resetDisplay() {
-        if(confirm("Effacer les équipes ?")) {
-            document.getElementById('results').innerHTML = '';
-            localStorage.removeItem('lastTeams');
-        }
     }
 
     function shuffle(array) {
@@ -170,30 +219,33 @@ Roumaïssa BASSI,f,cm2`;
     }
 
     function generateTeams() {
-        const students = getStudentsObject();
+        const presents = ALL_STUDENTS.filter(s => !absents.has(s.identite));
+        if (presents.length === 0) return alert("Tous les élèves sont absents !");
+
         let teams = Array.from({ length: selectedNumTeams }, () => []);
+        const groups = { f_ce2: [], g_ce2: [], f_cm2: [], g_cm2: [], autres: [] };
+        
+        presents.forEach(el => {
+            const niv = el.niveau.toUpperCase();
+            const sexe = el.sexe.toLowerCase();
+            if (niv.includes('CE2')) {
+                sexe === 'f' ? groups.f_ce2.push(el) : groups.g_ce2.push(el);
+            } else if (niv.includes('CM2')) {
+                sexe === 'f' ? groups.f_cm2.push(el) : groups.g_cm2.push(el);
+            } else { groups.autres.push(el); }
+        });
 
-        const groups = [
-            { list: shuffle([...students.ce2_f]), level: 'CE2', gender: 'F' },
-            { list: shuffle([...students.ce2_g]), level: 'CE2', gender: 'G' },
-            { list: shuffle([...students.cm2_f]), level: 'CM2', gender: 'F' },
-            { list: shuffle([...students.cm2_g]), level: 'CM2', gender: 'G' }
-        ];
+        let pool = [];
+        Object.values(groups).forEach(g => { pool = pool.concat(shuffle([...g])); });
 
-        // On distribue les élèves un par un dans les équipes pour équilibrer
-        let teamPointer = 0;
-        groups.forEach(group => {
-            group.list.forEach(name => {
-                teams[teamPointer % selectedNumTeams].push({ 
-                    name, 
-                    level: group.level, 
-                    gender: group.gender 
-                });
-                teamPointer++;
+        pool.forEach((student, index) => {
+            teams[index % selectedNumTeams].push({
+                name: formatNameFull(student.identite),
+                level: student.niveau.toUpperCase(),
+                gender: student.sexe.toUpperCase()
             });
         });
 
-        localStorage.setItem('lastTeams', JSON.stringify(teams));
         renderTeams(teams);
     }
 
@@ -202,33 +254,38 @@ Roumaïssa BASSI,f,cm2`;
         resultsDiv.innerHTML = '';
 
         teams.forEach((team, index) => {
+            if (team.length === 0) return;
+            team.sort((a, b) => a.level.localeCompare(b.level));
             const countF = team.filter(s => s.gender === 'F').length;
-            const countG = team.filter(s => s.gender === 'G').length;
+            const countG = team.filter(s => s.gender === 'M' || s.gender === 'G').length;
             
             let card = document.createElement('div');
             card.className = 'team-card';
             
             let studentsHTML = team.map(s => `
-                <div class="student">
-                    <span class="tag ${s.level.toLowerCase()}">${s.level}</span>
-                    <span>
-                        <span class="symbol ${s.gender === 'F' ? 'female' : 'male'}">${s.gender === 'F' ? '♀' : '♂'}</span>
-                        ${s.name}
-                    </span>
-                </div>
-            `).join('');
+                <div class="student-row">
+                    <span class="tag ${s.level.includes('CE2') ? 'tag-ce2' : 'tag-cm2'}">${s.level.includes('CE2') ? 'CE2' : 'CM2'}</span>
+                    <span class="${s.gender === 'F' ? 'name-f' : 'name-g'}">${s.name}</span>
+                </div>`).join('');
             
             card.innerHTML = `
                 <div class="team-header">
-                    <span class="team-title">G${index + 1}</span>
-                    <span class="team-stats">${countF}♀ ${countG}♂</span>
+                    <span class="team-title">Équipe ${index + 1}</span>
+                    <span class="team-stats">${countF}F / ${countG}G</span>
                 </div>
                 ${studentsHTML}
             `;
             resultsDiv.appendChild(card);
         });
     }
-</script>
 
+    function resetAll() {
+        if(confirm("Effacer les équipes ?")) {
+            document.getElementById('results').innerHTML = '';
+        }
+    }
+
+    window.onload = renderAttendance;
+</script>
 </body>
 </html>
