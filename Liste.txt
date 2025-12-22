@@ -1,4 +1,3 @@
- 
 Aliya NYCOLLIN-YAHIAOUI,f,ce2
 Ariane PEGUET,f,ce2
 Eden BRUNO,g,ce2
@@ -15,7 +14,7 @@ Timéo SIMEONE,g,ce2
 Victor BESSON,g,ce2
 Zélie THILLIEZ,f,ce2
 Célina IKHLEF,f,cm2
-Félix DUBOIS,g
+Félix DUBOIS,g,cm2
 Lila BÂABÂA,f,cm2
 Madeline BLANC,f,cm2
 Marouane BENALI,g,cm2

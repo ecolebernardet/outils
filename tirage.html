@@ -14,7 +14,6 @@
             --home-text: #052e16;
         }
 
-        /* ANTI-CLIGNOTEMENT RECTANGULAIRE */
         * {
             -webkit-tap-highlight-color: transparent;
             outline: none;
@@ -110,7 +109,7 @@
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            cursor: pointer; /* Indique que c'est cliquable */
+            cursor: pointer;
             transition: all 0.2s ease;
         }
 
@@ -182,12 +181,42 @@
     </div>
 
     <script>
-        const ALL_NAMES = [
-            "Aliya", "Ariane", "Eden", "Elowan", "Galise", "Jean", "Maëlys", "Matteo", 
-            "Milan", "Noa", "Sirine", "Soline", "Timéo", "Victor", "Zélie",
-            "Célina", "Félix", "Lila", "Madeline", "Marouane", "Maxime", "Mayline", 
-            "Nino", "Nolan", "Roumaïssa"
-        ].sort(); // Optionnel : trier par ordre alphabétique
+        // --- DONNÉES INTÉGRÉES ---
+        const rawData =
+`Aliya NYCOLLIN-YAHIAOUI,f,ce2
+Ariane PEGUET,f,ce2
+Eden BRUNO,g,ce2
+Elowan BRULÉ,g,ce2
+Galise ROCHAS,f,ce2
+Jean PAGANO,g,ce2
+Maëlys HUGOT,f,ce2
+Matteo VERNAY,g,ce2
+Milan HOSGUL,g,ce2
+Noa CONNAC,f,ce2
+Sirine ZERAÏBI,f,ce2
+Soline LE COADIC,f,ce2
+Timéo SIMEONE,g,ce2
+Victor BESSON,g,ce2
+Zélie THILLIEZ,f,ce2
+Célina IKHLEF,f,cm2
+Félix DUBOIS,g,cm2
+Lila BÂABÂA,f,cm2
+Madeline BLANC,f,cm2
+Marouane BENALI,g,cm2
+Maxime ALONSO,g,cm2
+Mayline ALVAREZ,f,cm2
+Nino ROUX,g,cm2
+Nolan BOUTARIC,g,cm2
+Roumaïssa BASSI,f,cm2`;
+
+        // Extraction des prénoms et tri alphabétique
+        const ALL_NAMES = rawData.split('\n')
+            .filter(line => line.trim() !== "")
+            .map(line => {
+                const fullName = line.split(',')[0].trim();
+                return fullName.split(' ')[0]; // On ne garde que le prénom
+            })
+            .sort((a, b) => a.localeCompare(b, 'fr'));
 
         let remaining = JSON.parse(localStorage.getItem('remainingStudents')) || [...ALL_NAMES];
 
@@ -195,13 +224,10 @@
             localStorage.setItem('remainingStudents', JSON.stringify(remaining));
         }
 
-        // Nouvelle fonction pour basculer l'état d'un élève manuellement
         function toggleStudent(name) {
             if (remaining.includes(name)) {
-                // Si présent, on le retire (on le barre)
                 remaining = remaining.filter(n => n !== name);
             } else {
-                // Si absent, on le rajoute (on le remet en jeu)
                 remaining.push(name);
             }
             saveState();
@@ -213,14 +239,13 @@
             const counter = document.getElementById('counter');
             const btn = document.getElementById('draw-btn');
 
-            listUI.innerHTML = ''; // On vide la liste
+            listUI.innerHTML = ''; 
             
             ALL_NAMES.forEach(n => {
                 const isDrawn = !remaining.includes(n);
                 const li = document.createElement('li');
                 li.className = `student-item ${isDrawn ? 'drawn' : ''}`;
                 li.innerText = n;
-                // On ajoute l'événement de clic
                 li.onclick = () => toggleStudent(n);
                 listUI.appendChild(li);
             });
@@ -272,6 +297,7 @@
             }
         }
 
+        // Initialisation
         updateUI();
     </script>
 </body>

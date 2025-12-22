@@ -11,10 +11,8 @@
         body { font-family: 'Inter', sans-serif; background: var(--bg-dark); margin: 0; padding: 8px; box-sizing: border-box; }
         .columns-container { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; max-width: 42rem; margin: 0 auto; }
         
-        /* Conteneur de la liste sans fond ni bordure */
         .student-list { list-style: none; padding: 0; margin: 0; background: transparent; }
         
-        /* Chaque prénom dans son propre cadre */
         .student-item { 
             background: #eeeeee; 
             padding: 9px 10px; 
@@ -22,20 +20,18 @@
             justify-content: space-between; 
             align-items: center; 
             cursor: pointer; 
-            border-radius: 5rem; /* Coins arrondis pour le cadre */
-            margin-bottom: 4px;    /* Espace entre les cadres */
+            border-radius: 5rem; 
+            margin-bottom: 4px; 
         }
         .student-item:active { transform: scale(0.98); }
 
         .student-name { font-weight: 600; color: #111827; font-size: 0.7rem; line-height: 1.2; }
         
-        /* Style spécial si un commentaire existe */
         .has-comment { 
-            border-left: 0px solid var(--primary); 
-            background: #eeeeee; /* Teinte très légère pour différencier */
+            background: #ffffff; 
+            border: 1px solid var(--primary);
         }
         
-        /* Modales */
         .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); align-items: center; justify-content: center; z-index: 1000; }
         .modal-content { background: white; padding: 20px; border-radius: 15px; width: 90%; max-width: 350px; }
         textarea { width: 100%; margin: 15px 0; padding: 12px; border-radius: 10px; border: 1px solid #ddd; font-size: 0.9rem; resize: none; background: #f9f9f9; }
@@ -44,13 +40,11 @@
         .btn-save { background: var(--primary); color: white; }
         .btn-cancel { background: #eee; color: #555; }
 
-        /* Style pour réduire la largeur des boutons */
         .nav-btn {
-            width: 70%; /* Largeur réduite à 70% de la colonne */
-            margin: 0 auto; /* Centrage */
+            width: 70%;
+            margin: 0 auto;
             display: block;
         }
-
     </style>
 </head>
 <body>
@@ -106,29 +100,70 @@
     </div>
 
     <script>
-        const nomsGauche = ["Aliya NYCOLLIN-YAHIAOUI", "Ariane PEGUET", "Eden BRUNO", "Elowan BRULÉ", "Galise ROCHAS", "Jean PAGANO", "Maëlys HUGOT", "Matteo VERNAY", "Milan HOSGUL", "Noa CONNAC", "Sirine ZERAÏBI", "Soline LE COADIC", "Timéo SIMEONE", "Victor BESSON", "Zélie THILLIEZ"];
-        const nomsDroite = ["Célina IKHLEF", "Félix DUBOIS", "Lila BÂABÂA", "Madeline BLANC", "Marouane BENALI", "Maxime ALONSO", "Mayline ALVAREZ", "Nino ROUX", "Nolan BOUTARIC", "Roumaïssa BASSI"];
+        // --- DONNÉES INTÉGRÉES ---
+        const rawData =
+`Aliya NYCOLLIN-YAHIAOUI,f,ce2
+Ariane PEGUET,f,ce2
+Eden BRUNO,g,ce2
+Elowan BRULÉ,g,ce2
+Galise ROCHAS,f,ce2
+Jean PAGANO,g,ce2
+Maëlys HUGOT,f,ce2
+Matteo VERNAY,g,ce2
+Milan HOSGUL,g,ce2
+Noa CONNAC,f,ce2
+Sirine ZERAÏBI,f,ce2
+Soline LE COADIC,f,ce2
+Timéo SIMEONE,g,ce2
+Victor BESSON,g,ce2
+Zélie THILLIEZ,f,ce2
+Célina IKHLEF,f,cm2
+Félix DUBOIS,g,cm2
+Lila BÂABÂA,f,cm2
+Madeline BLANC,f,cm2
+Marouane BENALI,g,cm2
+Maxime ALONSO,g,cm2
+Mayline ALVAREZ,f,cm2
+Nino ROUX,g,cm2
+Nolan BOUTARIC,g,cm2
+Roumaïssa BASSI,f,cm2`;
 
         let savedComments = JSON.parse(localStorage.getItem('studentObservations')) || {};
         let currentName = "";
 
         function formatNameDisplay(fullName) {
             const parts = fullName.split(' ');
-            return parts[0].charAt(0).toUpperCase() + parts[0].slice(1).toLowerCase() + " " + parts.slice(1).join(' ').toUpperCase();
+            if (parts.length === 0) return "";
+            const firstName = parts[0].charAt(0).toUpperCase() + parts[0].slice(1).toLowerCase();
+            const lastName = parts.slice(1).join(' ').toUpperCase();
+            return `${firstName} ${lastName}`;
         }
 
         function renderList() {
             const listL = document.getElementById('listLeft');
             const listR = document.getElementById('listRight');
-            listL.innerHTML = ''; listR.innerHTML = '';
-            nomsGauche.forEach(nom => listL.appendChild(createStudentElement(nom)));
-            nomsDroite.forEach(nom => listR.appendChild(createStudentElement(nom)));
+            listL.innerHTML = ''; 
+            listR.innerHTML = '';
+            
+            const lines = rawData.split('\n');
+
+            lines.forEach(line => {
+                if (line.trim() === "") return;
+                
+                const [nom, sexe, classe] = line.split(',');
+                const studentEl = createStudentElement(nom.trim());
+
+                if (classe && classe.trim().toLowerCase() === 'ce2') {
+                    listL.appendChild(studentEl);
+                } else {
+                    listR.appendChild(studentEl);
+                }
+            });
         }
 
         function createStudentElement(nom) {
             const comment = savedComments[nom] || "";
             const li = document.createElement('li');
-            // Application du style de carte individuelle
             li.className = 'student-item' + (comment.trim() ? ' has-comment' : '');
             li.innerHTML = `
                 <span class="student-name">${formatNameDisplay(nom)}</span>
@@ -192,6 +227,7 @@
             document.getElementById('ioModal').style.display = 'flex';
         }
 
+        // Initialisation au chargement
         renderList();
     </script>
 </body>

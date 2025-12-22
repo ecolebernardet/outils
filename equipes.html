@@ -8,8 +8,8 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
         body { font-family: 'Inter', sans-serif; background-color: #111; color: #eee; margin: 0; display: flex; justify-content: center; }
-       
-        h1 { text-align: center; font-size: 1.1rem; margin-bottom: 15px; color: #fff; font-weight: 700; }
+        
+        h1 { text-align: center; font-size: 1.1rem; margin-top: 10px; margin-bottom: 15px; color: #fff; font-weight: 700; }
         
         .label { text-align: center; font-size: 0.7rem; color: #888; margin-bottom: 8px; display: block; letter-spacing: 0.05em; }
         
@@ -31,7 +31,6 @@
         }
         .num-btn.active { background: #ff637e; border-color: #ffffff; transform: scale(1.1); box-shadow: 0 0 10px rgba(255, 99, 126, 0.4); }
 
-        /* MODIFICATIONS ICI POUR LE CENTRAGE DU BOUTON */
         .generate-btn { 
             background-color: #ff637e; 
             color: white; 
@@ -42,40 +41,38 @@
             font-weight: bold; 
             font-size: 1rem; 
             width: 73%; 
-            display: block;      /* Rend le bouton bloc pour permettre le margin auto */
-            margin: 0 auto 7px auto; /* Centre horizontalement (auto) et ajoute de l'espace en bas */
+            display: block; 
+            margin: 0 auto 15px auto;
             transition: transform 0.1s; 
             text-align: center;
         }
         .generate-btn:active { transform: scale(0.96); }
         
         .grid-teams { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .team-card { border-radius: 5px; padding: 2px; background: #333333; border-top: 0px solid #3d5afe; }
-        .team-header { display: flex; justify-content: start; align-items: center; border-bottom: 1px solid #666; margin-bottom: 8px; margin-left: 5px; margin-right: 5px; padding-bottom: 2px; }
+        .team-card { border-radius: 5px; padding: 5px; background: #333333; }
+        .team-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #666; margin-bottom: 8px; padding-bottom: 4px; }
         .team-title { font-weight: bold; color: #ffd230; font-size: 0.8rem; }
-        .team-stats { font-size: 0.8rem; color: #aaa; font-weight: 500; }
+        .team-stats { font-size: 0.7rem; color: #aaa; font-weight: 500; }
         
-        .student { margin: 0px 5px 0 5px; display: flex; justify-content: start; font-size: 0.9rem; align-items: center; }
-        .symbol { margin-left: 5px; font-weight: semibold; }
+        .student { margin-bottom: 4px; display: flex; justify-content: start; font-size: 0.85rem; align-items: center; }
+        .symbol { margin-left: 5px; font-weight: 600; }
         .female { margin-right: 5px; color: #ff80ab; }
         .male { margin-right: 5px; color: #40c4ff; }
         
-        .tag { font-size: 0.5rem; padding: 1px 5px; border-radius: 10px; font-weight: bold; margin-left: 10px; text-transform: uppercase; }
-        .ce2 { letter-spacing: 0.05rem; margin-right: 5px; background: #ffccd3; color: #111111; }
-        .cm2 { margin-right: 5px; background: #74d4ff; color: #111111; }
+        .tag { font-size: 0.55rem; padding: 1px 4px; border-radius: 4px; font-weight: bold; margin-right: 6px; text-transform: uppercase; }
+        .ce2 { background: #ffccd3; color: #111; }
+        .cm2 { background: #74d4ff; color: #111; }
 
-        .bottom-nav { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 10px; padding-top: 10px; border-top: 0px solid #333; }
+        .bottom-nav { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 20px; padding-bottom: 20px; }
         .btn-nav { font-weight: 600; padding: 12px; border-radius: 50px; font-size: 10px; letter-spacing: 0.05em; transition: transform 0.1s; text-align: center; border: none; cursor: pointer; }
         .btn-nav:active { transform: scale(0.95); }
         .btn-raz { background-color: #e11d48; color: #fff1f2; }
         .btn-home { background-color: #71bd7b; color: #052e16; text-decoration: none; display: flex; align-items: center; justify-content: center; }
-
-
     </style>
 </head>
 <body>
 
-<div class="container">
+<div class="container w-full max-w-xl px-4">
     <h1>Groupes CE2/CM2</h1>
     
     <span class="label">Nombre d'équipes</span>
@@ -100,25 +97,53 @@
 </div>
 
 <script>
-    const students = {
-        ce2_f: ["Aliya", "Ariane", "Galise", "Maëlys", "Noa", "Sirine", "Soline", "Zélie"],
-        ce2_g: ["Elowan", "Jean", "Matteo", "Milan", "Timéo", "Victor", "Eden"], 
-        cm2_f: ["Célina", "Lila", "Madeline", "Mayline", "Roumaïssa"],
-        cm2_g: ["Félix", "Marouane", "Maxime", "Nino", "Nolan"]
-    };
+    // --- DONNÉES INTÉGRÉES ---
+    const rawData = `Aliya NYCOLLIN-YAHIAOUI,f,ce2
+Ariane PEGUET,f,ce2
+Eden BRUNO,g,ce2
+Elowan BRULÉ,g,ce2
+Galise ROCHAS,f,ce2
+Jean PAGANO,g,ce2
+Maëlys HUGOT,f,ce2
+Matteo VERNAY,g,ce2
+Milan HOSGUL,g,ce2
+Noa CONNAC,f,ce2
+Sirine ZERAÏBI,f,ce2
+Soline LE COADIC,f,ce2
+Timéo SIMEONE,g,ce2
+Victor BESSON,g,ce2
+Zélie THILLIEZ,f,ce2
+Célina IKHLEF,f,cm2
+Félix DUBOIS,g,cm2
+Lila BÂABÂA,f,cm2
+Madeline BLANC,f,cm2
+Marouane BENALI,g,cm2
+Maxime ALONSO,g,cm2
+Mayline ALVAREZ,f,cm2
+Nino ROUX,g,cm2
+Nolan BOUTARIC,g,cm2
+Roumaïssa BASSI,f,cm2`;
 
+    let selectedNumTeams = 4;
+
+    function getStudentsObject() {
+        const obj = { ce2_f: [], ce2_g: [], cm2_f: [], cm2_g: [] };
+        rawData.split('\n').filter(l => l.trim() !== "").forEach(line => {
+            const [name, gender, grade] = line.split(',');
+            const key = `${grade.trim().toLowerCase()}_${gender.trim().toLowerCase()}`;
+            if (obj[key]) {
+                const firstName = name.trim().split(' ')[0];
+                obj[key].push(firstName);
+            }
+        });
+        return obj;
+    }
 
     window.onload = function() {
         const savedTeams = localStorage.getItem('lastTeams');
         const savedNum = localStorage.getItem('numTeams');
-        
-        if (savedNum) {
-            selectNum(parseInt(savedNum));
-        }
-
-        if (savedTeams) {
-            renderTeams(JSON.parse(savedTeams));
-        }
+        if (savedNum) selectNum(parseInt(savedNum));
+        if (savedTeams) renderTeams(JSON.parse(savedTeams));
     };
 
     function selectNum(n) {
@@ -130,10 +155,9 @@
     }
 
     function resetDisplay() {
-        if(confirm("Effacer les équipes affichées et la sauvegarde ?")) {
+        if(confirm("Effacer les équipes ?")) {
             document.getElementById('results').innerHTML = '';
             localStorage.removeItem('lastTeams');
-            localStorage.removeItem('numTeams');
         }
     }
 
@@ -146,6 +170,7 @@
     }
 
     function generateTeams() {
+        const students = getStudentsObject();
         let teams = Array.from({ length: selectedNumTeams }, () => []);
 
         const groups = [
@@ -155,11 +180,16 @@
             { list: shuffle([...students.cm2_g]), level: 'CM2', gender: 'G' }
         ];
 
-        let teamIndex = 0;
+        // On distribue les élèves un par un dans les équipes pour équilibrer
+        let teamPointer = 0;
         groups.forEach(group => {
             group.list.forEach(name => {
-                teams[teamIndex % selectedNumTeams].push({ name, level: group.level, gender: group.gender });
-                teamIndex++;
+                teams[teamPointer % selectedNumTeams].push({ 
+                    name, 
+                    level: group.level, 
+                    gender: group.gender 
+                });
+                teamPointer++;
             });
         });
 
@@ -177,6 +207,7 @@
             
             let card = document.createElement('div');
             card.className = 'team-card';
+            
             let studentsHTML = team.map(s => `
                 <div class="student">
                     <span class="tag ${s.level.toLowerCase()}">${s.level}</span>
@@ -184,14 +215,13 @@
                         <span class="symbol ${s.gender === 'F' ? 'female' : 'male'}">${s.gender === 'F' ? '♀' : '♂'}</span>
                         ${s.name}
                     </span>
-
                 </div>
             `).join('');
             
             card.innerHTML = `
                 <div class="team-header">
-                    <span class="team-title">Équipe ${index + 1}</span>
-                    <span class="team-stats">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${countF}♀ / ${countG}♂</span>
+                    <span class="team-title">G${index + 1}</span>
+                    <span class="team-stats">${countF}♀ ${countG}♂</span>
                 </div>
                 ${studentsHTML}
             `;
