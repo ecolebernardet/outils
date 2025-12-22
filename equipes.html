@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Générateur d'Équipes</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #111; color: #eee; margin: 0; display: flex; justify-content: center; }
+       
+        h1 { text-align: center; font-size: 1.1rem; margin-bottom: 15px; color: #fff; font-weight: 700; }
+        
+        .label { text-align: center; font-size: 0.7rem; color: #888; margin-bottom: 8px; display: block; letter-spacing: 0.05em; }
+        
+        .selector-grid { display: flex; justify-content: center; gap: 6px; margin-bottom: 15px; flex-wrap: wrap; }
+        .num-btn { 
+            background: #444; 
+            color: #fff; 
+            border: 1px solid #888; 
+            width: 30px; 
+            height: 30px; 
+            border-radius: 50%; 
+            cursor: pointer; 
+            font-weight: bold; 
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+        .num-btn.active { background: #ff637e; border-color: #ffffff; transform: scale(1.1); box-shadow: 0 0 10px rgba(255, 99, 126, 0.4); }
+
+        /* MODIFICATIONS ICI POUR LE CENTRAGE DU BOUTON */
+        .generate-btn { 
+            background-color: #ff637e; 
+            color: white; 
+            border: none; 
+            padding: 10px; 
+            border-radius: 50px; 
+            cursor: pointer; 
+            font-weight: bold; 
+            font-size: 1rem; 
+            width: 73%; 
+            display: block;      /* Rend le bouton bloc pour permettre le margin auto */
+            margin: 0 auto 7px auto; /* Centre horizontalement (auto) et ajoute de l'espace en bas */
+            transition: transform 0.1s; 
+            text-align: center;
+        }
+        .generate-btn:active { transform: scale(0.96); }
+        
+        .grid-teams { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .team-card { border-radius: 5px; padding: 2px; background: #333333; border-top: 0px solid #3d5afe; }
+        .team-header { display: flex; justify-content: start; align-items: center; border-bottom: 1px solid #666; margin-bottom: 8px; margin-left: 5px; margin-right: 5px; padding-bottom: 2px; }
+        .team-title { font-weight: bold; color: #ffd230; font-size: 0.8rem; }
+        .team-stats { font-size: 0.8rem; color: #aaa; font-weight: 500; }
+        
+        .student { margin: 0px 5px 0 5px; display: flex; justify-content: start; font-size: 0.9rem; align-items: center; }
+        .symbol { margin-left: 5px; font-weight: semibold; }
+        .female { margin-right: 5px; color: #ff80ab; }
+        .male { margin-right: 5px; color: #40c4ff; }
+        
+        .tag { font-size: 0.5rem; padding: 1px 5px; border-radius: 10px; font-weight: bold; margin-left: 10px; text-transform: uppercase; }
+        .ce2 { letter-spacing: 0.05rem; margin-right: 5px; background: #ffccd3; color: #111111; }
+        .cm2 { margin-right: 5px; background: #74d4ff; color: #111111; }
+
+        .bottom-nav { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 10px; padding-top: 10px; border-top: 0px solid #333; }
+        .btn-nav { font-weight: 600; padding: 12px; border-radius: 50px; font-size: 10px; letter-spacing: 0.05em; transition: transform 0.1s; text-align: center; border: none; cursor: pointer; }
+        .btn-nav:active { transform: scale(0.95); }
+        .btn-raz { background-color: #e11d48; color: #fff1f2; }
+        .btn-home { background-color: #71bd7b; color: #052e16; text-decoration: none; display: flex; align-items: center; justify-content: center; }
+
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Groupes CE2/CM2</h1>
+    
+    <span class="label">Nombre d'équipes</span>
+    <div class="selector-grid">
+        <button class="num-btn" onclick="selectNum(2)">2</button>
+        <button class="num-btn" onclick="selectNum(3)">3</button>
+        <button class="num-btn active" onclick="selectNum(4)">4</button>
+        <button class="num-btn" onclick="selectNum(5)">5</button>
+        <button class="num-btn" onclick="selectNum(6)">6</button>
+        <button class="num-btn" onclick="selectNum(7)">7</button>
+        <button class="num-btn" onclick="selectNum(8)">8</button>
+    </div>
+
+    <button class="generate-btn" onclick="generateTeams()">MÉLANGER & GÉNÉRER</button>
+
+    <div id="results" class="grid-teams"></div>
+
+    <div class="bottom-nav">
+        <button onclick="resetDisplay()" class="btn-nav btn-raz">RàZ</button>
+        <a href="index.html" class="btn-nav btn-home">Accueil</a>
+    </div>
+</div>
+
+<script>
+    const students = {
+        ce2_f: ["Aliya", "Ariane", "Galise", "Maëlys", "Noa", "Sirine", "Soline", "Zélie"],
+        ce2_g: ["Elowan", "Jean", "Matteo", "Milan", "Timéo", "Victor", "Eden"], 
+        cm2_f: ["Célina", "Lila", "Madeline", "Mayline", "Roumaïssa"],
+        cm2_g: ["Félix", "Marouane", "Maxime", "Nino", "Nolan"]
+    };
+
+
+    window.onload = function() {
+        const savedTeams = localStorage.getItem('lastTeams');
+        const savedNum = localStorage.getItem('numTeams');
+        
+        if (savedNum) {
+            selectNum(parseInt(savedNum));
+        }
+
+        if (savedTeams) {
+            renderTeams(JSON.parse(savedTeams));
+        }
+    };
+
+    function selectNum(n) {
+        selectedNumTeams = n;
+        localStorage.setItem('numTeams', n);
+        document.querySelectorAll('.num-btn').forEach(btn => {
+            btn.classList.toggle('active', parseInt(btn.innerText) === n);
+        });
+    }
+
+    function resetDisplay() {
+        if(confirm("Effacer les équipes affichées et la sauvegarde ?")) {
+            document.getElementById('results').innerHTML = '';
+            localStorage.removeItem('lastTeams');
+            localStorage.removeItem('numTeams');
+        }
+    }
+
+    function shuffle(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+    }
+
+    function generateTeams() {
+        let teams = Array.from({ length: selectedNumTeams }, () => []);
+
+        const groups = [
+            { list: shuffle([...students.ce2_f]), level: 'CE2', gender: 'F' },
+            { list: shuffle([...students.ce2_g]), level: 'CE2', gender: 'G' },
+            { list: shuffle([...students.cm2_f]), level: 'CM2', gender: 'F' },
+            { list: shuffle([...students.cm2_g]), level: 'CM2', gender: 'G' }
+        ];
+
+        let teamIndex = 0;
+        groups.forEach(group => {
+            group.list.forEach(name => {
+                teams[teamIndex % selectedNumTeams].push({ name, level: group.level, gender: group.gender });
+                teamIndex++;
+            });
+        });
+
+        localStorage.setItem('lastTeams', JSON.stringify(teams));
+        renderTeams(teams);
+    }
+
+    function renderTeams(teams) {
+        const resultsDiv = document.getElementById('results');
+        resultsDiv.innerHTML = '';
+
+        teams.forEach((team, index) => {
+            const countF = team.filter(s => s.gender === 'F').length;
+            const countG = team.filter(s => s.gender === 'G').length;
+            
+            let card = document.createElement('div');
+            card.className = 'team-card';
+            let studentsHTML = team.map(s => `
+                <div class="student">
+                    <span class="tag ${s.level.toLowerCase()}">${s.level}</span>
+                    <span>
+                        <span class="symbol ${s.gender === 'F' ? 'female' : 'male'}">${s.gender === 'F' ? '♀' : '♂'}</span>
+                        ${s.name}
+                    </span>
+
+                </div>
+            `).join('');
+            
+            card.innerHTML = `
+                <div class="team-header">
+                    <span class="team-title">Équipe ${index + 1}</span>
+                    <span class="team-stats">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${countF}♀ / ${countG}♂</span>
+                </div>
+                ${studentsHTML}
+            `;
+            resultsDiv.appendChild(card);
+        });
+    }
+</script>
+
+</body>
+</html>

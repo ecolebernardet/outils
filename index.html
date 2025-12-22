@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>CE2-CM2</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: black; }
+        .menu-card { transition: transform 0.2s, background-color 0.2s; border-radius: 1rem; }
+        .menu-card:active { transform: scale(0.95); }
+    </style>
+</head>
+<body class="flex items-start justify-center min-h-screen p-4 pt-8">
+  
+    <div class="w-full max-w-sm">
+        <header class="text-center mb-8">
+            <a href="liste.html" class="inline-block active:opacity-70 transition-opacity">
+                <h1 class="flex items-center justify-center gap-4 text-white text-3xl font-bold p-1 tracking-normal">
+                    <span>CE2</span>
+                    <img src="logo-ecole-jean-rostand-v2-006.png" class="w-16 h-auto" alt="Logo">
+                    <span>CM2</span>
+                </h1>
+            </a>
+        </header>
+
+        <nav class="grid grid-cols-2 gap-4">
+           
+            <a href="tirage.html" class="menu-card bg-zinc-700 border border-zinc-300 p-4 flex flex-col items-center text-center gap-3 hover:bg-zinc-800">
+                <div class="bg-violet-500 p-3 border border-zinc-300 rounded-full">
+                    <span class="text-2xl block">🎲</span>
+                </div>
+                <div>
+                    <h2 class="text-white font-bold text-sm">Tirage</h2>
+                    <p class="text-gray-400 text-[10px]">Prénom aléatoire</p>
+                </div>
+            </a>      
+
+            <a href="equipes.html" class="menu-card bg-zinc-700 border border-zinc-300 p-4 flex flex-col items-center text-center gap-3 hover:bg-zinc-800">
+                <div class="bg-rose-400 p-3 border border-zinc-300 rounded-full">
+                    <span class="text-2xl block">👥</span>
+                </div>
+                <div>
+                    <h2 class="text-white font-bold text-sm">Équipes</h2>
+                    <p class="text-gray-400 text-[10px]">Groupes mixtes</p>
+                </div>
+            </a>
+
+            <a href="infos.html" class="menu-card bg-zinc-700 border border-zinc-300 p-4 flex flex-col items-center text-center gap-3 hover:bg-zinc-800">
+                <div class="bg-emerald-500 p-3 border border-zinc-300 rounded-full">
+                    <span class="text-2xl block">✏️</span>
+                </div>
+                <div>
+                    <h2 class="text-white font-bold text-sm">Infos</h2>
+                    <p class="text-gray-400 text-[10px]">Suivi des élèves</p>
+                </div>
+            </a>
+
+            <a href="notes.html" class="menu-card bg-zinc-700 border border-zinc-300 p-4 flex flex-col items-center text-center gap-3 hover:bg-zinc-800">
+                <div class="bg-amber-500 p-3 border border-zinc-300 rounded-full">
+                    <span class="text-2xl block">📒</span>
+                </div>
+                <div>
+                    <h2 class="text-white font-bold text-sm">Notes</h2>
+                    <p class="text-gray-400 text-[10px]">Pense-bête rapide</p>
+                </div>
+            </a>
+
+            <a href="compteur.html" class="menu-card bg-zinc-700 border border-zinc-300 p-4 flex flex-col items-center text-center gap-3 hover:bg-zinc-800">
+                <div class="bg-blue-500 p-3 border border-zinc-300 rounded-full">
+                    <span class="text-2xl block">🚥</span>
+                </div>
+                <div>
+                    <h2 class="text-white font-bold text-sm">Compteur</h2>
+                    <p class="text-gray-400 text-[10px]">Comportement</p>
+                </div>
+            </a>
+           
+        </nav>
+    </div>
+
+</body>
+</html>

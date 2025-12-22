@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Compteur CE2-CM2</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body { 
+            font-family: 'Inter', sans-serif; 
+            touch-action: manipulation;
+            background-color: #000;
+        }
+        
+        .counter-badge {
+            width: 1.4rem; height: 1.4rem; min-width: 1.4rem;
+            display: flex; align-items: center; justify-content: center;
+            border-radius: 50%; font-weight: 800; font-size: 0.9rem;
+            transition: all 0.1s ease; border: 1px solid #d1d5db;
+        }
+        
+        .count-0 { color: #9ca3af; background-color: transparent; border-color: #d1d5db; }
+        .count-1 { color: #000; background-color: #aee386; border-color: #aee386; }
+        .count-2 { color: #000; background-color: #fcff21; border-color: #fcff21; }
+        .count-3 { color: #000; background-color: #ffc20a; border-color: #ffc20a; }
+        .count-4 { color: #000; background-color: #ff7328; border-color: #ff7328; }
+        .count-5 { 
+            color: #fff; background-color: #dc2626; border-color: #dc2626;
+            box-shadow: 0 0 10px rgba(220, 38, 38, 0.8);
+            animation: pulse 0.5s infinite alternate;
+        }
+
+        @keyframes pulse { from { transform: scale(1); } to { transform: scale(1.03); } }
+        .no-select { -webkit-tap-highlight-color: transparent; user-select: none; }
+
+        .student-card {
+            background-color: #eeeeee;
+            border-radius: 50px;
+            margin-bottom: 3px;
+        }
+
+        /* Style pour réduire la largeur des boutons */
+        .nav-btn {
+            width: 70%; /* Largeur réduite à 70% de la colonne */
+            margin: 0 auto; /* Centrage */
+            display: block;
+        }
+    </style>
+</head>
+<body class="min-h-screen pb-12">
+    <div class="p-1 max-w-2xl mx-auto"> 
+        <main class="grid grid-cols-2 gap-5 items-start">
+            
+            <div class="flex flex-col">
+                <h2 class="text-rose-400 text-[10px] font-bold uppercase tracking-widest text-center mb-1">CE2</h2>
+                <div id="list-left" class="flex flex-col"></div>
+            </div>
+
+            <div class="flex flex-col">
+                <h2 class="text-blue-400 text-[10px] font-bold uppercase tracking-widest text-center mb-1">CM2</h2>
+                <div id="list-right" class="flex flex-col"></div>
+                
+                <div class="flex flex-col items-center pt-4 gap-3">
+                    <button id="reset-button" class="nav-btn bg-rose-600 text-white font-bold py-4 rounded-full text-[10px] tracking-widest active:scale-95 transition-transform shadow-lg shadow-rose-900/20">
+                        RàZ
+                    </button>
+
+                    <button onclick="window.location.href='index.html'" class="nav-btn bg-[#71bd7b] text-green-950 font-bold py-4 rounded-full text-[10px] tracking-widest active:scale-95 transition-transform shadow-lg shadow-green-900/20">
+                        Accueil
+                    </button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const nomsGauche = [
+            "Aliya NYCOLLIN-YAHIAOUI", "Ariane PEGUET", "Eden BRUNO", "Elowan BRULÉ", "Galise ROCHAS", 
+            "Jean PAGANO", "Maëlys HUGOT", "Matteo VERNAY", "Milan HOSGUL", "Noa CONNAC", 
+            "Sirine ZERAÏBI", "Soline LE COADIC", "Timéo SIMEONE", "Victor BESSON", "Zélie THILLIEZ"
+        ];
+
+        const nomsDroite = [
+            "Célina IKHLEF", "Félix DUBOIS", "Lila BÂABÂA", "Madeline BLANC", "Marouane BENALI", 
+            "Maxime ALONSO", "Mayline ALVAREZ", "Nino ROUX", "Nolan BOUTARIC", "Roumaïssa BASSI"
+        ];
+
+        const STORAGE_KEY = 'studentCounterState';
+
+        function formatNameDisplay(fullName) {
+            const parts = fullName.split(' ');
+            const firstName = parts[0].charAt(0).toUpperCase() + parts[0].slice(1).toLowerCase();
+            const lastName = parts.slice(1).join(' ').toUpperCase();
+            return `${firstName} ${lastName}`;
+        }
+
+        const saveState = () => {
+            const state = {};
+            document.querySelectorAll('.counter-val').forEach(span => {
+                state[span.getAttribute('data-name')] = span.innerText;
+            });
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        };
+
+        const loadState = () => {
+            const saved = localStorage.getItem(STORAGE_KEY);
+            if (saved) {
+                const state = JSON.parse(saved);
+                Object.keys(state).forEach(name => {
+                    const span = document.querySelector(`[data-name="${name}"]`);
+                    if (span) {
+                        const val = parseInt(state[name]);
+                        span.innerText = val;
+                        updateBadgeStyle(span.parentElement, val);
+                    }
+                });
+            }
+        };
+
+        function updateBadgeStyle(badge, val) {
+            badge.classList.remove('count-0', 'count-1', 'count-2', 'count-3', 'count-4', 'count-5');
+            badge.classList.add(`count-${val}`);
+        }
+
+        function createRow(name) {
+            const card = document.createElement('div');
+            card.className = 'student-card flex items-center justify-between p-2 transition-all no-select cursor-pointer';
+
+            const nameEl = document.createElement('div');
+            nameEl.className = 'font-semibold text-black text-[11px] leading-tight pr-1 tracking-tight truncate';
+            nameEl.innerText = formatNameDisplay(name);
+
+            const badge = document.createElement('div');
+            badge.className = 'counter-badge count-0';
+            
+            const counterSpan = document.createElement('span');
+            counterSpan.setAttribute('data-name', name);
+            counterSpan.className = 'counter-val';
+            counterSpan.innerText = '0';
+            
+            badge.appendChild(counterSpan);
+
+            let clickCount = 0;
+            let clickTimer;
+
+            card.addEventListener('click', () => {
+                clickCount++;
+                if (clickCount === 1) {
+                    clickTimer = setTimeout(() => {
+                        if (clickCount === 1) {
+                            let val = parseInt(counterSpan.innerText);
+                            if (val < 5) {
+                                val++;
+                                counterSpan.innerText = val;
+                                updateBadgeStyle(badge, val);
+                                saveState();
+                            }
+                        }
+                        clickCount = 0;
+                    }, 250);
+                } else if (clickCount === 2) {
+                    clearTimeout(clickTimer);
+                    let val = parseInt(counterSpan.innerText);
+                    if (val > 0) {
+                        val--;
+                        counterSpan.innerText = val;
+                        updateBadgeStyle(badge, val);
+                        saveState();
+                    }
+                    clickCount = 0;
+                }
+            });
+
+            card.oncontextmenu = (e) => { e.preventDefault(); };
+            card.appendChild(nameEl);
+            card.appendChild(badge);
+            return card;
+        }
+
+        const listLeft = document.getElementById('list-left');
+        const listRight = document.getElementById('list-right');
+
+        nomsGauche.forEach(name => listLeft.appendChild(createRow(name)));
+        nomsDroite.forEach(name => listRight.appendChild(createRow(name)));
+
+        document.getElementById('reset-button').onclick = () => {
+            if(confirm("Tout remettre à zéro ?")) {
+                document.querySelectorAll('.counter-val').forEach(span => {
+                    span.innerText = '0';
+                    updateBadgeStyle(span.parentElement, 0);
+                });
+                localStorage.removeItem(STORAGE_KEY);
+            }
+        };
+
+        loadState();
+    </script>
+</body>
+</html>

@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Tirage au sort - CE2/CM2</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #121212; color: white; }
+        .card { background: #1e1e1e; border: 1px solid #333; border-radius: 1.5rem; }
+        .btn-primary { background: #8b5cf6; transition: all 0.2s; }
+        .btn-primary:active { transform: scale(0.95); background: #7c3aed; }
+        .gender-f { color: #f472b6; } /* Rose pour filles */
+        .gender-g { color: #60a5fa; } /* Bleu pour garçons */
+    </style>
+</head>
+<body class="flex flex-col items-center justify-center min-h-screen p-6">
+
+    <div class="w-full max-w-sm text-center">
+        <header class="mb-8">
+            <h1 class="text-zinc-500 text-xs uppercase tracking-[0.2em] font-bold">Tirage Aléatoire</h1>
+            <div id="status" class="text-[10px] mt-2 text-zinc-600">Chargement de la liste...</div>
+        </header>
+
+        <div class="card p-10 shadow-2xl mb-8">
+            <div id="display-area" class="h-32 flex flex-col items-center justify-center">
+                <div id="result-name" class="text-4xl font-bold mb-2">?</div>
+                <div id="result-info" class="text-xs uppercase tracking-widest text-zinc-500">Prêt</div>
+            </div>
+        </div>
+
+        <button onclick="tirerAuSort()" id="btn-tirage" disabled
+                class="btn-primary w-full py-5 rounded-2xl font-bold text-lg shadow-lg shadow-violet-500/20 mb-6 opacity-50 cursor-not-allowed">
+            Lancer le tirage
+        </button>
+
+        <a href="index.html" class="text-zinc-500 text-sm font-medium hover:text-white transition-colors">
+            ← Retour au menu
+        </a>
+    </div>
+
+    <script>
+        let eleves = [];
+
+        // 1. Fonction pour charger la liste depuis le fichier TXT
+        async function chargerEleves() {
+            const statusLabel = document.getElementById('status');
+            const btn = document.getElementById('btn-tirage');
+
+            try {
+                const response = await fetch('liste.txt');
+                if (!response.ok) throw new Error('Fichier introuvable');
+                
+                const texte = await response.text();
+                
+                // On transforme le texte en tableau d'objets
+                eleves = texte.trim().split('\n')
+                    .filter(ligne => ligne.includes(',')) // On ignore les lignes mal formées
+                    .map(ligne => {
+                        const [nom, sexe, niveau] = ligne.split(',');
+                        return { 
+                            nom: nom.trim(), 
+                            sexe: sexe.trim().toLowerCase(), 
+                            niveau: niveau.trim().toUpperCase() 
+                        };
+                    });
+
+                if (eleves.length > 0) {
+                    statusLabel.innerText = `${eleves.length} élèves chargés`;
+                    statusLabel.className = "text-[10px] mt-2 text-emerald-500";
+                    btn.disabled = false;
+                    btn.classList.remove('opacity-50', 'cursor-not-allowed');
+                } else {
+                    statusLabel.innerText = "La liste est vide";
+                }
+
+            } catch (error) {
+                statusLabel.innerText = "Erreur : liste.txt introuvable";
+                statusLabel.className = "text-[10px] mt-2 text-rose-500";
+                console.error(error);
+            }
+        }
+
+        // 2. Fonction de tirage au sort
+        function tirerAuSort() {
+            if (eleves.length === 0) return;
+
+            const displayNom = document.getElementById('result-name');
+            const displayInfo = document.getElementById('result-info');
+            
+            // Animation rapide avant le résultat
+            let count = 0;
+            const interval = setInterval(() => {
+                const randomTemp = eleves[Math.floor(Math.random() * eleves.length)];
+                displayNom.innerText = randomTemp.nom;
+                displayNom.className = "text-4xl font-bold mb-2 text-zinc-600";
+                count++;
+                
+                if (count > 10) {
+                    clearInterval(interval);
+                    
+                    // Résultat final
+                    const choisi = eleves[Math.floor(Math.random() * eleves.length)];
+                    displayNom.innerText = choisi.nom;
+                    
+                    // Couleur selon le sexe
+                    displayNom.className = `text-4xl font-bold mb-2 ${choisi.sexe === 'f' ? 'gender-f' : 'gender-g'}`;
+                    
+                    // Affichage du niveau (CE2 ou CM2)
+                    displayInfo.innerText = choisi.niveau;
+                }
+            }, 50);
+        }
+
+        // Lancer le chargement au démarrage
+        chargerEleves();
+    </script>
+</body>
+</html>
