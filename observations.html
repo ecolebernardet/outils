@@ -3,18 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Observations - Transfert par Fichier</title>
+    <title>Observations - Style Compteur</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
         :root { --primary: #ff637e; --bg-dark: #000000; }
         body { font-family: 'Inter', sans-serif; background: var(--bg-dark); margin: 0; padding: 10px; min-height: 100vh; color: white; }
+        
         .columns-container { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; max-width: 500px; margin: 0 auto; }
-        .student-item { padding: 5px 11px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; border-radius: 50px; margin-bottom: 3px; }
-        .bg-m { background: #dbeafe; color: #1e3a8a; } 
-        .bg-f { background: #fce7f3; color: #831843; } 
-        .is-absent { opacity: 0.3 !important; background: #333 !important; color: #777 !important; text-decoration: line-through; }
+        
+        /* STYLE CADRE BLANC (COMME COMPTEUR) */
+        .student-item { 
+            background-color: #ffffff; /* Fond blanc */
+            padding: 6px 10px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            cursor: pointer; 
+            border-radius: 50px; 
+            margin-bottom: 4px; 
+            transition: all 0.1s;
+        }
+
+        /* COULEURS DE POLICE PAR GENRE (COMME COMPTEUR) */
+        .text-girl { color: #db2777; border-color: #fbcfe8; } 
+        .text-boy { color: #2563eb; border-color: #bfdbfe; } 
+        
+        .is-absent { opacity: 0.25 !important; filter: grayscale(1); text-decoration: line-through; }
+        
         .student-name { font-weight: 800; font-size: 0.7rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .status-icon { font-size: 0.7rem; opacity: 0.8; }
+
+        /* MODAL */
         .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(4px); }
         .modal-content { background: #1a1a1a; padding: 20px; border-radius: 20px; width: 92%; max-width: 400px; border: 1px solid #333; }
         textarea { width: 100%; margin: 10px 0; padding: 12px; border-radius: 12px; border: 1px solid #333; font-size: 0.8rem; background: #000; color: #fff; outline: none; }
@@ -22,8 +42,11 @@
         .modal-btn { flex: 1; padding: 14px; border: none; border-radius: 50px; font-weight: 900; cursor: pointer; text-transform: uppercase; font-size: 10px; }
         .btn-save { background: var(--primary); color: white; }
         .btn-cancel { background: #333; color: #ccc; }
+
+        /* NAV BAS */
         .bottom-nav { width: 100%; max-width: 500px; margin: 25px auto 0; padding-bottom: 40px; }
         .nav-btn { font-weight: 900; border-radius: 50px; font-size: 10px; padding: 12px; border: none; flex: 1; display: flex; align-items: center; justify-content: center; gap: 5px; }
+        .no-select { -webkit-tap-highlight-color: transparent; user-select: none; }
     </style>
 </head>
 <body>
@@ -41,8 +64,8 @@
 
     <div id="modal" class="modal-overlay">
         <div class="modal-content">
-            <h2 id="modalTitle" style="margin:0; font-size: 1.1rem; font-weight: 800;">Élève</h2>
-            <textarea id="commentInput" rows="8"></textarea>
+            <h2 id="modalTitle" style="margin:0; font-size: 1.1rem; font-weight: 800; color: white;">Élève</h2>
+            <textarea id="commentInput" rows="8" placeholder="Écrire une observation..."></textarea>
             <div class="btns">
                 <button class="modal-btn btn-cancel" onclick="closeAllModals()">Fermer</button>
                 <button class="modal-btn btn-save" onclick="saveData()">Enregistrer</button>
@@ -67,29 +90,48 @@
         function renderList() {
             const container = document.getElementById('listeContainer');
             container.innerHTML = "";
+            
             if (elevesInscrits.length === 0) {
-                container.innerHTML = `<div class="col-span-2 text-center p-10 text-zinc-500 text-[10px] font-bold uppercase">Aucune donnée chargée.</div>`;
+                container.innerHTML = `<div class="col-span-2 text-center p-10 text-zinc-500 text-[10px] font-bold uppercase">Aucune donnée.</div>`;
                 return;
             }
-            const groupes = {};
+
+            const groupes = { "CE2": [], "CM2": [] };
             elevesInscrits.forEach(el => {
-                const niv = el.niveau.toUpperCase();
-                if (!groupes[niv]) groupes[niv] = [];
+                const niv = el.niveau.toUpperCase().includes('CE2') ? "CE2" : "CM2";
                 groupes[niv].push(el);
             });
-            Object.keys(groupes).sort().forEach(niv => {
+
+            ["CE2", "CM2"].forEach(niv => {
                 const col = document.createElement('div');
-                const colorTitle = (niv.includes('CE2')) ? 'text-amber-400' : 'text-emerald-400';
-                col.innerHTML = `<h2 class="${colorTitle} text-[10px] font-black uppercase text-center mb-3">${niv}</h2>`;
-                const ul = document.createElement('ul');
+                col.className = "flex flex-col";
+                
+                // TITRES COLORÉS (JAUNE POUR CE2, VERT POUR CM2)
+                const colorTitle = (niv === 'CE2') ? 'text-yellow-400' : 'text-green-500';
+                col.innerHTML = `<h2 class="${colorTitle} text-[12px] font-black uppercase tracking-[0.2em] text-center mb-3">${niv}</h2>`;
+                
+                const listWrapper = document.createElement('div');
+                
                 groupes[niv].sort((a,b) => a.identite.localeCompare(b.identite)).forEach(el => {
-                    const li = document.createElement('li');
-                    li.className = `student-item ${el.sexe === 'f' ? 'bg-f' : 'bg-m'} ${absentsList.includes(el.id) ? 'is-absent' : ''}`;
-                    li.innerHTML = `<span class="student-name">${formatName(el.identite)}</span><span>${(savedComments[el.id] || "").trim() ? '📝' : '＋'}</span>`;
-                    li.onclick = () => openCommentModal(el.id, formatName(el.identite));
-                    ul.appendChild(li);
+                    const isAbs = absentsList.includes(el.id);
+                    const genderClass = (el.sexe.toLowerCase() === 'f') ? 'text-girl' : 'text-boy';
+                    
+                    const item = document.createElement('div');
+                    item.className = `student-item no-select ${genderClass} ${isAbs ? 'is-absent' : ''}`;
+                    
+                    const hasNote = (savedComments[el.id] || "").trim().length > 0;
+                    
+                    item.innerHTML = `
+                        <span class="student-name">${formatName(el.identite)}</span>
+                        <span class="status-icon">${hasNote ? '🔎' : '＋'}</span>
+                    `;
+                    
+                    item.onclick = () => openCommentModal(el.id, formatName(el.identite));
+                    listWrapper.appendChild(item);
                 });
-                col.appendChild(ul); container.appendChild(col);
+                
+                col.appendChild(listWrapper); 
+                container.appendChild(col);
             });
         }
 
@@ -98,9 +140,10 @@
             document.getElementById('modalTitle').innerText = nom;
             document.getElementById('commentInput').value = savedComments[id] || "";
             document.getElementById('modal').style.display = 'flex';
+            setTimeout(() => document.getElementById('commentInput').focus(), 100);
         }
 
-        function closeAllModals() { document.querySelectorAll('.modal-overlay').forEach(m => m.style.display = 'none'); }
+        function closeAllModals() { document.getElementById('modal').style.display = 'none'; }
 
         function saveData() {
             const val = document.getElementById('commentInput').value;
@@ -110,48 +153,38 @@
             renderList(); closeAllModals();
         }
 
-        // --- EXPORT VERS FICHIER TXT ---
         function exportToFile() {
-            // Nettoyage avant export
             let cleanedComments = {};
             elevesInscrits.forEach(s => { if(savedComments[s.id]) cleanedComments[s.id] = savedComments[s.id]; });
-
             const bundle = {
                 eleves: elevesInscrits,
                 observations: cleanedComments,
                 absents: absentsList,
                 date: new Date().toLocaleDateString()
             };
-
             const blob = new Blob([JSON.stringify(bundle, null, 2)], { type: 'text/plain' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
             a.download = `observations_${new Date().toISOString().split('T')[0]}.txt`;
-            document.body.appendChild(a);
             a.click();
-            document.body.removeChild(a);
             URL.revokeObjectURL(url);
         }
 
-        // --- IMPORT DEPUIS FICHIER TXT ---
         document.getElementById('importFile').addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (!file) return;
-
             const reader = new FileReader();
             reader.onload = function(e) {
                 try {
                     const data = JSON.parse(e.target.result);
-                    if (data.eleves && confirm("Importer les données de ce fichier ? (Cela écrasera la session actuelle)")) {
+                    if (data.eleves && confirm("Écraser les données actuelles par celles du fichier ?")) {
                         localStorage.setItem('maListeEleves', JSON.stringify(data.eleves));
                         localStorage.setItem('studentObservations', JSON.stringify(data.observations || {}));
                         localStorage.setItem('absentsList', JSON.stringify(data.absents || []));
                         window.location.reload();
                     }
-                } catch (err) {
-                    alert("Erreur : Le fichier n'est pas un fichier d'observations valide.");
-                }
+                } catch (err) { alert("Fichier invalide."); }
             };
             reader.readAsText(file);
         });
