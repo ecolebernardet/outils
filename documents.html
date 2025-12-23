@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover">
     <title>Documents - CE2/CM2</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -23,7 +23,7 @@
             height: 100vh; 
             display: flex; 
             flex-direction: column;
-            padding-bottom: calc(20px + env(safe-area-inset-bottom));
+            padding-bottom: calc(40px + env(safe-area-inset-bottom)); /* Espace augmenté pour la navigation */
         }
 
         .doc-card {
@@ -31,51 +31,48 @@
             border: 1px solid #333;
             border-radius: 12px;
             overflow: hidden;
-            display: flex; flex-direction: column;
+            display: flex;
+            flex-direction: column;
             transition: transform 0.1s;
         }
+        .doc-card:active { transform: scale(0.95); }
 
-        /* Overlay Plein Écran */
         #overlay {
             display: none;
             position: fixed;
             inset: 0;
-            background: black;
+            background: rgba(0,0,0,1);
             z-index: 100;
-            overflow: auto; /* Permet le défilement quand l'image est grande */
+            overflow: auto; /* Crucial pour le déplacement */
             -webkit-overflow-scrolling: touch;
         }
 
-        /* Image en mode normal (tient dans l'écran) */
-        .img-fit {
-            width: 100%;
-            height: 100vh;
-            object-contain: contain;
-            cursor: zoom-in;
-        }
-
-        /* Image en mode ZOOM (plus grande que l'écran pour se déplacer) */
-        .img-zoom {
-            width: 250%; /* Largeur augmentée pour permettre le déplacement */
-            max-width: none;
-            height: auto;
-            cursor: zoom-out;
+        #fullImage {
             display: block;
+            margin: auto;
+            width: 100%;
+            height: auto;
+            transition: transform 0.3s ease;
+            transform-origin: top left; /* On zoome à partir du coin pour garder le contrôle du scroll */
+            cursor: zoom-in;
         }
 
         .close-btn {
             position: fixed;
             top: env(safe-area-inset-top, 20px);
             right: 20px;
-            background: rgba(0,0,0,0.6);
+            background: rgba(255,255,255,0.3);
             color: white;
             border: 2px solid white;
             width: 44px;
             height: 44px;
             border-radius: 50%;
-            font-size: 28px;
+            font-size: 24px;
             z-index: 110;
-            display: flex; align-items: center; justify-content: center;
+            backdrop-filter: blur(5px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .bottom-nav { margin-top: auto; padding-top: 10px; }
@@ -119,8 +116,8 @@
 
     <div id="overlay">
         <button class="close-btn" onclick="closeLightbox()">&times;</button>
-        <div id="imgContainer">
-            <img id="fullImage" src="" onclick="toggleZoom()" class="img-fit">
+        <div id="zoomWrapper" style="width: 100%; min-height: 100vh; display: flex; align-items: center;">
+            <img id="fullImage" src="" onclick="toggleZoom()">
         </div>
     </div>
 
@@ -130,16 +127,21 @@
         function openLightbox(imgSrc) {
             const overlay = document.getElementById('overlay');
             const fullImg = document.getElementById('fullImage');
+            const wrapper = document.getElementById('zoomWrapper');
+            
             fullImg.src = imgSrc;
             
-            // Reset à l'état normal
+            // État initial : image ajustée
             isZoomed = false;
-            fullImg.className = "img-fit";
+            fullImg.style.transform = "scale(1)";
+            fullImg.style.width = "100%";
+            wrapper.style.width = "100%";
+            wrapper.style.height = "100vh";
             
             overlay.style.display = 'block';
             document.body.style.overflow = 'hidden';
-            overlay.scrollTop = 0;
             overlay.scrollLeft = 0;
+            overlay.scrollTop = 0;
         }
 
         function closeLightbox() {
@@ -149,24 +151,27 @@
 
         function toggleZoom() {
             const fullImg = document.getElementById('fullImage');
+            const wrapper = document.getElementById('zoomWrapper');
             const overlay = document.getElementById('overlay');
-            
+
             if (!isZoomed) {
-                // Passage en mode Zoom : l'image devient très grande
-                fullImg.className = "img-zoom";
-                isZoomed = true;
+                // On passe à 2.5x. Pour que le scroll fonctionne partout, 
+                // on agrandit le conteneur (wrapper) à la même taille que l'image zoomée.
+                fullImg.style.transform = "scale(2.5)";
+                wrapper.style.width = "250%"; 
+                wrapper.style.height = (fullImg.offsetHeight * 2.5) + "px";
                 
-                // Optionnel : centre l'image après le zoom
-                setTimeout(() => {
-                    overlay.scrollLeft = (fullImg.clientWidth - window.innerWidth) / 2;
-                    overlay.scrollTop = (fullImg.clientHeight - window.innerHeight) / 2;
-                }, 10);
+                fullImg.style.cursor = "zoom-out";
+                isZoomed = true;
             } else {
-                // Retour au mode normal
-                fullImg.className = "img-fit";
+                fullImg.style.transform = "scale(1)";
+                wrapper.style.width = "100%";
+                wrapper.style.height = "100vh";
+                
+                fullImg.style.cursor = "zoom-in";
                 isZoomed = false;
-                overlay.scrollTop = 0;
                 overlay.scrollLeft = 0;
+                overlay.scrollTop = 0;
             }
         }
     </script>
