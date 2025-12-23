@@ -52,7 +52,6 @@
     let selectedNumTeams = 4;
     let ALL_STUDENTS = JSON.parse(localStorage.getItem('maListeEleves')) || [];
     
-    // --- MODIFICATION ICI : Chargement des absents depuis la mémoire ---
     let savedAbsents = JSON.parse(localStorage.getItem('absentsList')) || [];
     let absents = new Set(savedAbsents);
 
@@ -92,7 +91,6 @@
         } else {
             absents.add(id);
         }
-        // --- MODIFICATION ICI : Sauvegarde immédiate des absents ---
         localStorage.setItem('absentsList', JSON.stringify(Array.from(absents)));
         renderAttendance();
     }
@@ -161,9 +159,11 @@
             let html = `<div class="team-card"><div class="team-header"><span class="team-title">Équipe ${i+1}</span><span class="team-stats">${f}F/${m}G • ${ce2}CE/${cm2}CM</span></div>`;
             team.forEach(s => {
                 const isCE2 = s.niveau.toUpperCase().includes('CE2');
+                // MODIFICATION ICI : s.identite.split(" ")[0] pour ne garder que le prénom
+                const prenom = s.identite.split(" ")[0];
                 html += `<div class="flex items-center mb-1 text-[0.65rem] font-bold">
                     <span class="tag ${isCE2?'tag-ce2':'tag-cm2'}">${isCE2?'CE2':'CM2'}</span>
-                    <span class="${s.sexe.toLowerCase()==='f'?'name-f':'name-g'}">${s.identite}</span>
+                    <span class="${s.sexe.toLowerCase()==='f'?'name-f':'name-g'}">${prenom}</span>
                 </div>`;
             });
             results.innerHTML += html + `</div>`;
