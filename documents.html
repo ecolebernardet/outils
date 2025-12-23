@@ -2,30 +2,32 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
     <title>Documents - CE2/CM2</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
-        :root { --bg-dark: #121212; --text-light: #e0e0e0; }
         
         body { 
             font-family: 'Inter', sans-serif; 
-            background: var(--bg-dark); 
-            color: var(--text-light); 
-            margin: 0; padding: 10px; 
+            background-color: #121212; 
+            color: #e0e0e0;
+            margin: 0; padding: 10px;
             overflow: hidden; 
         }
-        
-        .container { 
-            max-width: 400px; 
-            margin: 0 auto; 
-            height: 100vh; 
-            display: flex; 
+
+        /* Grille principale */
+        .container {
+            max-width: 450px;
+            margin: 0 auto;
+            height: 100vh;
+            display: flex;
             flex-direction: column;
-            padding-bottom: calc(50px + env(safe-area-inset-bottom));
+            /* Espace important en bas pour la barre de navigation du téléphone */
+            padding-bottom: calc(70px + env(safe-area-inset-bottom));
         }
 
+        /* Style des 8 cases */
         .doc-card {
             background: #1e1e1e;
             border: 1px solid #333;
@@ -33,118 +35,160 @@
             overflow: hidden;
             display: flex;
             flex-direction: column;
+            transition: transform 0.1s;
+            height: 100%;
         }
+        .doc-card:active { transform: scale(0.96); }
 
-        /* Overlay Plein Écran */
+        /* Fenêtre de zoom (Overlay) */
         #overlay {
             display: none;
             position: fixed;
             inset: 0;
-            background: black;
+            background-color: black;
             z-index: 100;
-            overflow: auto; /* Autorise le défilement */
+            overflow: auto;
             -webkit-overflow-scrolling: touch;
         }
 
-        /* Conteneur interne qui grandit avec le zoom */
         #zoomWrapper {
             display: flex;
             align-items: center;
             justify-content: center;
             min-width: 100%;
             min-height: 100vh;
-            padding: 20px;
         }
 
         #fullImage {
             width: 100%;
             height: auto;
-            max-width: 100%;
-            transition: transform 0.3s ease;
+            transition: transform 0.3s ease-out;
             cursor: zoom-in;
-            transform-origin: center center; /* Zoom depuis le centre */
+            transform-origin: center center;
         }
 
+        /* Bouton Fermer flottant */
         .close-btn {
             position: fixed;
             top: env(safe-area-inset-top, 20px);
             right: 20px;
-            background: rgba(0,0,0,0.7);
+            background: rgba(0, 0, 0, 0.6);
             color: white;
             border: 2px solid white;
             width: 44px;
             height: 44px;
             border-radius: 50%;
-            font-size: 28px;
+            font-size: 24px;
             z-index: 110;
+            backdrop-filter: blur(10px);
             display: flex; align-items: center; justify-content: center;
         }
 
-        .bottom-nav { margin-top: auto; padding-top: 10px; }
-        .nav-btn { font-weight: 800; border-radius: 50px; font-size: 11px; padding: 14px; border: none; width: 100%; cursor: pointer; text-transform: uppercase; }
+        .nav-btn {
+            font-weight: 800;
+            border-radius: 50px;
+            font-size: 11px;
+            padding: 16px;
+            width: 100%;
+            text-transform: uppercase;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <header class="text-center mb-3">
+        <header class="text-center mb-4 pt-2">
             <h1 class="text-yellow-500 font-bold text-[10px] uppercase tracking-[0.2em]">Documents & Ressources</h1>
         </header>
 
-        <nav class="grid grid-cols-2 gap-2 flex-grow">
+        <nav class="grid grid-cols-2 grid-rows-4 gap-3 flex-grow">
+            
             <div class="doc-card" onclick="openLightbox('2025-CALENDRIER.jpg')">
-                <div class="h-16 overflow-hidden bg-black">
-                    <img src="2025-CALENDRIER.jpg" class="w-full h-full object-cover opacity-60">
+                <div class="flex-grow overflow-hidden bg-zinc-900">
+                    <img src="2025-CALENDRIER.jpg" class="w-full h-full object-cover opacity-70">
                 </div>
-                <div class="p-2 text-center">
-                    <p class="text-[10px] font-bold text-white truncate">Calendrier</p>
+                <div class="p-2 text-center bg-[#1e1e1e]">
+                    <p class="text-[9px] font-bold text-white uppercase truncate">Calendrier</p>
                 </div>
             </div>
 
-            <script>
-                const labels = ["Emploi du temps", "Mots outils", "Poésies", "Cantine", "Règlement", "Projets", "Sorties"];
-                labels.forEach(label => {
-                    document.write(`
-                        <div class="doc-card opacity-40">
-                            <div class="h-16 bg-zinc-800 flex items-center justify-center"><span class="text-xl">📄</span></div>
-                            <div class="p-2 text-center"><p class="text-[10px] font-bold text-white">${label}</p></div>
-                        </div>
-                    `);
-                });
-            </script>
+            <div class="doc-card opacity-50">
+                <div class="flex-grow flex items-center justify-center text-xl">📅</div>
+                <div class="p-2 text-center bg-[#1e1e1e]">
+                    <p class="text-[9px] font-bold text-white uppercase truncate">Emploi du temps</p>
+                </div>
+            </div>
+
+            <div class="doc-card opacity-50">
+                <div class="flex-grow flex items-center justify-center text-xl">📝</div>
+                <div class="p-2 text-center bg-[#1e1e1e]">
+                    <p class="text-[9px] font-bold text-white uppercase truncate">Mots Outils</p>
+                </div>
+            </div>
+
+            <div class="doc-card opacity-50">
+                <div class="flex-grow flex items-center justify-center text-xl">🎭</div>
+                <div class="p-2 text-center bg-[#1e1e1e]">
+                    <p class="text-[9px] font-bold text-white uppercase truncate">Poésies</p>
+                </div>
+            </div>
+
+            <div class="doc-card opacity-50">
+                <div class="flex-grow flex items-center justify-center text-xl">🍎</div>
+                <div class="p-2 text-center bg-[#1e1e1e]">
+                    <p class="text-[9px] font-bold text-white uppercase truncate">Menu Cantine</p>
+                </div>
+            </div>
+
+            <div class="doc-card opacity-50">
+                <div class="flex-grow flex items-center justify-center text-xl">📜</div>
+                <div class="p-2 text-center bg-[#1e1e1e]">
+                    <p class="text-[9px] font-bold text-white uppercase truncate">Règlement</p>
+                </div>
+            </div>
+
+            <div class="doc-card opacity-50">
+                <div class="flex-grow flex items-center justify-center text-xl">🚀</div>
+                <div class="p-2 text-center bg-[#1e1e1e]">
+                    <p class="text-[9px] font-bold text-white uppercase truncate">Projets</p>
+                </div>
+            </div>
+
+            <div class="doc-card opacity-50">
+                <div class="flex-grow flex items-center justify-center text-xl">🚌</div>
+                <div class="p-2 text-center bg-[#1e1e1e]">
+                    <p class="text-[9px] font-bold text-white uppercase truncate">Sorties</p>
+                </div>
+            </div>
+
         </nav>
 
-        <footer class="bottom-nav">
-            <button onclick="window.location.href='index.html'" class="nav-btn bg-[#71bd7b] text-green-950 shadow-lg">Accueil</button>
+        <footer class="mt-4">
+            <button onclick="window.location.href='index.html'" class="nav-btn bg-[#71bd7b] text-green-950">
+                Retour à l'Accueil
+            </button>
         </footer>
     </div>
 
     <div id="overlay">
         <button class="close-btn" onclick="closeLightbox()">&times;</button>
         <div id="zoomWrapper">
-            <img id="fullImage" src="" onclick="toggleZoom()">
+            <img id="fullImage" src="" onclick="handleZoom(event)">
         </div>
     </div>
 
     <script>
         let isZoomed = false;
+        const zoomScale = 2.0; // Puissance du zoom
 
         function openLightbox(imgSrc) {
             const overlay = document.getElementById('overlay');
             const fullImg = document.getElementById('fullImage');
-            const wrapper = document.getElementById('zoomWrapper');
-            
             fullImg.src = imgSrc;
-            fullImg.style.transform = "scale(1)";
-            wrapper.style.width = "100%";
-            wrapper.style.height = "100vh";
-            isZoomed = false;
-            
+            resetZoom();
             overlay.style.display = 'block';
             document.body.style.overflow = 'hidden';
-            
-            overlay.scrollTop = 0;
-            overlay.scrollLeft = 0;
         }
 
         function closeLightbox() {
@@ -152,28 +196,38 @@
             document.body.style.overflow = 'auto';
         }
 
-        function toggleZoom() {
+        function resetZoom() {
             const fullImg = document.getElementById('fullImage');
-            const wrapper = document.getElementById('zoomWrapper');
             const overlay = document.getElementById('overlay');
-            
+            isZoomed = false;
+            fullImg.style.transform = "scale(1)";
+            overlay.scrollLeft = 0;
+            overlay.scrollTop = 0;
+        }
+
+        function handleZoom(e) {
+            const fullImg = document.getElementById('fullImage');
+            const overlay = document.getElementById('overlay');
+
             if (!isZoomed) {
-                // Zoom à 150%
-                fullImg.style.transform = "scale(1.5)";
-                // On agrandit le wrapper pour permettre au scroll d'exister
-                wrapper.style.width = "150%";
-                wrapper.style.height = "150vh";
-                fullImg.style.cursor = "zoom-out";
+                fullImg.style.transform = `scale(${zoomScale})`;
                 isZoomed = true;
+
+                // Coordonnées du clic
+                const rect = fullImg.getBoundingClientRect();
+                const touchX = (e.clientX || e.pageX) - rect.left;
+                const touchY = (e.clientY || e.pageY) - rect.top;
+
+                // Déplacement du scroll pour centrer le point cliqué
+                setTimeout(() => {
+                    overlay.scrollTo({
+                        left: (touchX * zoomScale) - (window.innerWidth / 2),
+                        top: (touchY * zoomScale) - (window.innerHeight / 2),
+                        behavior: 'smooth'
+                    });
+                }, 10);
             } else {
-                // Retour normal
-                fullImg.style.transform = "scale(1)";
-                wrapper.style.width = "100%";
-                wrapper.style.height = "100vh";
-                fullImg.style.cursor = "zoom-in";
-                isZoomed = false;
-                overlay.scrollTop = 0;
-                overlay.scrollLeft = 0;
+                resetZoom();
             }
         }
     </script>
