@@ -4,107 +4,62 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Calendrier scolaire</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/hammer.js/2.0.8/hammer.min.js"></script>
+    <title>Calendrier</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/photoswipe/5.3.7/photoswipe.min.css">
     <style>
-        html, body { 
-            margin: 0; padding: 0; width: 100%; height: 100%;
-            background-color: #000; overflow: hidden;
-            /* Empêche le rebond élastique et les gestes système */
-            touch-action: none; 
-            -webkit-user-select: none;
-        }
+        body { margin: 0; background: #000; overflow: hidden; touch-action: none; }
         
+        /* Bouton Retour élégant */
         .back-btn {
             position: fixed; top: 20px; left: 20px;
             background: #71bd7b; color: #052e16;
             padding: 12px 20px; border-radius: 50px;
             text-decoration: none; font-weight: 800;
-            z-index: 9999; box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            z-index: 9999; font-family: sans-serif;
+            font-size: 13px; text-transform: uppercase;
         }
 
-        #zoom-wrapper {
-            width: 100%; height: 100%;
-            display: flex; align-items: center; justify-content: center;
-            overflow: hidden;
-        }
-
-        #target-img {
-            max-width: 100%; 
-            height: auto;
-            /* Utilisation du GPU pour une fluidité maximale */
-            will-change: transform;
-            transform-origin: 0 0;
-        }
+        /* Masquer l'image originale, elle ne sert que de source */
+        #gallery { display: none; }
     </style>
 </head>
 <body>
 
     <a href="documents.html" class="back-btn">← Retour</a>
 
-    <div id="zoom-wrapper">
-        <img id="target-img" src="documents_calendrier.jpg" alt="Calendrier">
+    <div id="gallery">
+        <a id="zoom-trigger" 
+           href="documents_calendrier.jpg" 
+           data-pswp-width="1600" 
+           data-pswp-height="2000">
+        </a>
     </div>
 
-    <script>
-        const img = document.getElementById('target-img');
-        const wrapper = document.getElementById('zoom-wrapper');
+    <script type="module">
+        import PhotoSwipeLightbox from 'https://cdnjs.cloudflare.com/ajax/libs/photoswipe/5.3.7/photoswipe-lightbox.esm.min.js';
 
-        // Initialisation de Hammer sur le conteneur
-        const mc = new Hammer.Manager(wrapper);
-        const pinch = new Hammer.Pinch();
-        const pan = new Hammer.Pan({ threshold: 0, pointers: 0 });
-
-        pinch.recognizeWith(pan);
-        mc.add([pinch, pan]);
-
-        let scale = 1;
-        let lastScale = 1;
-        let translateX = 0;
-        let translateY = 0;
-        let lastTranslateX = 0;
-        let lastTranslateY = 0;
-
-        // Force l'arrêt du "Pull-to-refresh" au niveau global
-        window.addEventListener('touchmove', (e) => {
-            e.preventDefault();
-        }, { passive: false });
-
-        mc.on("pinchmove panmove", (e) => {
-            // Calcul du zoom
-            scale = lastScale * e.scale;
-            if (scale < 0.8) scale = 0.8; // Limite mini
-            if (scale > 5) scale = 5;     // Limite maxi
-
-            // Calcul du déplacement
-            translateX = lastTranslateX + e.deltaX;
-            translateY = lastTranslateY + e.deltaY;
-
-            updateTransform();
+        const lightbox = new PhotoSwipeLightbox({
+            gallery: '#gallery',
+            children: 'a',
+            pswpModule: () => import('https://cdnjs.cloudflare.com/ajax/libs/photoswipe/5.3.7/photoswipe.esm.min.js'),
+            // Désactive les animations inutiles pour gagner en réactivité
+            showHideAnimationType: 'none',
+            zoomAnimationDuration: false,
+            // Paramètres anti-bug pour les Apps
+            allowPanToNext: false,
+            allowMouseDrag: true,
+            wheelToZoom: true
         });
 
-        mc.on("pinchend panend", (e) => {
-            lastScale = scale;
-            lastTranslateX = translateX;
-            lastTranslateY = translateY;
-        });
+        lightbox.init();
 
-        function updateTransform() {
-            // translate3d force l'accélération matérielle (GPU)
-            const transform = `translate3d(${translateX}px, ${translateY}px, 0) scale(${scale})`;
-            img.style.transform = transform;
-            img.style.webkitTransform = transform;
-        }
-
-        // Centrage initial de l'image
-        img.onload = () => {
-            const rect = img.getBoundingClientRect();
-            translateX = (window.innerWidth - rect.width) / 2;
-            translateY = (window.innerHeight - rect.height) / 2;
-            lastTranslateX = translateX;
-            lastTranslateY = translateY;
-            updateTransform();
+        // Lancement automatique dès l'ouverture de la page
+        window.onload = () => {
+            document.getElementById('zoom-trigger').click();
         };
+
+        // Bloquer l'actualisation "Pull to Refresh"
+        document.addEventListener('touchmove', (e) => { e.preventDefault(); }, { passive: false });
     </script>
 </body>
 </html>
