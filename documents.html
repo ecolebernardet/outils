@@ -22,8 +22,8 @@
             min-height: 100vh; 
             display: flex; 
             flex-direction: column; 
-            /* ESPACE AJOUTÉ ICI : 80px au lieu de 60px pour bien dégager le bas */
-            padding-bottom: calc(80px + env(safe-area-inset-bottom)); 
+            /* ESPACE AJOUTÉ ICI : 60px pour bien dégager le bas */
+            padding-bottom: calc(60px + env(safe-area-inset-bottom)); 
         }
 
         .doc-card { 
@@ -61,9 +61,9 @@
 
         <nav class="grid grid-cols-2 grid-rows-4 gap-3 flex-grow">
             
-            <div class="doc-card" onclick="window.location.href='calendrier.html'">
+            <div class="doc-card" onclick="window.location.href='documents_calendrier.html'">
                 <div class="flex-grow overflow-hidden bg-zinc-900">
-                    <img src="2025-CALENDRIER.jpg" class="w-full h-full object-cover opacity-70">
+                    <img src="documents_calendrier.jpg" class="w-full h-full object-cover opacity-70">
                 </div>
                 <div class="p-2 text-center bg-[#1e1e1e]">
                     <p class="text-[9px] font-bold text-white uppercase">Calendrier</p>
