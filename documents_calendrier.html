@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
     <title>Calendrier</title>
     <style>
-        /* BLOQUAGE TOTAL DU REBOND DE L'APP */
+        /* 1. VERROUILLAGE DE LA PAGE */
         html, body {
             margin: 0;
             padding: 0;
@@ -13,35 +13,40 @@
             height: 100vh;
             overflow: hidden;
             background-color: #000;
-            position: fixed; /* Empêche l'app de tirer la page vers le bas */
+            position: fixed; 
         }
 
+        /* 2. BOUTON RETOUR EN BAS */
         .back-btn {
             position: fixed;
-            top: 20px;
-            left: 20px;
+            bottom: 30px; /* Placé en bas */
+            left: 50%;
+            transform: translateX(-50%); /* Centrage parfait */
             background: #71bd7b;
             color: #052e16;
-            padding: 12px 25px;
+            padding: 15px 40px;
             border-radius: 50px;
             text-decoration: none;
             font-weight: 800;
             z-index: 9999;
             font-family: sans-serif;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.8);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.8);
+            text-transform: uppercase;
+            font-size: 14px;
+            white-space: nowrap;
         }
 
-        /* LA ZONE DE ZOOM : On crée un "caisson" étanche */
+        /* 3. ZONE DE NAVIGATION DANS L'IMAGE */
         #zoom-box {
             width: 100%;
             height: 100%;
-            overflow: auto; /* Permet le scroll interne sans toucher au scroll de l'app */
+            overflow: auto;
             display: block;
             -webkit-overflow-scrolling: touch;
         }
 
         .image-container {
-            width: 250%; /* On force l'image à être plus grande pour simuler un zoom déjà fait */
+            width: 250%; /* Image pré-zoomée pour éviter le pinch-to-zoom instable */
             display: block;
         }
 
@@ -51,23 +56,20 @@
             display: block;
         }
 
-        .instruction {
+        /* Petit fondu noir en bas pour que le bouton ressorte bien */
+        .bottom-shadow {
             position: fixed;
-            bottom: 20px;
+            bottom: 0;
+            left: 0;
             width: 100%;
-            text-align: center;
-            color: white;
-            font-family: sans-serif;
-            font-size: 11px;
-            background: rgba(0,0,0,0.5);
-            padding: 10px 0;
+            height: 100px;
+            background: linear-gradient(transparent, rgba(0,0,0,0.8));
             pointer-events: none;
+            z-index: 9998;
         }
     </style>
 </head>
 <body>
-
-    <a href="documents.html" class="back-btn">← Retour</a>
 
     <div id="zoom-box">
         <div class="image-container">
@@ -75,25 +77,27 @@
         </div>
     </div>
 
-    <div class="instruction">Faites glisser pour explorer le document</div>
+    <div class="bottom-shadow"></div>
+    <a href="documents.html" class="back-btn">← Retour</a>
 
     <script>
-        // RUSE : On démarre le scroll à 1 pixel du haut
-        // Cela empêche l'App de détecter le "bord haut" et donc d'activer le pull-to-refresh
         const box = document.getElementById('zoom-box');
         
+        // Sécurité anti-rafraîchissement
         window.onload = () => {
-            box.scrollTop = 1;
-            box.scrollLeft = (box.scrollWidth - window.innerWidth) / 2; // Centre l'image
+            box.scrollTop = 2; // On décale de 2px pour être sûr
+            // Centre l'image horizontalement au démarrage
+            box.scrollLeft = (box.scrollWidth - window.innerWidth) / 2;
         };
 
+        // Si l'utilisateur remonte tout en haut, on le bloque à 2px
         box.addEventListener('scroll', () => {
             if (box.scrollTop <= 0) {
-                box.scrollTop = 1;
+                box.scrollTop = 2;
             }
         });
 
-        // Bloque les gestes à deux doigts qui font sauter l'app
+        // Empêche les gestes natifs de zoom qui font sauter l'app
         document.addEventListener('gesturestart', function(e) {
             e.preventDefault();
         });
