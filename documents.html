@@ -30,7 +30,7 @@
             grid-template-columns: repeat(2, 1fr);
             grid-auto-rows: minmax(120px, auto);
             gap: 12px;
-            margin-bottom: 24px; /* Espace entre la grille et le bouton */
+            margin-bottom: 24px;
         }
 
         .doc-card { 
@@ -53,10 +53,11 @@
             overflow: hidden;
         }
 
-        /* AJUSTEMENT DU BOUTON SOUS LE TABLEAU */
         footer {
-            padding-bottom: 50px; /* Espace de 50px sous le bouton */
-            margin-top: 0; /* On annule le margin-top: auto pour qu'il colle à la suite */
+            padding-bottom: 50px; 
+            margin-top: 0;
+            display: flex;
+            justify-content: center; /* Centre le bouton plus étroit */
         }
     </style>
 </head>
@@ -68,7 +69,7 @@
 
         <nav class="grid-docs">
             <div class="doc-card" onclick="window.location.href='documents_calendrier.html'">
-                <div class="img-slot"><img src="documents_calendrier.jpg" class="w-full h-full"></div>
+                <div class="img-slot"><img src="documents_calendrier.jpg" class="w-full h-full object-cover opacity-70"></div>
                 <div class="p-2 text-center bg-[#1e1e1e]"><p class="text-[9px] font-bold text-white uppercase">Calendrier</p></div>
             </div>
 
@@ -109,7 +110,7 @@
         </nav>
 
         <footer>
-            <button onclick="window.location.href='index.html'" class="w-full bg-[#71bd7b] text-green-950 font-bold py-4 rounded-full text-[11px] uppercase shadow-lg active:opacity-80">
+            <button onclick="window.location.href='index.html'" class="w-full max-w-[200px] bg-[#71bd7b] text-green-950 font-bold py-2.5 rounded-full text-[10px] uppercase shadow-lg active:opacity-80">
                 Accueil
             </button>
         </footer>
