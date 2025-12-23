@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Observations - Transfert Nettoyé</title>
+    <title>Observations - Transfert par Fichier</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
         :root { --primary: #ff637e; --bg-dark: #000000; }
         body { font-family: 'Inter', sans-serif; background: var(--bg-dark); margin: 0; padding: 10px; min-height: 100vh; color: white; }
         .columns-container { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; max-width: 500px; margin: 0 auto; }
-        .student-item { padding: 5px 11px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; border-radius: 50px; margin-bottom: 3px; transition: all 0.2s; }
+        .student-item { padding: 5px 11px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; border-radius: 50px; margin-bottom: 3px; }
         .bg-m { background: #dbeafe; color: #1e3a8a; } 
         .bg-f { background: #fce7f3; color: #831843; } 
         .is-absent { opacity: 0.3 !important; background: #333 !important; color: #777 !important; text-decoration: line-through; }
@@ -23,7 +23,7 @@
         .btn-save { background: var(--primary); color: white; }
         .btn-cancel { background: #333; color: #ccc; }
         .bottom-nav { width: 100%; max-width: 500px; margin: 25px auto 0; padding-bottom: 40px; }
-        .nav-btn { font-weight: 900; border-radius: 50px; font-size: 10px; padding: 12px; border: none; flex: 1; }
+        .nav-btn { font-weight: 900; border-radius: 50px; font-size: 10px; padding: 12px; border: none; flex: 1; display: flex; align-items: center; justify-content: center; gap: 5px; }
     </style>
 </head>
 <body>
@@ -31,8 +31,11 @@
     <div id="listeContainer" class="columns-container"></div>
 
     <footer class="bottom-nav px-2 flex gap-2">
-        <button onclick="openIOModal('export')" class="nav-btn bg-zinc-800 text-white">Exporter 📤</button>
-        <button onclick="openIOModal('import')" class="nav-btn bg-zinc-800 text-white">Importer 📥</button>
+        <button onclick="exportToFile()" class="nav-btn bg-zinc-800 text-white">Exporter .txt 📤</button>
+        <label class="nav-btn bg-zinc-800 text-white cursor-pointer">
+            Importer .txt 📥
+            <input type="file" id="importFile" class="hidden" accept=".txt">
+        </label>
         <button onclick="window.location.href='index.html'" class="nav-btn bg-[#71bd7b] text-green-950">Accueil</button>
     </footer>
 
@@ -43,18 +46,6 @@
             <div class="btns">
                 <button class="modal-btn btn-cancel" onclick="closeAllModals()">Fermer</button>
                 <button class="modal-btn btn-save" onclick="saveData()">Enregistrer</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="ioModal" class="modal-overlay">
-        <div class="modal-content">
-            <h2 id="ioTitle" style="margin:0; font-size: 1.1rem; font-weight: 800;">Transfert</h2>
-            <p id="ioInstructions" class="text-[10px] text-zinc-500 mt-2 mb-2 uppercase font-bold"></p>
-            <textarea id="ioTextArea" rows="10"></textarea>
-            <div class="btns">
-                <button class="modal-btn btn-cancel" onclick="closeAllModals()">Annuler</button>
-                <button id="ioActionBtn" class="modal-btn btn-save">Copier</button>
             </div>
         </div>
     </div>
@@ -77,7 +68,7 @@
             const container = document.getElementById('listeContainer');
             container.innerHTML = "";
             if (elevesInscrits.length === 0) {
-                container.innerHTML = `<div class="col-span-2 text-center p-10 text-zinc-500 text-[10px] font-bold uppercase">Aucune donnée.</div>`;
+                container.innerHTML = `<div class="col-span-2 text-center p-10 text-zinc-500 text-[10px] font-bold uppercase">Aucune donnée chargée.</div>`;
                 return;
             }
             const groupes = {};
@@ -119,58 +110,51 @@
             renderList(); closeAllModals();
         }
 
-        function openIOModal(mode) {
-            const modal = document.getElementById('ioModal');
-            const area = document.getElementById('ioTextArea');
-            const btn = document.getElementById('ioActionBtn');
-            modal.style.display = 'flex';
+        // --- EXPORT VERS FICHIER TXT ---
+        function exportToFile() {
+            // Nettoyage avant export
+            let cleanedComments = {};
+            elevesInscrits.forEach(s => { if(savedComments[s.id]) cleanedComments[s.id] = savedComments[s.id]; });
 
-            if (mode === 'export') {
-                document.getElementById('ioTitle').innerText = "Exporter (Nettoyé)";
-                document.getElementById('ioInstructions').innerText = "Seules les notes des élèves actuels sont incluses :";
-                
-                // NETTOYAGE : On ne garde que les observations dont l'ID existe dans la liste actuelle
-                let cleanedComments = {};
-                elevesInscrits.forEach(student => {
-                    if (savedComments[student.id]) {
-                        cleanedComments[student.id] = savedComments[student.id];
-                    }
-                });
+            const bundle = {
+                eleves: elevesInscrits,
+                observations: cleanedComments,
+                absents: absentsList,
+                date: new Date().toLocaleDateString()
+            };
 
-                const bundle = {
-                    eleves: elevesInscrits,
-                    observations: cleanedComments,
-                    absents: absentsList
-                };
-                
-                area.value = JSON.stringify(bundle);
-                btn.innerText = "Copier";
-                btn.onclick = () => {
-                    area.select();
-                    document.execCommand('copy');
-                    btn.innerText = "Copié !";
-                    // On met aussi à jour le stockage local avec la version nettoyée
-                    localStorage.setItem('studentObservations', JSON.stringify(cleanedComments));
-                    setTimeout(closeAllModals, 800);
-                };
-            } else {
-                document.getElementById('ioTitle').innerText = "Importer Tout";
-                document.getElementById('ioInstructions').innerText = "Collez le texte JSON ici :";
-                area.value = "";
-                btn.innerText = "Restaurer";
-                btn.onclick = () => {
-                    try {
-                        const data = JSON.parse(area.value.trim());
-                        if(data.eleves) {
-                            localStorage.setItem('maListeEleves', JSON.stringify(data.eleves));
-                            localStorage.setItem('studentObservations', JSON.stringify(data.observations || {}));
-                            localStorage.setItem('absentsList', JSON.stringify(data.absents || []));
-                            window.location.reload();
-                        }
-                    } catch(e) { alert("Code invalide."); }
-                };
-            }
+            const blob = new Blob([JSON.stringify(bundle, null, 2)], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `observations_${new Date().toISOString().split('T')[0]}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
         }
+
+        // --- IMPORT DEPUIS FICHIER TXT ---
+        document.getElementById('importFile').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    if (data.eleves && confirm("Importer les données de ce fichier ? (Cela écrasera la session actuelle)")) {
+                        localStorage.setItem('maListeEleves', JSON.stringify(data.eleves));
+                        localStorage.setItem('studentObservations', JSON.stringify(data.observations || {}));
+                        localStorage.setItem('absentsList', JSON.stringify(data.absents || []));
+                        window.location.reload();
+                    }
+                } catch (err) {
+                    alert("Erreur : Le fichier n'est pas un fichier d'observations valide.");
+                }
+            };
+            reader.readAsText(file);
+        });
 
         window.onload = renderList;
     </script>
