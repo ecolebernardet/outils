@@ -14,11 +14,10 @@
             background: var(--bg-dark); 
             color: var(--text-light); 
             margin: 0; padding: 10px; 
-            overflow: hidden; /* Empêche le scroll pour tenir sur un écran */
+            overflow: hidden; 
         }
         .container { max-width: 400px; margin: 0 auto; height: 98vh; display: flex; flex-direction: column; }
 
-        /* Style des cases de documents */
         .doc-card {
             background: #1e1e1e;
             border: 1px solid #333;
@@ -30,16 +29,38 @@
         }
         .doc-card:active { transform: scale(0.95); }
 
-        /* Overlay Plein Écran */
+        /* Overlay Plein Écran avec support ZOOM */
         #overlay {
             display: none;
             position: fixed;
             inset: 0;
-            background: rgba(0,0,0,0.95);
+            background: rgba(0,0,0,1);
             z-index: 100;
-            justify-content: center;
-            align-items: center;
-            padding: 5px;
+            overflow: auto; /* Permet de naviguer dans l'image zoomée */
+            -webkit-overflow-scrolling: touch;
+        }
+
+        #fullImage {
+            display: block;
+            margin: auto;
+            min-width: 100%;
+            transition: transform 0.3s ease;
+            cursor: zoom-in;
+        }
+
+        .close-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 24px;
+            z-index: 110;
+            backdrop-filter: blur(5px);
         }
 
         .bottom-nav { margin-top: auto; padding-bottom: 15px; }
@@ -64,68 +85,17 @@
                 </div>
             </div>
 
-            <div class="doc-card opacity-40">
-                <div class="h-16 bg-zinc-800 flex items-center justify-center">
-                    <span class="text-xl">📄</span>
-                </div>
-                <div class="p-2 text-center">
-                    <p class="text-[10px] font-bold text-white">Emploi du temps</p>
-                </div>
-            </div>
-
-            <div class="doc-card opacity-40">
-                <div class="h-16 bg-zinc-800 flex items-center justify-center">
-                    <span class="text-xl">📄</span>
-                </div>
-                <div class="p-2 text-center">
-                    <p class="text-[10px] font-bold text-white">Mots outils</p>
-                </div>
-            </div>
-
-            <div class="doc-card opacity-40">
-                <div class="h-16 bg-zinc-800 flex items-center justify-center">
-                    <span class="text-xl">📄</span>
-                </div>
-                <div class="p-2 text-center">
-                    <p class="text-[10px] font-bold text-white">Poésies</p>
-                </div>
-            </div>
-
-            <div class="doc-card opacity-40">
-                <div class="h-16 bg-zinc-800 flex items-center justify-center">
-                    <span class="text-xl">📄</span>
-                </div>
-                <div class="p-2 text-center">
-                    <p class="text-[10px] font-bold text-white">Menu Cantine</p>
-                </div>
-            </div>
-
-            <div class="doc-card opacity-40">
-                <div class="h-16 bg-zinc-800 flex items-center justify-center">
-                    <span class="text-xl">📄</span>
-                </div>
-                <div class="p-2 text-center">
-                    <p class="text-[10px] font-bold text-white">Règlement</p>
-                </div>
-            </div>
-
-            <div class="doc-card opacity-40">
-                <div class="h-16 bg-zinc-800 flex items-center justify-center">
-                    <span class="text-xl">📄</span>
-                </div>
-                <div class="p-2 text-center">
-                    <p class="text-[10px] font-bold text-white">Projets</p>
-                </div>
-            </div>
-
-            <div class="doc-card opacity-40">
-                <div class="h-16 bg-zinc-800 flex items-center justify-center">
-                    <span class="text-xl">📄</span>
-                </div>
-                <div class="p-2 text-center">
-                    <p class="text-[10px] font-bold text-white">Sorties</p>
-                </div>
-            </div>
+            <script>
+                const labels = ["Emploi du temps", "Mots outils", "Poésies", "Cantine", "Règlement", "Projets", "Sorties"];
+                labels.forEach(label => {
+                    document.write(`
+                        <div class="doc-card opacity-40">
+                            <div class="h-16 bg-zinc-800 flex items-center justify-center"><span class="text-xl">📄</span></div>
+                            <div class="p-2 text-center"><p class="text-[10px] font-bold text-white">${label}</p></div>
+                        </div>
+                    `);
+                });
+            </script>
 
         </nav>
 
@@ -134,21 +104,41 @@
         </footer>
     </div>
 
-    <div id="overlay" onclick="closeLightbox()">
-        <img id="fullImage" src="" class="max-w-full max-h-full object-contain">
-        <button class="absolute top-5 right-5 text-white text-4xl">&times;</button>
+    <div id="overlay">
+        <button class="close-btn" onclick="closeLightbox()">&times;</button>
+        <img id="fullImage" src="" onclick="toggleZoom()">
     </div>
 
     <script>
+        let isZoomed = false;
+
         function openLightbox(imgSrc) {
             const overlay = document.getElementById('overlay');
             const fullImg = document.getElementById('fullImage');
             fullImg.src = imgSrc;
+            fullImg.style.transform = "scale(1)";
+            isZoomed = false;
             overlay.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
         }
 
         function closeLightbox() {
             document.getElementById('overlay').style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+
+        // Fonction pour zoomer/dézoomer au clic (en plus du pinch-to-zoom naturel du mobile)
+        function toggleZoom() {
+            const fullImg = document.getElementById('fullImage');
+            if (!isZoomed) {
+                fullImg.style.transform = "scale(2.5)"; // Zoom x2.5
+                fullImg.style.cursor = "zoom-out";
+                isZoomed = true;
+            } else {
+                fullImg.style.transform = "scale(1)";
+                fullImg.style.cursor = "zoom-in";
+                isZoomed = false;
+            }
         }
     </script>
 
