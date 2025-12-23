@@ -7,29 +7,28 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
-        
         body { 
             background-color: #121212; 
             color: #e0e0e0; 
             margin: 0; 
-            padding: 10px; 
-            font-family: 'Inter', sans-serif;
+            padding: 8px; 
+            font-family: 'Inter', sans-serif; 
+            overflow: hidden; 
         }
-
         .container { 
             max-width: 450px; 
             margin: 0 auto; 
-            min-height: 100vh; 
+            height: 100vh; 
             display: flex; 
             flex-direction: column; 
-            /* ESPACE AJOUTÉ ICI : 60px pour bien dégager le bas */
-            padding-bottom: calc(60px + env(safe-area-inset-bottom)); 
+            justify-content: space-between;
+            padding-bottom: env(safe-area-inset-bottom); 
         }
-
+        /* Ajustement de la hauteur des cartes pour éviter le scroll */
         .doc-card { 
             background: #1e1e1e; 
             border: 1px solid #333; 
-            border-radius: 12px; 
+            border-radius: 10px; 
             overflow: hidden; 
             display: flex; 
             flex-direction: column; 
@@ -38,57 +37,60 @@
             cursor: pointer; 
         }
         .doc-card:active { transform: scale(0.96); }
-
-        .nav-btn {
-            width: 100%; 
-            background-color: #71bd7b; 
-            color: #052e16; 
-            font-weight: 800; 
-            padding: 16px; 
-            border-radius: 50px; 
-            text-[11px] 
-            uppercase; 
-            border: none;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-        }
     </style>
 </head>
 <body>
     <div class="container">
-        <header class="text-center mb-6 pt-4">
-            <h1 class="text-yellow-500 font-bold text-[10px] uppercase tracking-[0.2em]">Documents & Ressources</h1>
+        <header class="text-center py-2">
+            <h1 class="text-yellow-500 font-bold text-[9px] uppercase tracking-[0.2em]">Documents & Ressources</h1>
         </header>
 
-        <nav class="grid grid-cols-2 grid-rows-4 gap-3 flex-grow">
+        <nav class="grid grid-cols-2 grid-rows-4 gap-2 flex-grow mb-4">
             
             <div class="doc-card" onclick="window.location.href='documents_calendrier.html'">
-                <div class="flex-grow overflow-hidden bg-zinc-900">
-                    <img src="documents_calendrier.jpg" class="w-full h-full object-cover opacity-70">
-                </div>
-                <div class="p-2 text-center bg-[#1e1e1e]">
-                    <p class="text-[9px] font-bold text-white uppercase">Calendrier</p>
-                </div>
+                <div class="flex-grow overflow-hidden bg-zinc-900"><img src="documents_calendrier.jpg" class="w-full h-full object-cover opacity-70"></div>
+                <div class="py-1 text-center bg-[#1e1e1e]"><p class="text-[8px] font-bold text-white uppercase">Calendrier</p></div>
             </div>
 
-            <script>
-                const labels = ["Emploi du temps", "Mots outils", "Poésies", "Cantine", "Règlement", "Projets", "Sorties"];
-                labels.forEach(label => {
-                    document.write(`
-                        <div class="doc-card opacity-40">
-                            <div class="flex-grow flex items-center justify-center text-xl">📄</div>
-                            <div class="p-2 text-center bg-[#1e1e1e]">
-                                <p class="text-[9px] font-bold text-white uppercase">${label}</p>
-                            </div>
-                        </div>
-                    `);
-                });
-            </script>
+            <div class="doc-card" onclick="window.location.href='documents_planning_terrain.html'">
+                <div class="flex-grow overflow-hidden bg-zinc-900"><img src="documents_planning_terrain.jpg" class="w-full h-full object-cover opacity-70"></div>
+                <div class="py-1 text-center bg-[#1e1e1e]"><p class="text-[8px] font-bold text-white uppercase">Terrain</p></div>
+            </div>
+
+            <div class="doc-card" onclick="window.location.href='documents_planning_francais_ce2.html'">
+                <div class="flex-grow overflow-hidden bg-zinc-900"><img src="documents_planning_francais_ce2.jpg" class="w-full h-full object-cover opacity-70"></div>
+                <div class="py-1 text-center bg-[#1e1e1e]"><p class="text-[8px] font-bold text-white uppercase">Français CE2</p></div>
+            </div>
+
+            <div class="doc-card" onclick="window.location.href='documents_planning_maths_ce2.html'">
+                <div class="flex-grow overflow-hidden bg-zinc-900"><img src="documents_planning_maths_ce2.jpg" class="w-full h-full object-cover opacity-70"></div>
+                <div class="py-1 text-center bg-[#1e1e1e]"><p class="text-[8px] font-bold text-white uppercase">Maths CE2</p></div>
+            </div>
+
+             <div class="doc-card" onclick="window.location.href='documents_planning_francais_cm2.html'">
+                <div class="flex-grow overflow-hidden bg-zinc-900"><img src="documents_planning_francais_cm2.jpg" class="w-full h-full object-cover opacity-70"></div>
+                <div class="py-1 text-center bg-[#1e1e1e]"><p class="text-[8px] font-bold text-white uppercase">Français CM2</p></div>
+            </div>
+
+            <div class="doc-card" onclick="window.location.href='documents_planning_maths_cm2.html'">
+                <div class="flex-grow overflow-hidden bg-zinc-900"><img src="documents_planning_maths_cm2.jpg" class="w-full h-full object-cover opacity-70"></div>
+                <div class="py-1 text-center bg-[#1e1e1e]"><p class="text-[8px] font-bold text-white uppercase">Maths CM2</p></div>
+            </div>
+
+             <div class="doc-card" onclick="window.location.href='documents_planning_terrain.html'">
+                <div class="flex-grow overflow-hidden bg-zinc-900"><img src="documents_planning_terrain.jpg" class="w-full h-full object-cover opacity-70"></div>
+                <div class="py-1 text-center bg-[#1e1e1e]"><p class="text-[8px] font-bold text-white uppercase">Sorties</p></div>
+            </div>
+
+             <div class="doc-card" onclick="window.location.href='documents_planning_terrain.html'">
+                <div class="flex-grow overflow-hidden bg-zinc-900"><img src="documents_planning_terrain.jpg" class="w-full h-full object-cover opacity-70"></div>
+                <div class="py-1 text-center bg-[#1e1e1e]"><p class="text-[8px] font-bold text-white uppercase">Projets</p></div>
+            </div>
+
         </nav>
 
-        <footer class="mt-8">
-            <button onclick="window.location.href='index.html'" class="nav-btn">
-                Retour à l'Accueil
-            </button>
+        <footer class="pb-2">
+            <button onclick="window.location.href='index.html'" class="w-full bg-[#71bd7b] text-green-950 font-bold py-3 rounded-full text-[10px] uppercase shadow-lg">Retour à l'Accueil</button>
         </footer>
     </div>
 </body>
