@@ -96,7 +96,6 @@
             word-break: break-word; 
         }
 
-        /* BOUTONS HARMONISÉS */
         .bottom-nav { width: 100%; max-width: 500px; margin: 25px auto 0; padding-bottom: 40px; }
         .nav-btn { font-weight: 900; border-radius: 50px; font-size: 10px; padding: 12px; border: none; flex: 1; display: flex; align-items: center; justify-content: center; gap: 5px; cursor: pointer; }
 
@@ -113,7 +112,7 @@
 
     <div class="container">
         <header class="text-center mb-4">
-            <h1 class="text-yellow-500 font-bold text-xs uppercase tracking-widest">Mes Notes</h1>
+            <h1 id="pageTitle" class="font-bold text-xs uppercase tracking-widest">Mes Notes</h1>
         </header>
 
         <div class="create-note-box">
@@ -128,7 +127,7 @@
                     <div class="color-dot" style="background-color: #ffffff;" data-color="#ffffff"></div>
                     <div class="color-dot" style="background-color: #4b5563;" data-color="#4b5563"></div>
                 </div>
-                <button onclick="addNote()" class="bg-rose-500 text-white px-4 py-2 rounded-full text-[10px] font-bold uppercase shadow-md active:scale-90">Ajouter</button>
+                <button id="addBtn" onclick="addNote()" class="text-white px-4 py-2 rounded-full text-[10px] font-bold uppercase shadow-md active:scale-90">Ajouter</button>
             </div>
         </div>
 
@@ -154,13 +153,38 @@
             <div class="flex flex-wrap gap-2 mb-6" id="editColorPicker"></div>
             <div class="btns">
                 <button class="modal-btn btn-cancel" onclick="closeModal('editModal')">Annuler</button>
-                <button class="modal-btn btn-save" onclick="saveEditedNote()">Valider</button>
+                <button id="modalSaveBtn" class="modal-btn btn-save" onclick="saveEditedNote()">Valider</button>
             </div>
             <button onclick="deleteNoteFromModal()" class="w-full mt-6 text-rose-500 text-[10px] font-bold uppercase">Supprimer la note</button>
         </div>
     </div>
 
     <script>
+        // --- GESTION DU THÈME DYNAMIQUE ---
+        const themePrefs = JSON.parse(localStorage.getItem('theme_tuiles')) || {};
+        const couleurDominante = themePrefs.notes || 'yellow'; // 'yellow' par défaut comme dans votre HTML d'origine
+
+        function appliquerTheme() {
+            const title = document.getElementById('pageTitle');
+            const btn = document.getElementById('addBtn');
+            const modalBtn = document.getElementById('modalSaveBtn');
+
+            // Application au titre (en version 500 pour le texte)
+            title.classList.add(`text-${couleurDominante}-500`);
+
+            // Application au bouton ajouter
+            btn.classList.add(`bg-${couleurDominante}-500`);
+            
+            // Application au bouton du modal
+            if(modalBtn) modalBtn.classList.add(`bg-${couleurDominante}-500`);
+
+            // Gestion du contraste du texte (noir si couleur claire)
+            if(['yellow', 'lime', 'amber', 'cyan'].includes(couleurDominante)) {
+                btn.classList.replace('text-white', 'text-black');
+            }
+        }
+
+        // --- LOGIQUE DES NOTES ---
         let notes = JSON.parse(localStorage.getItem('myKeepNotes')) || [];
         let currentNoteIndex = -1;
         let selectedColorForNew = '#fef08a';
@@ -243,7 +267,6 @@
             }
         }
 
-        // --- NOUVEAU : EXPORT NOTES VERS FICHIER TXT ---
         function exportNotesToFile() {
             const blob = new Blob([JSON.stringify(notes, null, 2)], { type: 'text/plain' });
             const url = URL.createObjectURL(blob);
@@ -256,7 +279,6 @@
             URL.revokeObjectURL(url);
         }
 
-        // --- NOUVEAU : IMPORT NOTES DEPUIS FICHIER TXT ---
         document.getElementById('importNotesFile').addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (!file) return;
@@ -276,8 +298,12 @@
         function saveAndRender() { localStorage.setItem('myKeepNotes', JSON.stringify(notes)); renderNotes(); }
         function closeModal(id) { document.getElementById(id).style.display = 'none'; }
         
-        setupColorPickers();
-        renderNotes();
+        // Initialisation
+        window.onload = () => {
+            appliquerTheme();
+            setupColorPickers();
+            renderNotes();
+        };
     </script>
 </body>
 </html>

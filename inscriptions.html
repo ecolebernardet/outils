@@ -71,6 +71,38 @@
     </div>
 
     <script>
+	
+// 1. Récupération de la couleur choisie pour "inscriptions"
+const themePrefs = JSON.parse(localStorage.getItem('theme_tuiles')) || {};
+const couleurInscr = themePrefs.inscr || 'lime';
+
+// 2. Application dynamique au chargement
+window.addEventListener('DOMContentLoaded', () => {
+    // Application au Titre "Inscriptions"
+    const titrePage = document.querySelector('h1');
+    if (titrePage) {
+        // On lui applique la couleur du thème (en nuance 500 pour une bonne visibilité sur noir)
+        titrePage.classList.add(`text-${couleurInscr}-500`);
+    }
+
+    // Application au bouton "Enregistrer"
+    const btnEnregistrer = document.querySelector('#eleveForm button[type="submit"]');
+    if (btnEnregistrer) {
+        // On remplace le rose par défaut par la couleur du thème
+        btnEnregistrer.classList.remove('bg-pink-500');
+        btnEnregistrer.classList.add(`bg-${couleurInscr}-500`);
+        
+        // Ajustement du contraste si la couleur est claire
+        if(['yellow', 'lime', 'amber', 'cyan'].includes(couleurInscr)) {
+            btnEnregistrer.classList.replace('text-white', 'text-black');
+        }
+    }
+});
+
+// --- La suite de ton code (let eleves = ...) reste inchangée ---
+
+// --- La suite de ton code (let eleves = ...) reste strictement identique ---
+
         let eleves = JSON.parse(localStorage.getItem('maListeEleves')) || [];
 
         function formaterIdentite(prenom, nom) {

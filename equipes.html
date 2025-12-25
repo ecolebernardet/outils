@@ -13,10 +13,8 @@
         
         .section-title { font-size: 10px; color: #555; margin: 15px 0 5px 0; font-weight: 900; letter-spacing: 1px; text-align: center; text-transform: uppercase; }
         
-        /* Conteneur d'appel */
         #attendance-container { width: 100%; max-width: 600px; margin: 0 auto; }
         
-        /* Grilles par niveau */
         .attendance-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; margin-bottom: 20px; width: 100%; }
         
         .level-label { text-align: center; font-size: 9px; font-weight: 900; color: #444; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; }
@@ -28,10 +26,9 @@
         
         .absent { background: #2a2a2a !important; color: #777777 !important; text-decoration: line-through; opacity: 0.7; transform: scale(0.9); border-color: #333; }
         
-        .num-btn { background: #222; color: #fff; border: 1px solid #444; width: 34px; height: 34px; border-radius: 50%; font-weight: 800; cursor: pointer; }
-        .num-btn.active { background: var(--primary); border-color: #fff; transform: scale(1.1); }
+        .num-btn { background: #222; color: #fff; border: 1px solid #444; width: 34px; height: 34px; border-radius: 50%; font-weight: 800; cursor: pointer; transition: all 0.2s; }
         
-        .generate-btn { width: 100%; max-width: 300px; background: var(--primary); color: white; padding: 14px; font-size: 10px; font-weight: 900; border-radius: 50px; text-transform: uppercase; margin: 20px 0; border: none; cursor: pointer; box-shadow: 0 4px 15px rgba(255, 99, 126, 0.3); }
+        .generate-btn { width: 100%; max-width: 300px; color: white; padding: 14px; font-size: 10px; font-weight: 900; border-radius: 50px; text-transform: uppercase; margin: 20px 0; border: none; cursor: pointer; }
         
         .grid-teams { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; max-width: 500px; margin: 0 auto; }
         .team-card { border-radius: 1.2rem; padding: 12px; background: var(--card-bg); border: 1px solid #333; }
@@ -52,13 +49,19 @@
 </head>
 <body class="flex flex-col items-center">
 
+    <header class="text-center mt-4 mb-2">
+        <h1 id="mainTitle" class="font-bold text-xs uppercase tracking-widest">
+            Générer des équipes équilibrées
+        </h1>
+    </header>
+
     <p class="section-title">Appel (Absents en gris)</p>
     <div id="attendance-container"></div>
 
     <p class="section-title">Nombre d'équipes</p>
     <div class="flex gap-2 mb-4" id="selector"></div>
 
-    <button class="generate-btn" onclick="generateAndFix()">Générer & Rectifier</button>
+    <button id="main-generate-btn" class="generate-btn" onclick="generateAndFix()">Générer & Rectifier</button>
 
     <div id="results" class="grid-teams"></div>
 
@@ -68,17 +71,53 @@
     </div>
 
 <script>
+    // --- GESTION DU THÈME ---
+    const mapCouleurs = {
+        'red': '#ef4444', 'orange': '#f97316', 'amber': '#f59e0b', 'yellow': '#eab308',
+        'lime': '#84cc16', 'green': '#22c55e', 'emerald': '#10b981', 'teal': '#14b8a6',
+        'cyan': '#06b6d4', 'sky': '#0ea5e9', 'blue': '#3b82f6', 'indigo': '#6366f1',
+        'violet': '#8b5cf6', 'purple': '#a855f7', 'fuchsia': '#d946ef', 'pink': '#ec4899',
+        'rose': '#f43f5e', 'slate': '#64748b', 'gray': '#6b7280', 'zinc': '#71717a'
+    };
+
+    function appliquerTheme() {
+        const themePrefs = JSON.parse(localStorage.getItem('theme_tuiles')) || {};
+        const couleurNom = themePrefs.equipes || 'pink';
+        const couleurHex = mapCouleurs[couleurNom] || '#ec4899';
+
+        const title = document.getElementById('mainTitle');
+        const genBtn = document.getElementById('main-generate-btn');
+        
+        if(title) title.style.color = couleurHex;
+        if(genBtn) {
+            genBtn.style.backgroundColor = couleurHex;
+            if(['yellow', 'lime', 'amber', 'cyan'].includes(couleurNom)) {
+                genBtn.style.color = 'black';
+            } else {
+                genBtn.style.color = 'white';
+            }
+        }
+    }
+
+    // --- LOGIQUE ÉQUIPES ---
     let selectedNumTeams = 4;
     let ALL_STUDENTS = JSON.parse(localStorage.getItem('maListeEleves')) || [];
     let savedAbsents = JSON.parse(localStorage.getItem('absentsList')) || [];
     let absents = new Set(savedAbsents);
 
     function init() {
+        appliquerTheme();
         const sel = document.getElementById('selector');
         sel.innerHTML = '';
         for(let i=2; i<=8; i++) {
-            sel.innerHTML += `<button class="num-btn ${i===selectedNumTeams?'active':''}" id="btn-${i}" onclick="selectNum(${i})">${i}</button>`;
+            const btn = document.createElement('button');
+            btn.className = `num-btn`;
+            btn.id = `btn-${i}`;
+            btn.innerText = i;
+            btn.onclick = () => selectNum(i);
+            sel.appendChild(btn);
         }
+        selectNum(selectedNumTeams);
         renderAttendance();
         const saved = localStorage.getItem('savedTeams');
         if (saved) renderTeams(JSON.parse(saved));
@@ -86,15 +125,33 @@
 
     function selectNum(n) {
         selectedNumTeams = n;
-        document.querySelectorAll('.num-btn').forEach(b => b.classList.remove('active'));
-        document.getElementById('btn-'+n).classList.add('active');
+        const themePrefs = JSON.parse(localStorage.getItem('theme_tuiles')) || {};
+        const couleurNom = themePrefs.equipes || 'pink';
+        const activeColor = mapCouleurs[couleurNom] || '#ec4899';
+
+        document.querySelectorAll('.num-btn').forEach(b => {
+            b.style.backgroundColor = "#222";
+            b.style.borderColor = "#444";
+            b.style.color = "white";
+        });
+        
+        const activeBtn = document.getElementById('btn-' + n);
+        if (activeBtn) {
+            activeBtn.style.backgroundColor = activeColor;
+            activeBtn.style.borderColor = activeColor;
+            if(['yellow', 'lime', 'amber', 'cyan'].includes(couleurNom)) {
+                activeBtn.style.color = "black";
+            } else {
+                activeBtn.style.color = "white";
+            }
+        }
     }
 
     function renderAttendance() {
         const container = document.getElementById('attendance-container');
+        if(!container) return;
         container.innerHTML = '';
 
-        // Grouper par niveau
         const groupes = {};
         ALL_STUDENTS.forEach(s => {
             const niv = s.niveau.toUpperCase();
@@ -102,11 +159,9 @@
             groupes[niv].push(s);
         });
 
-        // Trier et afficher chaque groupe
         Object.keys(groupes).sort().forEach(niv => {
             const levelSection = document.createElement('div');
             levelSection.innerHTML = `<div class="level-label">${niv}</div>`;
-            
             const grid = document.createElement('div');
             grid.className = "attendance-grid";
 
@@ -114,14 +169,10 @@
                 const isAbs = absents.has(s.id);
                 const div = document.createElement('div');
                 div.className = `student-item bg-${s.sexe.toLowerCase()} ${isAbs ? 'absent' : ''}`;
-                
-                // Affichage du prénom uniquement
                 div.innerText = s.identite.split(" ")[0];
-                
                 div.onclick = () => toggleAbs(s.id);
                 grid.appendChild(div);
             });
-
             levelSection.appendChild(grid);
             container.appendChild(levelSection);
         });
@@ -148,38 +199,24 @@
         presents.sort(() => Math.random() - 0.5);
         presents.forEach((s, idx) => teams[idx % selectedNumTeams].push(s));
 
-        let iterations = 0;
+        // Algorithme d'équilibrage
         let improved = true;
-
-        while(improved && iterations < 1000) {
-            improved = false;
-            iterations++;
-
+        let count = 0;
+        while(improved && count < 100) {
+            improved = false; count++;
             for(let i=0; i < teams.length; i++) {
                 for(let j=0; j < teams.length; j++) {
                     if(i === j) continue;
-
-                    let sI = getStats(teams[i]);
-                    let sJ = getStats(teams[j]);
-
-                    if (Math.abs(sI.f - sJ.f) > 1 || Math.abs(sI.ce2 - sJ.ce2) > 1 || Math.abs(sI.cm2 - sJ.cm2) > 1) {
-                        for(let idxI=0; idxI < teams[i].length; idxI++) {
-                            for(let idxJ=0; idxJ < teams[j].length; idxJ++) {
-                                let currentDiff = Math.abs(sI.f - sJ.f) + Math.abs(sI.ce2 - sJ.ce2) + Math.abs(sI.cm2 - sJ.cm2);
-                                
-                                let tempI = [...teams[i]];
-                                let tempJ = [...teams[j]];
-                                [tempI[idxI], tempJ[idxJ]] = [tempJ[idxJ], tempI[idxI]];
-                                
-                                let nI = getStats(tempI);
-                                let nJ = getStats(tempJ);
-                                let nextDiff = Math.abs(nI.f - nJ.f) + Math.abs(nI.ce2 - nJ.ce2) + Math.abs(nI.cm2 - nJ.cm2);
-
-                                if(nextDiff < currentDiff) {
-                                    [teams[i][idxI], teams[j][idxJ]] = [teams[j][idxJ], teams[i][idxI]];
-                                    improved = true;
-                                    break;
-                                }
+                    let sI = getStats(teams[i]), sJ = getStats(teams[j]);
+                    if (Math.abs(sI.f-sJ.f)>1 || Math.abs(sI.ce2-sJ.ce2)>1) {
+                        for(let x=0; x<teams[i].length; x++) {
+                            for(let y=0; y<teams[j].length; y++) {
+                                let oldDiff = Math.abs(sI.f-sJ.f) + Math.abs(sI.ce2-sJ.ce2);
+                                [teams[i][x], teams[j][y]] = [teams[j][y], teams[i][x]];
+                                let nI = getStats(teams[i]), nJ = getStats(teams[j]);
+                                let newDiff = Math.abs(nI.f-nJ.f) + Math.abs(nI.ce2-nJ.ce2);
+                                if(newDiff < oldDiff) { improved = true; break; }
+                                else { [teams[i][x], teams[j][y]] = [teams[j][y], teams[i][x]]; }
                             }
                             if(improved) break;
                         }
@@ -187,7 +224,6 @@
                 }
             }
         }
-
         localStorage.setItem('savedTeams', JSON.stringify(teams));
         renderTeams(teams);
     }

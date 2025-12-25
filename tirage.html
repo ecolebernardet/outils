@@ -66,10 +66,9 @@
             text-overflow: ellipsis;
         }
 
-        /* MODIFICATION : Fond plus foncé pour les tirés */
         .drawn {
-            background: #2a2a2a !important; /* Plus sombre pour s'effacer */
-            color: #777777 !important; /* Texte gris plus discret */
+            background: #2a2a2a !important; 
+            color: #777777 !important; 
             text-decoration: line-through;
             opacity: 0.7;
             border-color: #333;
@@ -100,26 +99,30 @@
         #result-display {
             font-size: 1.4rem;
             font-weight: 800;
-            color: var(--primary);
         }
 
         .main-btn {
             width: 100%;
-            background: var(--primary);
-            color: white;
             padding: 14px;
             font-size: 10px;
             font-weight: 800;
             border-radius: 50px;
             text-transform: uppercase;
+            border: none;
+            cursor: pointer;
         }
 
-        /* Styles Boutons du bas */
         .btn-nav { font-weight: 800; padding: 14px; border-radius: 50px; font-size: 9px; cursor: pointer; border: none; flex: 1; }
         .stats { margin-top: 8px; font-size: 0.6rem; color: #aaa; text-transform: uppercase; font-weight: 600; }
     </style>
 </head>
 <body>
+
+    <header class="text-center mt-4 mb-2">
+        <h1 id="page-title" class="font-bold text-xs uppercase tracking-widest">
+            Tirer un prénom au hasard
+        </h1>
+    </header>
 
     <div class="card">
         <div id="result-container">
@@ -139,6 +142,32 @@
     </div>
 
     <script>
+        // --- GESTION DU THÈME DYNAMIQUE ---
+        const themePrefs = JSON.parse(localStorage.getItem('theme_tuiles')) || {};
+        const couleurTirage = themePrefs.tirage || 'pink';
+
+        function appliquerTheme() {
+            const title = document.getElementById('page-title');
+            const btn = document.getElementById('draw-btn');
+            const display = document.getElementById('result-display');
+
+            // Couleur du titre
+            title.classList.add(`text-${couleurTirage}-400`);
+
+            // Couleur du bouton
+            btn.classList.add(`bg-${couleurTirage}-500`);
+            
+            if(['yellow', 'lime', 'amber', 'cyan'].includes(couleurTirage)) {
+                btn.classList.add('text-black');
+            } else {
+                btn.classList.add('text-white');
+            }
+
+            // Couleur du prénom tiré
+            display.classList.add(`text-${couleurTirage}-500`);
+        }
+
+        // --- LOGIQUE DE TIRAGE ---
         function formatName(fullName) {
             const parts = fullName.trim().split(" ");
             return parts[0].charAt(0).toUpperCase() + parts[0].slice(1).toLowerCase();
@@ -232,6 +261,7 @@
                     display.innerText = formatName(winner.identite);
                     saveState();
                     renderList();
+                    btn.disabled = (remaining.length === 0);
                 }
             }, 60);
         }
@@ -245,7 +275,10 @@
             }
         }
 
-        renderList();
+        window.onload = () => {
+            appliquerTheme();
+            renderList();
+        };
     </script>
 </body>
 </html>

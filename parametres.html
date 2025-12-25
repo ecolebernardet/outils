@@ -7,44 +7,100 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
-        body { font-family: 'Inter', sans-serif; background: #000; color: #eee; padding: 10px; margin: 0; }
+        body { font-family: 'Inter', sans-serif; background: #000; color: #eee; padding: 0; margin: 0; overflow-x: hidden; }
         
-        .color-dot { width: 22px; height: 22px; border-radius: 50%; border: 1.5px solid rgba(255,255,255,0.1); transition: all 0.2s; }
-        .color-dot.active { border-color: white; transform: scale(1.3); box-shadow: 0 0 8px rgba(255,255,255,0.4); }
+        .tab-btn { 
+            padding: 12px 6px; font-size: 10px; font-weight: 800; text-transform: uppercase; 
+            letter-spacing: 1px; color: #666; border-bottom: 2px solid transparent;
+            transition: all 0.3s; flex: 1; text-align: center;
+        }
+        .tab-btn.active { color: white; border-bottom-color: white; }
+        .tab-content { display: none; animation: fadeIn 0.3s ease; }
+        .tab-content.active { display: block; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+        .tile-config { background: #0a0a0a; border: 1px solid #1a1a1a; border-radius: 0.75rem; padding: 8px 10px; margin-bottom: 6px; }
         
-        .tile-config { background: #111; border: 1px solid #222; border-radius: 1.2rem; padding: 12px; margin-bottom: 10px; }
-        .btn-nav { font-weight: 900; padding: 14px 4px; border-radius: 50px; font-size: 10px; text-align: center; text-transform: uppercase; transition: transform 0.1s; }
-        .btn-nav:active { transform: scale(0.95); }
+        .color-dot { width: 16px; height: 16px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.1); transition: all 0.2s; }
+        .color-dot.active { border-color: white; transform: scale(1.2); box-shadow: 0 0 5px rgba(255,255,255,0.4); z-index: 10; }
         
-        ::-webkit-scrollbar { width: 4px; }
-        ::-webkit-scrollbar-track { background: #000; }
-        ::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
+        .btn-nav { font-weight: 900; padding: 14px 4px; border-radius: 50px; font-size: 10px; text-align: center; text-transform: uppercase; }
+        .card-info { background: #111; border: 1px solid #222; border-radius: 1rem; padding: 15px; margin-bottom: 15px; }
     </style>
 </head>
-<body class="pb-28">
-    <div class="max-w-md mx-auto relative">
+<body class="pb-10">
+    <div class="max-w-md mx-auto">
         
-        <div class="flex items-center justify-between my-6 px-2">
-            <a href="index.html" class="bg-zinc-900 text-white px-4 py-2 rounded-full text-[10px] font-black uppercase border border-zinc-800 flex items-center gap-2">
-                <span>←</span> Retour
+        <div class="flex items-center justify-between p-4 bg-black/50 backdrop-blur-md sticky top-0 z-50 border-b border-zinc-900">
+            <a href="index.html" id="btn-retour" class="text-white px-4 py-2 rounded-full text-[10px] font-black uppercase border border-white/10">
+                ← Retour
             </a>
-            <h1 class="text-xl font-black uppercase tracking-tighter italic text-white">
-                Paramètres
-            </h1>
-            <div class="w-16"></div> </div>
+            <h1 class="text-lg font-black uppercase tracking-tighter italic">Réglages</h1>
+            <div class="w-16"></div> 
+        </div>
 
-        <div id="settingsContainer">
+        <div class="flex border-b border-zinc-900 sticky top-[65px] bg-black z-40">
+            <button class="tab-btn active" onclick="openTab(event, 'emploi')">Mode d'emploi</button>
+            <button class="tab-btn" onclick="openTab(event, 'perso')">Couleurs</button>
+            <button class="tab-btn" onclick="openTab(event, 'propos')">À Propos</button>
+        </div>
+
+        <div class="p-4">
+            <div id="emploi" class="tab-content active">
+                <div class="card-info">
+                    <h3 class="text-blue-400 font-black text-xs uppercase mb-2">📌 Inscriptions</h3>
+                    <p class="text-xs text-zinc-400 leading-relaxed">Ajoutez vos élèves un par un. Précisez son prénom et son nom, puis cliquez sur son genre et son niveau avant de l'enregistrer. <br><br> Vous pouvez aussi importer une liste d'un ficher .txt dans lequel les infos concernant chaque élève se présentent de cette manière :<br>Prénom;NOM;genre(f ou g);niveau(CP ou CE1 ou CE ou CM1 ou CM2 ou Autre). <br><br> L'appli générera ensuite une liste qui sera utilisée dans les autres rubriques.</p>
+                </div>
+                <div class="card-info">
+                    <h3 class="text-blue-400 font-black text-xs uppercase mb-2">⏲️ 108 heures</h3>
+                    <p class="text-xs text-zinc-400 leading-relaxed">Cette rubrique vous permet de gérer vos 108 heures annuelles dans 4 catégories différentes :<br> 1) Les APC <br>2) Les réunions (conseils des maîtres, conseils de cycle, rencontres avec les familles... <br>3) La formation continue <br>4) Les conseils d'écoles <br><br> Il est possible d'exporter et d'importer une liste d'heures déjà effectuées.</p>
+                </div>
+                <div class="card-info">
+                    <h3 class="text-green-400 font-black text-xs uppercase mb-2">🎲 Tirage</h3>
+                    <p class="text-xs text-zinc-400 leading-relaxed">Cocher ou décocher les élèves présents ou absents puis tirer un prénom d'élève au hasard.</p>
+                </div>
+                <div class="card-info">
+                    <h3 class="text-green-400 font-black text-xs uppercase mb-2">✏️ Observations</h3>
+                    <p class="text-xs text-zinc-400 leading-relaxed">Cliquez sur un élève pour noter un comportement ou une remarque. Utilisez le bouton d'export pour sauvegarder vos notes sur votre appareil.</p>
+                </div>
+                <div class="card-info">
+                    <h3 class="text-sky-400 font-black text-xs uppercase mb-2">🚥 Compteur</h3>
+                    <p class="text-xs text-zinc-400 leading-relaxed">Appui simple = +1. Double appui = -1. Idéal pour le suivi du comportement ou la participation.</p>
+                </div>
             </div>
 
-        <div class="fixed bottom-0 left-0 right-0 p-4 bg-black/90 backdrop-blur-md border-t border-zinc-900 z-50">
-            <div class="max-w-md mx-auto flex gap-4">
-                <button onclick="reinitialiser()" class="btn-nav bg-zinc-800 text-red-400 border border-red-900/20 flex-1">RàZ Couleurs</button>
-                <a href="index.html" class="btn-nav bg-white text-black flex items-center justify-center no-underline shadow-md flex-1">Enregistrer</a>
+            <div id="perso" class="tab-content">
+                <div id="settingsContainer" class="space-y-1"></div>
+                
+                <div class="flex gap-4 mt-6 pb-10">
+                    <button onclick="reinitialiser()" class="btn-nav bg-zinc-900 text-red-400 border border-red-900/20 flex-1">RàZ Couleurs</button>
+                    <a href="index.html" class="btn-nav bg-white text-black flex items-center justify-center no-underline shadow-md flex-1">Enregistrer</a>
+                </div>
+            </div>
+
+            <div id="propos" class="tab-content text-center py-10">
+                <div class="card-info">
+                    <p class="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-4">Version 1.2.0</p>
+                    <p class="text-sm italic text-zinc-300">"Conçu par et pour les professeurs des écoles."</p>
+                    <div class="h-[1px] bg-zinc-800 my-6"></div>
+                    <p class="text-xs text-zinc-500">Données locales uniquement.</p>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
+        function openTab(evt, tabName) {
+            let i, tabcontent, tablinks;
+            tabcontent = document.getElementsByClassName("tab-content");
+            for (i = 0; i < tabcontent.length; i++) { tabcontent[i].classList.remove("active"); }
+            tablinks = document.getElementsByClassName("tab-btn");
+            for (i = 0; i < tablinks.length; i++) { tablinks[i].classList.remove("active"); }
+            document.getElementById(tabName).classList.add("active");
+            evt.currentTarget.classList.add("active");
+        }
+
         const tuiles = [
             { id: 'param', label: 'Paramètres', emoji: '⚙️' },
             { id: 'inscr', label: 'Inscriptions', emoji: '📝' },
@@ -58,14 +114,10 @@
             { id: 'compt', label: 'Compteur', emoji: '🚥' }
         ];
 
-        const couleurs = [
-            'red', 'orange', 'amber', 'yellow', 'lime', 'green', 'emerald', 
-            'teal', 'cyan', 'sky', 'blue', 'indigo', 'violet', 'purple', 
-            'fuchsia', 'pink', 'rose', 'slate', 'gray', 'zinc', 'neutral', 'stone'
-        ];
+        const couleurs = ['red', 'orange', 'amber', 'yellow', 'lime', 'green', 'emerald', 'teal', 'cyan', 'sky', 'blue', 'indigo', 'violet', 'purple', 'fuchsia', 'pink', 'rose', 'gray'];
 
         let prefs = JSON.parse(localStorage.getItem('theme_tuiles')) || {
-            param: 'stone', inscr: 'lime', h108: 'orange', docs: 'red', 
+            param: 'gray', inscr: 'lime', h108: 'orange', docs: 'red', 
             liens: 'indigo', tirage: 'yellow', equipes: 'rose', 
             notes: 'purple', obs: 'green', compt: 'sky'
         };
@@ -73,30 +125,30 @@
         function renderSettings() {
             const container = document.getElementById('settingsContainer');
             container.innerHTML = '';
+            
+            // Mise à jour de la couleur du bouton Retour
+            const btnRetour = document.getElementById('btn-retour');
+            const mainColor = prefs.param;
+            btnRetour.className = `bg-${mainColor}-600 text-white px-4 py-2 rounded-full text-[10px] font-black uppercase border border-${mainColor}-400/30`;
 
             tuiles.forEach(tuile => {
                 const configDiv = document.createElement('div');
                 configDiv.className = 'tile-config';
-                
                 const currentColor = prefs[tuile.id];
-                
                 configDiv.innerHTML = `
-                    <div class="flex justify-between items-center mb-4">
-                        <div class="flex items-center gap-2">
-                            <span class="text-lg">${tuile.emoji}</span>
-                            <span class="text-[10px] font-black uppercase tracking-widest text-zinc-300">${tuile.label}</span>
+                    <div class="flex justify-between items-center mb-2">
+                        <div class="flex items-center gap-1.5">
+                            <span class="text-xs">${tuile.emoji}</span>
+                            <span class="text-[9px] font-black uppercase tracking-tight text-zinc-400">${tuile.label}</span>
                         </div>
-                        <span class="text-[9px] font-bold uppercase px-2 py-0.5 rounded bg-zinc-800 text-${currentColor}-400 border border-zinc-700">${currentColor}</span>
+                        <span class="text-[8px] font-bold uppercase text-${currentColor}-400 border border-zinc-800 px-1.5 rounded">${currentColor}</span>
                     </div>
-                    <div class="flex flex-wrap gap-2.5 justify-center">
+                    <div class="flex flex-wrap gap-1.5 justify-start">
                         ${couleurs.map(c => `
-                            <button 
-                                onclick="setTileColor('${tuile.id}', '${c}')" 
-                                class="color-dot bg-${c}-500 ${currentColor === c ? 'active' : ''}">
-                            </button>
-                        `).join('')}
-                    </div>
-                `;
+                            <button onclick="setTileColor('${tuile.id}', '${c}')" 
+                                    class="color-dot bg-${c}-500 ${currentColor === c ? 'active' : ''}">
+                            </button>`).join('')}
+                    </div>`;
                 container.appendChild(configDiv);
             });
         }
@@ -113,7 +165,6 @@
                 location.reload();
             }
         }
-
         renderSettings();
     </script>
 </body>

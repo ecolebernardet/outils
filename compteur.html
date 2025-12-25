@@ -12,6 +12,16 @@
             touch-action: manipulation;
             background-color: #000;
         }
+
+        /* STYLE DU TITRE DYNAMIQUE */
+        #mainTitle {
+            text-align: center;
+            font-weight: 800;
+            font-size: 1rem;
+            margin: 15px 0 20px 0;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+        }
         
         /* STYLE DES BADGES DE COMPTEUR */
         .counter-badge {
@@ -64,6 +74,8 @@
 </head>
 <body class="min-h-screen">
     <div class="p-2 max-w-2xl mx-auto "> 
+        <h1 id="mainTitle">Compteur du suivi du comportement</h1>
+
         <main class="grid grid-cols-2 gap-3 items-start">
             <div class="flex flex-col">
                 <h2 class="text-yellow-400 text-[12px] font-black uppercase tracking-[0.2em] text-center mb-3">CE2</h2>
@@ -90,8 +102,28 @@
     <script>
         const STORAGE_KEY = 'studentCounterState';
 
+        // --- GESTION DU THÈME ---
+        function appliquerTheme() {
+            const prefs = JSON.parse(localStorage.getItem('theme_tuiles')) || {};
+            const nomCouleur = prefs['compt'] || 'sky'; // 'compt' est l'id défini dans parametres.html
+
+            const mapCouleurs = {
+                'red': '#ef4444', 'orange': '#f97316', 'amber': '#f59e0b', 'yellow': '#eab308',
+                'lime': '#84cc16', 'green': '#22c55e', 'emerald': '#10b981', 'teal': '#14b8a6',
+                'cyan': '#06b6d4', 'sky': '#0ea5e9', 'blue': '#3b82f6', 'indigo': '#6366f1',
+                'violet': '#8b5cf6', 'purple': '#a855f7', 'fuchsia': '#d946ef', 'pink': '#ec4899',
+                'rose': '#f43f5e', 'slate': '#64748b', 'gray': '#6b7280', 'zinc': '#71717a',
+                'neutral': '#737373', 'stone': '#78716c'
+            };
+
+            const couleurHexa = mapCouleurs[nomCouleur] || '#0ea5e9';
+            const titre = document.getElementById('mainTitle');
+            if (titre) titre.style.color = couleurHexa;
+        }
+
         function formatNameDisplay(fullName) {
             const parts = fullName.trim().split(' ');
+            if (parts.length === 0) return "";
             const firstName = parts[0].charAt(0).toUpperCase() + parts[0].slice(1).toLowerCase();
             const lastName = parts.slice(1).join(' ').toUpperCase();
             return `${firstName} ${lastName}`;
@@ -122,7 +154,10 @@
 
         function updateBadgeStyle(badge, val) {
             badge.classList.remove('count-1', 'count-2', 'count-3', 'count-4', 'count-5');
-            if (val > 0) badge.classList.add(`count-${val}`);
+            if (val > 0) {
+                const safeVal = Math.min(val, 5);
+                badge.classList.add(`count-${safeVal}`);
+            }
         }
 
         function createRow(name, sexe) {
@@ -182,6 +217,7 @@
         }
 
         function initApp() {
+            appliquerTheme(); // Applique la couleur du titre
             const listLeft = document.getElementById('list-left');
             const listRight = document.getElementById('list-right');
             const allStudents = JSON.parse(localStorage.getItem('maListeEleves')) || [];

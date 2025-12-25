@@ -31,7 +31,7 @@
             color: #888; padding: 8px 16px; border-radius: 20px;
             font-size: 11px; font-weight: 600; white-space: nowrap; cursor: pointer;
         }
-        .tab-btn.active { background: var(--primary); color: #064e3b; border-color: var(--primary); }
+        /* La couleur .active est maintenant gérée par le script JS */
 
         /* Liste des liens */
         .link-item {
@@ -53,11 +53,10 @@
             color: white; padding: 10px; border-radius: 8px;
             margin-bottom: 10px; font-size: 14px; outline: none;
         }
-        .btn-add { background: var(--primary); color: #064e3b; width: 100%; padding: 12px; border-radius: 8px; font-weight: bold; font-size: 12px; }
+        .btn-add { color: #064e3b; width: 100%; padding: 12px; border-radius: 8px; font-weight: bold; font-size: 12px; }
         
         .btn-del { color: #ff5a5a; font-size: 20px; padding-left: 15px; cursor: pointer; font-weight: bold; }
 
-        /* Style des boutons du bas (identique à Notes) */
         .bottom-nav { width: 100%; max-width: 500px; margin: 25px auto 0; padding-bottom: 40px; display: flex; gap: 8px; }
         .nav-btn { font-weight: 900; border-radius: 50px; font-size: 10px; padding: 12px; border: none; flex: 1; display: flex; align-items: center; justify-content: center; gap: 5px; cursor: pointer; }
     </style>
@@ -66,7 +65,7 @@
 
 <div class="container">
     <header class="text-center mb-6">
-        <h1 class="text-green-400 font-bold text-xs uppercase tracking-widest">🌐 Mes Liens Éducatifs</h1>
+        <h1 id="mainTitle" class="font-bold text-xs uppercase tracking-widest text-green-400">🌐 Mes Liens Éducatifs</h1>
     </header>
 
     <div class="add-box">
@@ -78,7 +77,7 @@
             <option value="Sciences">🔬 Sciences</option>
             <option value="Autre">🌍 Autre</option>
         </select>
-        <button onclick="addLink()" class="btn-add uppercase tracking-tighter">Ajouter à ma bibliothèque</button>
+        <button id="mainAddBtn" onclick="addLink()" class="btn-add uppercase tracking-tighter">Ajouter à ma bibliothèque</button>
     </div>
 
     <div class="tabs-container" id="tabs">
@@ -102,6 +101,43 @@
 </div>
 
 <script>
+    // --- GESTION DU THÈME ---
+    const themePrefs = JSON.parse(localStorage.getItem('theme_tuiles')) || {};
+    const couleurLiens = themePrefs.liens || 'green';
+
+    function appliquerTheme() {
+        const title = document.getElementById('mainTitle');
+        const btn = document.getElementById('mainAddBtn');
+        
+        if(title) title.className = `font-bold text-xs uppercase tracking-widest text-${couleurLiens}-400`;
+        
+        if(btn) {
+            btn.className = `btn-add uppercase tracking-tighter bg-${couleurLiens}-500 text-white`;
+            if(['yellow', 'lime', 'amber', 'cyan'].includes(couleurLiens)) {
+                btn.classList.add('text-black');
+                btn.classList.remove('text-white');
+            }
+        }
+        // Appliquer aux onglets actifs
+        updateTabColors();
+    }
+
+    function updateTabColors() {
+        const colorClassActive = `bg-${couleurLiens}-500`;
+        const textClassActive = ['yellow', 'lime', 'amber', 'cyan'].includes(couleurLiens) ? 'text-black' : 'text-white';
+        const borderClassActive = `border-${couleurLiens}-500`;
+
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            if (btn.classList.contains('active')) {
+                btn.className = `tab-btn active ${colorClassActive} ${textClassActive} ${borderClassActive}`;
+            } else {
+                btn.className = `tab-btn`;
+                btn.style.backgroundColor = ""; // Reset inline
+            }
+        });
+    }
+
+    // --- LOGIQUE ORIGINALE ---
     let links = JSON.parse(localStorage.getItem('eduLinksList')) || [];
     let currentFilter = 'Tous';
 
@@ -149,6 +185,7 @@
             btn.classList.remove('active');
             if(btn.innerText.includes(cat)) btn.classList.add('active');
         });
+        updateTabColors(); // Mise à jour des couleurs des onglets
         render();
     }
 
@@ -181,6 +218,7 @@
         reader.readAsText(file);
     });
 
+    window.addEventListener('DOMContentLoaded', appliquerTheme);
     render();
 </script>
 </body>

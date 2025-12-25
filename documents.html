@@ -2,118 +2,114 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Mes documents utiles</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Documents - Outils Profs</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+        body { font-family: 'Inter', sans-serif; background: #000; color: #eee; padding: 10px; margin: 0; }
         
-        body { 
-            background-color: #000000; 
-            color: #e0e0e0; 
-            margin: 0; 
-            padding: 12px; 
-            font-family: 'Inter', sans-serif; 
-            overflow-y: auto; 
-            -webkit-overflow-scrolling: touch;
-        }
-
-        .container { 
-            max-width: 450px; 
-            margin: 0 auto; 
-            display: flex; 
-            flex-direction: column;
-        }
-
-        .grid-docs {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            grid-auto-rows: minmax(120px, auto);
-            gap: 12px;
-            margin-bottom: 24px;
-        }
-
         .doc-card { 
-            background: #000000; 
-            border: 1px solid #333; 
-            border-radius: 12px; 
-            overflow: hidden; 
-            display: flex; 
-            flex-direction: column; 
-            transition: transform 0.1s; 
-            cursor: pointer;
+            background: #111; border: 1px solid #222; 
+            border-radius: 1.2rem; padding: 15px; 
+            display: flex; align-items: center; gap: 15px;
+            transition: transform 0.1s;
         }
+        .doc-card:active { transform: scale(0.98); }
         
-        .doc-card:active { transform: scale(0.96); }
-
-        .img-slot {
-            flex-grow: 1;
-            height: 100px;
-            background-color: #18181b;
-            overflow: hidden;
+        .icon-box {
+            width: 45px; height: 45px; border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.5rem;
         }
 
-        footer {
-            padding-bottom: 50px; 
-            margin-top: 0;
-            display: flex;
-            justify-content: center; /* Centre le bouton plus étroit */
+        .nav-btn { 
+            font-weight: 900; border-radius: 50px; font-size: 10px; 
+            padding: 14px; text-align: center; text-transform: uppercase;
+            flex: 1;
         }
     </style>
 </head>
-<body>
-    <div class="container">
-        <header class="text-center py-4">
-            <h1 class="text-pink-300 font-bold text-[10px] uppercase tracking-[0.2em]">Documents & Ressources</h1>
+<body class="pb-24">
+    <div class="max-w-md mx-auto">
+        <header class="my-8 text-center">
+            <h1 id="pageTitle" class="text-2xl font-black uppercase tracking-tighter italic">
+                Documents
+            </h1>
+            <p class="text-zinc-500 text-[10px] font-bold uppercase tracking-widest mt-1">Accès rapide aux ressources</p>
         </header>
 
-        <nav class="grid-docs">
-            <div class="doc-card" onclick="window.location.href='documents_calendrier.html'">
-                <div class="img-slot"><img src="documents_calendrier.jpg" class="w-full h-full"></div>
-                <div class="p-2 text-center bg-[#222222]"><p class="text-[9px] font-bold text-white">Calendrier</p></div>
-            </div>
+        <div class="flex flex-col gap-3 px-2">
+            
+            <a href="#" class="doc-card">
+                <div class="icon-box theme-bg-light">📂</div>
+                <div class="flex-1">
+                    <h2 class="text-sm font-bold text-white">Livret Scolaire (LSU)</h2>
+                    <p class="text-[10px] text-zinc-500 uppercase font-bold">Portail officiel</p>
+                </div>
+                <span class="text-zinc-700">→</span>
+            </a>
 
-            <div class="doc-card" onclick="window.location.href='documents_planning_terrain.html'">
-                <div class="img-slot"><img src="documents_planning_terrain.jpg" class="w-full h-full"></div>
-                <div class="p-2 text-center bg-[#1e1e1e]"><p class="text-[9px] font-bold text-white ">Terrain</p></div>
-            </div>
+            <a href="#" class="doc-card">
+                <div class="icon-box theme-bg-light">📝</div>
+                <div class="flex-1">
+                    <h2 class="text-sm font-bold text-white">Cahier Journal</h2>
+                    <p class="text-[10px] text-zinc-500 uppercase font-bold">Google Drive / Word</p>
+                </div>
+                <span class="text-zinc-700">→</span>
+            </a>
 
-            <div class="doc-card" onclick="window.location.href='documents_planning_francais_ce2.html'">
-                <div class="img-slot"><img src="documents_planning_francais_ce2.jpg" class="w-full h-full"></div>
-                <div class="p-2 text-center bg-[#1e1e1e]"><p class="text-[9px] font-bold text-white ">Français CE2</p></div>
-            </div>
+            <a href="#" class="doc-card">
+                <div class="icon-box theme-bg-light">📅</div>
+                <div class="flex-1">
+                    <h2 class="text-sm font-bold text-white">Emploi du temps</h2>
+                    <p class="text-[10px] text-zinc-500 uppercase font-bold">Format PDF</p>
+                </div>
+                <span class="text-zinc-700">→</span>
+            </a>
 
-            <div class="doc-card" onclick="window.location.href='documents_planning_maths_ce2.html'">
-                <div class="img-slot"><img src="documents_planning_maths_ce2.jpg" class="w-full h-full"></div>
-                <div class="p-2 text-center bg-[#1e1e1e]"><p class="text-[9px] font-bold text-white ">Maths CE2</p></div>
-            </div>
+            <a href="#" class="doc-card">
+                <div class="icon-box theme-bg-light">🛡️</div>
+                <div class="flex-1">
+                    <h2 class="text-sm font-bold text-white">PPMS / Sécurité</h2>
+                    <p class="text-[10px] text-zinc-500 uppercase font-bold">Consignes d'urgence</p>
+                </div>
+                <span class="text-zinc-700">→</span>
+            </a>
 
-            <div class="doc-card" onclick="window.location.href='documents_planning_francais_cm2.html'">
-                <div class="img-slot"><img src="documents_planning_francais_cm2.jpg" class="w-full h-full"></div>
-                <div class="p-2 text-center bg-[#1e1e1e]"><p class="text-[9px] font-bold text-white ">Français CM2</p></div>
-            </div>
+        </div>
 
-            <div class="doc-card" onclick="window.location.href='documents_planning_maths_cm2.html'">
-                <div class="img-slot"><img src="documents_planning_maths_cm2.jpg" class="w-full h-full"></div>
-                <div class="p-2 text-center bg-[#1e1e1e]"><p class="text-[9px] font-bold text-white ">Maths CM2</p></div>
+        <div class="fixed bottom-0 left-0 right-0 p-4 bg-black/80 backdrop-blur-lg border-t border-zinc-900">
+            <div class="max-w-md mx-auto flex gap-4">
+                <a href="index.html" class="nav-btn bg-zinc-900 text-white border border-zinc-800 no-underline flex items-center justify-center gap-2">
+                   <span>←</span> Accueil
+                </a>
+                <button onclick="window.print()" class="nav-btn bg-white text-black shadow-lg">Imprimer</button>
             </div>
-
-            <div class="doc-card" onclick="window.location.href='documents_emploi_du_temps.html'">
-                <div class="img-slot"><img src="documents_emploi_du_temps.jpg" class="w-full h-full"></div>
-                <div class="p-2 text-center bg-[#1e1e1e]"><p class="text-[9px] font-bold text-white ">Emploi du temps</p></div>
-            </div>
-
-            <div class="doc-card" onclick="window.location.href='documents_planning_services.html'">
-                <div class="img-slot"><img src="documents_planning_services.jpg" class="w-full h-full"></div>
-                <div class="p-2 text-center bg-[#1e1e1e]"><p class="text-[9px] font-bold text-white ">Planning des services</p></div>
-            </div>
-        </nav>
-
-        <footer>
-            <button onclick="window.location.href='index.html'" class="w-full max-w-[200px] bg-[#71bd7b] text-green-950 font-bold py-3 rounded-full text-[11px] shadow-lg active:opacity-80">
-                Accueil
-            </button>
-        </footer>
+        </div>
     </div>
+
+    <script>
+        // 1. Gestion du thème dynamique
+        const themePrefs = JSON.parse(localStorage.getItem('theme_tuiles')) || {};
+        const couleurDocs = themePrefs.docs || 'red'; // Rouge par défaut
+
+        function appliquerTheme() {
+            // Couleur du titre
+            const title = document.getElementById('pageTitle');
+            title.classList.add(`text-${couleurDocs}-500`);
+
+            // Couleurs des icônes (fond léger)
+            const iconBoxes = document.querySelectorAll('.theme-bg-light');
+            iconBoxes.forEach(box => {
+                box.classList.add(`bg-${couleurDocs}-900/30`);
+                box.classList.add(`text-${couleurDocs}-400`);
+                box.style.border = `1px solid rgba(var(--tw-color-${couleurDocs}-500), 0.2)`;
+            });
+        }
+
+        // Lancement au chargement
+        window.addEventListener('DOMContentLoaded', appliquerTheme);
+    </script>
 </body>
 </html>

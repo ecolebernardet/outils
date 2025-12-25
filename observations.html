@@ -3,18 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Observations - Style Compteur</title>
+    <title>Observations</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
         :root { --primary: #ff637e; --bg-dark: #000000; }
         body { font-family: 'Inter', sans-serif; background: var(--bg-dark); margin: 0; padding: 10px; min-height: 100vh; color: white; }
         
+        /* TITRE DYNAMIQUE */
+        #mainTitle {
+            text-align: center;
+            font-weight: 800;
+            font-size: 1.1rem;
+            margin: 15px 0 20px 0;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+        }
+
         .columns-container { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; max-width: 500px; margin: 0 auto; }
         
-        /* STYLE CADRE BLANC (COMME COMPTEUR) */
+        /* STYLE CADRE BLANC */
         .student-item { 
-            background-color: #ffffff; /* Fond blanc */
+            background-color: #ffffff; 
             padding: 6px 10px; 
             display: flex; 
             justify-content: space-between; 
@@ -25,7 +35,7 @@
             transition: all 0.1s;
         }
 
-        /* COULEURS DE POLICE PAR GENRE (COMME COMPTEUR) */
+        /* COULEURS DE POLICE PAR GENRE */
         .text-girl { color: #db2777; border-color: #fbcfe8; } 
         .text-boy { color: #2563eb; border-color: #bfdbfe; } 
         
@@ -50,6 +60,8 @@
     </style>
 </head>
 <body>
+
+    <h1 id="mainTitle">Infos concernant les élèves</h1>
 
     <div id="listeContainer" class="columns-container"></div>
 
@@ -79,6 +91,28 @@
         let absentsList = JSON.parse(localStorage.getItem('absentsList')) || [];
         let currentStudentId = "";
 
+        // --- FONCTION DE THÈME ---
+        function appliquerTheme() {
+            const prefs = JSON.parse(localStorage.getItem('theme_tuiles')) || {};
+            const nomCouleur = prefs['obs'] || 'green'; // 'obs' est l'ID dans parametres.html
+
+            const mapCouleurs = {
+                'red': '#ef4444', 'orange': '#f97316', 'amber': '#f59e0b', 'yellow': '#eab308',
+                'lime': '#84cc16', 'green': '#22c55e', 'emerald': '#10b981', 'teal': '#14b8a6',
+                'cyan': '#06b6d4', 'sky': '#0ea5e9', 'blue': '#3b82f6', 'indigo': '#6366f1',
+                'violet': '#8b5cf6', 'purple': '#a855f7', 'fuchsia': '#d946ef', 'pink': '#ec4899',
+                'rose': '#f43f5e', 'slate': '#64748b', 'gray': '#6b7280', 'zinc': '#71717a',
+                'neutral': '#737373', 'stone': '#78716c'
+            };
+
+            const couleurHexa = mapCouleurs[nomCouleur] || '#22c55e';
+            
+            // Appliquer au titre
+            document.getElementById('mainTitle').style.color = couleurHexa;
+            // Appliquer au bouton de sauvegarde de la modal
+            document.documentElement.style.setProperty('--primary', couleurHexa);
+        }
+
         function formatName(str) {
             if(!str) return "";
             const parts = str.trim().split(' ');
@@ -106,7 +140,6 @@
                 const col = document.createElement('div');
                 col.className = "flex flex-col";
                 
-                // TITRES COLORÉS (JAUNE POUR CE2, VERT POUR CM2)
                 const colorTitle = (niv === 'CE2') ? 'text-yellow-400' : 'text-green-500';
                 col.innerHTML = `<h2 class="${colorTitle} text-[12px] font-black uppercase tracking-[0.2em] text-center mb-3">${niv}</h2>`;
                 
@@ -189,7 +222,10 @@
             reader.readAsText(file);
         });
 
-        window.onload = renderList;
+        window.onload = () => {
+            appliquerTheme();
+            renderList();
+        };
     </script>
 </body>
 </html>
