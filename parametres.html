@@ -33,7 +33,7 @@
     <div class="max-w-md mx-auto">
         
         <div class="flex items-center justify-between p-4 bg-black/50 backdrop-blur-md sticky top-0 z-50 border-b border-zinc-900">
-            <a href="index.html" id="btn-retour" class="flex items-center justify-center w-10 h-10 rounded-full transition-all duration-300">
+            <a href="index.html" id="btn-retour" class="flex items-center justify-center w-10 h-10 rounded-full transition-all duration-300 shadow-lg bg-zinc-800 border border-white/10 active:scale-90">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15 19l-7-7 7-7" />
                 </svg>
@@ -50,45 +50,20 @@
 
         <div class="p-4">
             <div id="emploi" class="tab-content active">
-                <div class="card-info">
-                    <h3 id="title-inscr" class="font-black text-xs uppercase mb-2">📌 Inscriptions</h3>
-                    <p class="text-xs text-zinc-400 leading-relaxed">Ajoutez vos élèves un par un. Précisez son prénom et son nom, puis cliquez sur son genre et son niveau avant de l'enregistrer. <br><br> Vous pouvez aussi importer une liste d'un ficher .txt.<br><br> L'appli générera ensuite une liste qui sera utilisée dans les autres rubriques.</p>
-                </div>
-                <div class="card-info">
-                    <h3 id="title-liens" class="font-black text-xs uppercase mb-2">🔗️ Liens</h3>
-                    <p class="text-xs text-zinc-400 leading-relaxed">Lister les sites que vous utilisez souvent pour vous y rendre en un clic.</p>
-                </div>
-                <div class="card-info">
-                    <h3 id="title-h108" class="font-black text-xs uppercase mb-2">⏲️ 108 heures</h3>
-                    <p class="text-xs text-zinc-400 leading-relaxed">Gérez vos 108 heures annuelles (APC, réunions, formation, conseils d'écoles). Exportation et importation possibles.</p>
-                </div>
-                <div class="card-info">
-                    <h3 id="title-memos" class="font-black text-xs uppercase mb-2">📒️ Mémos</h3>
-                    <p class="text-xs text-zinc-400 leading-relaxed">Enregistrez des notes sous forme de pense-bête avec couleurs personnalisables.</p>
-                </div>
-                <div class="card-info">
-                    <h3 id="title-tirage" class="font-black text-xs uppercase mb-2">🎲 Tirage</h3>
-                    <p class="text-xs text-zinc-400 leading-relaxed">Tirez un prénom d'élève au hasard parmi les présents.</p>
-                </div>
-                <div class="card-info">
-                    <h3 id="title-equipes" class="font-black text-xs uppercase mb-2">👥 Équipes</h3>
-                    <p class="text-xs text-zinc-400 leading-relaxed">Générez des groupes mixtes et équilibrés par niveau automatiquement.</p>
-                </div>
-                <div class="card-info">
-                    <h3 id="title-obs" class="font-black text-xs uppercase mb-2">✏️ Observations</h3>
-                    <p class="text-xs text-zinc-400 leading-relaxed">Notez des informations précises sur chaque élève et sauvegardez vos notes.</p>
-                </div>
-                <div class="card-info">
-                    <h3 id="title-compt" class="font-black text-xs uppercase mb-2">🚥 Compteur</h3>
-                    <p class="text-xs text-zinc-400 leading-relaxed">Suivi rapide du comportement. Appui simple = +1. Double appui = -1.</p>
-                </div>
+                <div class="card-info"><h3 id="title-inscr" class="font-black text-xs uppercase mb-2">📌 Inscriptions</h3><p class="text-xs text-zinc-400 leading-relaxed">Ajoutez vos élèves un par un.<br>Précisez son prénom et son nom, puis cliquez sur son genre et son niveau avant de l'enregistrer.<br> Vous pouvez aussi importer votre liste issue d'un fichier .txt dans lequel chaque élève est enregistré sur une ligne différente sous la forme Prénom;NOM;genre(f ou m);niveau(CP ou CE1 ou CE2 ou CM1 ou CM2 ou Autre).<br> Une fois votre liste générée, vous pouvez l'exporter dans un fichier .txt.<br> Cette liste servira dans les autres rubriques.</p></div>
+                <div class="card-info"><h3 id="title-liens" class="font-black text-xs uppercase mb-2">🔗️ Liens</h3><p class="text-xs text-zinc-400 leading-relaxed">Listez les sites que vous utilisez souvent pour vous y rendre en un clic.</p></div>
+                <div class="card-info"><h3 id="title-h108" class="font-black text-xs uppercase mb-2">⏲️ 108 heures</h3><p class="text-xs text-zinc-400 leading-relaxed">Gérez vos 108 heures annuelles. Exportation et importation possibles.</p></div>
+                <div class="card-info"><h3 id="title-memos" class="font-black text-xs uppercase mb-2">📒️ Mémos</h3><p class="text-xs text-zinc-400 leading-relaxed">Enregistrez des notes sous forme de pense-bête avec couleurs personnalisables.</p></div>
+                <div class="card-info"><h3 id="title-tirage" class="font-black text-xs uppercase mb-2">🎲 Tirage</h3><p class="text-xs text-zinc-400 leading-relaxed">Décochez les élèves absents puis tirez un prénom d'élève au hasard parmi les présents.</p></div>
+                <div class="card-info"><h3 id="title-equipes" class="font-black text-xs uppercase mb-2">👥 Équipes</h3><p class="text-xs text-zinc-400 leading-relaxed">Générez des groupes mixtes et équilibrés par niveau automatiquement.</p></div>
+                <div class="card-info"><h3 id="title-obs" class="font-black text-xs uppercase mb-2">✏️ Observations</h3><p class="text-xs text-zinc-400 leading-relaxed">Notez des informations sur chaque élève et sauvegardez vos données.</p></div>
+                <div class="card-info"><h3 id="title-compt" class="font-black text-xs uppercase mb-2">🚥 Compteur</h3><p class="text-xs text-zinc-400 leading-relaxed">Suivi rapide du comportement. Appui simple = +1. Double appui = -1.</p></div>
             </div>
 
             <div id="perso" class="tab-content">
                 <div id="settingsContainer" class="space-y-1"></div>
-                <div class="flex gap-4 mt-6 pb-10">
-                    <button onclick="reinitialiser()" class="btn-nav bg-red-600 text-white flex-1 shadow-lg active:scale-95">RàZ Couleurs</button>
-                    <a href="index.html" class="btn-nav bg-green-600 text-white flex items-center justify-center no-underline shadow-lg flex-1 active:scale-95">Enregistrer</a>
+                <div class="flex mt-6 pb-10">
+                    <a href="index.html" class="btn-nav bg-green-600 text-white flex items-center justify-center no-underline shadow-lg flex-1 active:scale-95">Enregistrer et quitter</a>
                 </div>
             </div>
 
@@ -122,7 +97,6 @@
             evt.currentTarget.classList.add("active");
         }
 
-        // Liste des tuiles sans "documents"
         const tuiles = [
             { id: 'inscr', label: 'Inscriptions', emoji: '📝' },
             { id: 'liens', label: 'Liens', emoji: '🔗' },
@@ -142,16 +116,11 @@
             obs: 'green', compt: 'sky'
         };
 
-        function appliquerCouleursEmploi() {
+        function appliquerCouleursGlobales() {
             const mapping = {
-                'title-inscr': 'inscr',
-                'title-liens': 'liens',
-                'title-h108': 'h108',
-                'title-memos': 'memos',
-                'title-tirage': 'tirage',
-                'title-equipes': 'equipes',
-                'title-obs': 'obs',
-                'title-compt': 'compt'
+                'title-inscr': 'inscr', 'title-liens': 'liens', 'title-h108': 'h108',
+                'title-memos': 'memos', 'title-tirage': 'tirage', 'title-equipes': 'equipes',
+                'title-obs': 'obs', 'title-compt': 'compt'
             };
 
             for (let [elementId, prefId] of Object.entries(mapping)) {
@@ -189,7 +158,7 @@
                 container.appendChild(configDiv);
             });
             
-            appliquerCouleursEmploi();
+            appliquerCouleursGlobales();
         }
 
         function setTileColor(tuileId, couleur) {
@@ -198,12 +167,6 @@
             renderSettings();
         }
 
-        function reinitialiser() {
-            if(confirm("Réinitialiser toutes les couleurs ?")) {
-                localStorage.removeItem('theme_tuiles');
-                location.reload();
-            }
-        }
         renderSettings();
     </script>
 </body>
