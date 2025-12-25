@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Paramètres - Outils Profs</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+        body { font-family: 'Inter', sans-serif; background: #000; color: #eee; padding: 10px; margin: 0; }
+        
+        .color-dot { width: 22px; height: 22px; border-radius: 50%; border: 1.5px solid rgba(255,255,255,0.1); transition: all 0.2s; }
+        .color-dot.active { border-color: white; transform: scale(1.3); box-shadow: 0 0 8px rgba(255,255,255,0.4); }
+        
+        .tile-config { background: #111; border: 1px solid #222; border-radius: 1.2rem; padding: 12px; margin-bottom: 10px; }
+        .btn-nav { font-weight: 900; padding: 14px 4px; border-radius: 50px; font-size: 10px; text-align: center; text-transform: uppercase; transition: transform 0.1s; }
+        .btn-nav:active { transform: scale(0.95); }
+        
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: #000; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
+    </style>
+</head>
+<body class="pb-28">
+    <div class="max-w-md mx-auto relative">
+        
+        <div class="flex items-center justify-between my-6 px-2">
+            <a href="index.html" class="bg-zinc-900 text-white px-4 py-2 rounded-full text-[10px] font-black uppercase border border-zinc-800 flex items-center gap-2">
+                <span>←</span> Retour
+            </a>
+            <h1 class="text-xl font-black uppercase tracking-tighter italic text-white">
+                Paramètres
+            </h1>
+            <div class="w-16"></div> </div>
+
+        <div id="settingsContainer">
+            </div>
+
+        <div class="fixed bottom-0 left-0 right-0 p-4 bg-black/90 backdrop-blur-md border-t border-zinc-900 z-50">
+            <div class="max-w-md mx-auto flex gap-4">
+                <button onclick="reinitialiser()" class="btn-nav bg-zinc-800 text-red-400 border border-red-900/20 flex-1">RàZ Couleurs</button>
+                <a href="index.html" class="btn-nav bg-white text-black flex items-center justify-center no-underline shadow-md flex-1">Enregistrer</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const tuiles = [
+            { id: 'param', label: 'Paramètres', emoji: '⚙️' },
+            { id: 'inscr', label: 'Inscriptions', emoji: '📝' },
+            { id: 'h108', label: '108 Heures', emoji: '⏲️' },
+            { id: 'docs', label: 'Documents', emoji: '📂' },
+            { id: 'liens', label: 'Liens', emoji: '🔗' },
+            { id: 'tirage', label: 'Tirage', emoji: '🎲' },
+            { id: 'equipes', label: 'Équipes', emoji: '👥' },
+            { id: 'notes', label: 'Notes', emoji: '📒' },
+            { id: 'obs', label: 'Observations', emoji: '✏️' },
+            { id: 'compt', label: 'Compteur', emoji: '🚥' }
+        ];
+
+        const couleurs = [
+            'red', 'orange', 'amber', 'yellow', 'lime', 'green', 'emerald', 
+            'teal', 'cyan', 'sky', 'blue', 'indigo', 'violet', 'purple', 
+            'fuchsia', 'pink', 'rose', 'slate', 'gray', 'zinc', 'neutral', 'stone'
+        ];
+
+        let prefs = JSON.parse(localStorage.getItem('theme_tuiles')) || {
+            param: 'stone', inscr: 'lime', h108: 'orange', docs: 'red', 
+            liens: 'indigo', tirage: 'yellow', equipes: 'rose', 
+            notes: 'purple', obs: 'green', compt: 'sky'
+        };
+
+        function renderSettings() {
+            const container = document.getElementById('settingsContainer');
+            container.innerHTML = '';
+
+            tuiles.forEach(tuile => {
+                const configDiv = document.createElement('div');
+                configDiv.className = 'tile-config';
+                
+                const currentColor = prefs[tuile.id];
+                
+                configDiv.innerHTML = `
+                    <div class="flex justify-between items-center mb-4">
+                        <div class="flex items-center gap-2">
+                            <span class="text-lg">${tuile.emoji}</span>
+                            <span class="text-[10px] font-black uppercase tracking-widest text-zinc-300">${tuile.label}</span>
+                        </div>
+                        <span class="text-[9px] font-bold uppercase px-2 py-0.5 rounded bg-zinc-800 text-${currentColor}-400 border border-zinc-700">${currentColor}</span>
+                    </div>
+                    <div class="flex flex-wrap gap-2.5 justify-center">
+                        ${couleurs.map(c => `
+                            <button 
+                                onclick="setTileColor('${tuile.id}', '${c}')" 
+                                class="color-dot bg-${c}-500 ${currentColor === c ? 'active' : ''}">
+                            </button>
+                        `).join('')}
+                    </div>
+                `;
+                container.appendChild(configDiv);
+            });
+        }
+
+        function setTileColor(tuileId, couleur) {
+            prefs[tuileId] = couleur;
+            localStorage.setItem('theme_tuiles', JSON.stringify(prefs));
+            renderSettings();
+        }
+
+        function reinitialiser() {
+            if(confirm("Réinitialiser toutes les couleurs ?")) {
+                localStorage.removeItem('theme_tuiles');
+                location.reload();
+            }
+        }
+
+        renderSettings();
+    </script>
+</body>
+</html>

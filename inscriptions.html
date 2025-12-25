@@ -25,7 +25,7 @@
         }
         .card-input:checked + .card-label { background: var(--theme-main) !important; color: #000 !important; border-color: #fff; }
 
-        /* STYLE CADRE BLANC */
+        /* STYLE CADRE BLANC (TON CODE ORIGINAL) */
         .student-item { 
             background-color: #ffffff !important; 
             padding: 6px 10px; 
@@ -38,11 +38,9 @@
             border: none;
         }
 
-        /* COULEURS DE POLICE PAR GENRE */
-        .text-girl { color: #db2777 !important; } 
-        .text-boy { color: #2563eb !important; }  
+        .text-girl { color: #db2777 !important; } /* Rose */
+        .text-boy { color: #2563eb !important; }  /* Bleu */
         
-        /* Taille réduite pour tenir sur 2 colonnes mobile */
         .student-name { font-weight: 800; font-size: 0.65rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 80%; }
 
         .btn-nav { font-weight: 900; padding: 14px 4px; border-radius: 50px; font-size: 10px; text-align: center; text-transform: uppercase; }
@@ -53,8 +51,8 @@
 </head>
 <body>
     <div class="max-w-4xl mx-auto">
-        <h1 class="text-center text-xl font-black  my-6 tracking-tighter ">
-            Gestion de la liste des élèves inscrits
+        <h1 class="text-center text-xl font-black uppercase my-6 tracking-tighter italic">
+            Gestion des <span class="theme-text-main">Inscriptions</span>
         </h1>
         
         <div class="max-w-md mx-auto bg-zinc-900 border-2 theme-border rounded-[2rem] p-6 mb-10 shadow-2xl">
@@ -82,15 +80,26 @@
     </div>
 
     <script>
-        const themes = {
-            lime: { main: '#bef264', dark: '#365314' },
-            rose: { main: '#fb7185', dark: '#881337' },
-            sky:  { main: '#38bdf8', dark: '#0c4a6e' }
-        };
-        const currentTheme = themes[localStorage.getItem('app_theme') || 'lime'];
-        document.documentElement.style.setProperty('--theme-main', currentTheme.main);
-        document.documentElement.style.setProperty('--theme-dark', currentTheme.dark);
+        // RÉCUPÉRATION DU THÈME DEPUIS LES PARAMÈTRES
+        const prefs = JSON.parse(localStorage.getItem('theme_tuiles')) || { inscr: 'lime' };
+        const selectedColor = prefs.inscr || 'lime';
 
+        // Conversion des noms de couleurs en codes Hexa (ou variables Tailwind)
+        // Note: Pour faire simple et garder ton système, on utilise un petit dictionnaire
+        const colorMap = {
+            red: '#ef4444', orange: '#f97316', amber: '#f59e0b', yellow: '#eab308',
+            lime: '#bef264', green: '#22c55e', emerald: '#10b981', teal: '#14b8a6',
+            cyan: '#06b6d4', sky: '#0ea5e9', blue: '#3b82f6', indigo: '#6366f1',
+            violet: '#8b5cf6', purple: '#a855f7', fuchsia: '#d946ef', pink: '#ec4899',
+            rose: '#f43f5e', slate: '#64748b', gray: '#6b7280', zinc: '#71717a',
+            neutral: '#737373', stone: '#78716c'
+        };
+
+        const mainColor = colorMap[selectedColor] || colorMap.lime;
+        document.documentElement.style.setProperty('--theme-main', mainColor);
+        document.documentElement.style.setProperty('--theme-dark', mainColor + '66'); // Version semi-transparente pour les bords
+
+        // Niveaux (Ton code original)
         const levels = ['CP','CE1','CE2','CM1','CM2','AUTRE'];
         const levelGrid = document.getElementById('levelGrid');
         levels.forEach(l => {
