@@ -1,0 +1,170 @@
+[
+  {
+    "id": 1766615784061,
+    "cat": "APC",
+    "date": "2025-09-26",
+    "minutes": 360,
+    "comm": "Correction évals nationales"
+  },
+  {
+    "id": 1766615831964,
+    "cat": "PEDAGO",
+    "date": "2025-09-02",
+    "minutes": 120,
+    "comm": "CM"
+  },
+  {
+    "id": 1766615851832,
+    "cat": "PEDAGO",
+    "date": "2025-09-09",
+    "minutes": 75,
+    "comm": "CC"
+  },
+  {
+    "id": 1766615893412,
+    "cat": "PEDAGO",
+    "date": "2025-09-11",
+    "minutes": 60,
+    "comm": "Réunion Kezaco Isabelle Mourrier"
+  },
+  {
+    "id": 1766615913056,
+    "cat": "PEDAGO",
+    "date": "2025-09-12",
+    "minutes": 120,
+    "comm": "Réunion de rentrée"
+  },
+  {
+    "id": 1766615936366,
+    "cat": "PEDAGO",
+    "date": "2025-09-16",
+    "minutes": 30,
+    "comm": "CM"
+  },
+  {
+    "id": 1766615986548,
+    "cat": "PEDAGO",
+    "date": "2025-09-22",
+    "minutes": 30,
+    "comm": "Réunion maman Ange classe de mer"
+  },
+  {
+    "id": 1766616005381,
+    "cat": "PEDAGO",
+    "date": "2025-09-23",
+    "minutes": 30,
+    "comm": "CM"
+  },
+  {
+    "id": 1766616027282,
+    "cat": "PEDAGO",
+    "date": "2025-09-25",
+    "minutes": 30,
+    "comm": "rdv maman Ela classe de mer"
+  },
+  {
+    "id": 1766616043917,
+    "cat": "PEDAGO",
+    "date": "2025-09-30",
+    "minutes": 30,
+    "comm": "CM"
+  },
+  {
+    "id": 1766616067774,
+    "cat": "PEDAGO",
+    "date": "2025-09-30",
+    "minutes": 30,
+    "comm": "rdv maman Mayline classe de mer"
+  },
+  {
+    "id": 1766616086966,
+    "cat": "PEDAGO",
+    "date": "2025-10-02",
+    "minutes": 30,
+    "comm": "rdv parents Eden"
+  },
+  {
+    "id": 1766616112991,
+    "cat": "PEDAGO",
+    "date": "2025-10-06",
+    "minutes": 30,
+    "comm": "rdv famille Lautrey et Baabaa classe de mer"
+  },
+  {
+    "id": 1766616130452,
+    "cat": "PEDAGO",
+    "date": "2025-10-14",
+    "minutes": 105,
+    "comm": "CC"
+  },
+  {
+    "id": 1766616151849,
+    "cat": "PEDAGO",
+    "date": "2025-10-16",
+    "minutes": 30,
+    "comm": "rdv parents Maëlys classe de mer"
+  },
+  {
+    "id": 1766616169467,
+    "cat": "PEDAGO",
+    "date": "2025-11-07",
+    "minutes": 120,
+    "comm": "réunion parents classe de mer"
+  },
+  {
+    "id": 1766616191540,
+    "cat": "PEDAGO",
+    "date": "2025-11-10",
+    "minutes": 30,
+    "comm": "EE Mayline"
+  },
+  {
+    "id": 1766616207973,
+    "cat": "PEDAGO",
+    "date": "2025-11-21",
+    "minutes": 60,
+    "comm": "rdn Nolan"
+  },
+  {
+    "id": 1766616248406,
+    "cat": "CONSEIL",
+    "date": "2025-11-06",
+    "minutes": 120,
+    "comm": "CE 1"
+  },
+  {
+    "id": 1766616273374,
+    "cat": "FORM",
+    "date": "2025-10-13",
+    "minutes": 120,
+    "comm": "Constellation maths"
+  },
+  {
+    "id": 1766616294734,
+    "cat": "APC",
+    "date": "2025-11-05",
+    "minutes": 180,
+    "comm": "Constellations maths"
+  },
+  {
+    "id": 1766616318704,
+    "cat": "FORM",
+    "date": "2025-11-04",
+    "minutes": 180,
+    "comm": "RIS"
+  },
+  {
+    "id": 1766616370222,
+    "cat": "PEDAGO",
+    "date": "2025-12-16",
+    "minutes": 45,
+    "comm": "CM"
+  },
+  {
+    "id": 1766616415051,
+    "cat": "PEDAGO",
+    "date": "2025-12-02",
+    "minutes": 60,
+    "comm": "réunion assistantes sociales"
+  }
+]
