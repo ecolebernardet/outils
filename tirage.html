@@ -8,17 +8,10 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
         
-        :root {
-            --primary: #ff637e;
-            --bg: #000000;
-            --text: #ffffff;
-            --card-bg: #222222;
-        }
-
         body {
             font-family: 'Inter', sans-serif;
-            background-color: var(--bg);
-            color: var(--text);
+            background-color: #000;
+            color: #eee;
             margin: 0;
             padding: 10px;
             display: flex;
@@ -26,23 +19,28 @@
             align-items: center;
         }
 
+        /* STYLE ISSU DE 108H */
+        .light-card { background: #e5e7eb; color: #111827; border-radius: 1.5rem; width: 100%; max-width: 400px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); text-align: center; margin-bottom: 20px; }
+        
+        .result-box { 
+            background: #ffffff; 
+            border: 1px solid #9ca3af; 
+            color: #111827; 
+            border-radius: 0.75rem; 
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 12px;
+            font-size: 1.4rem;
+            font-weight: 800;
+        }
+
         .bg-m { background: #dbeafe; color: #1e3a8a; } 
         .bg-f { background: #fce7f3; color: #831843; } 
         
-        .level-section { 
-            width: 100%;
-            margin-bottom: 20px;
-        }
-
-        .level-title {
-            text-align: center;
-            font-size: 10px;
-            font-weight: 900;
-            color: #555;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            margin-bottom: 10px;
-        }
+        .level-section { width: 100%; margin-bottom: 20px; }
+        .level-title { text-align: center; font-size: 10px; font-weight: 900; color: #555; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 10px; }
 
         .student-grid {
             display: grid;
@@ -74,46 +72,21 @@
             border-color: #333;
         }
 
-        .card {
-            background: var(--card-bg);
-            width: 100%;
-            max-width: 400px;
-            border-radius: 2rem;
-            padding: 15px;
-            text-align: center;
-            margin-bottom: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-        }
-
-        #result-container {
-            height: 60px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: #ffffff;
-            border-radius: 50px;
-            margin-bottom: 15px;
-            border: 2px solid #333;
-        }
-
-        #result-display {
-            font-size: 1.4rem;
-            font-weight: 800;
-        }
-
         .main-btn {
             width: 100%;
-            padding: 14px;
+            padding: 12px;
             font-size: 10px;
             font-weight: 800;
             border-radius: 50px;
             text-transform: uppercase;
             border: none;
             cursor: pointer;
+            transition: transform 0.1s;
         }
+        .main-btn:active { transform: scale(0.95); }
 
         .btn-nav { font-weight: 800; padding: 14px; border-radius: 50px; font-size: 9px; cursor: pointer; border: none; flex: 1; }
-        .stats { margin-top: 8px; font-size: 0.6rem; color: #aaa; text-transform: uppercase; font-weight: 600; }
+        .stats { margin-top: 8px; font-size: 0.6rem; color: #666; text-transform: uppercase; font-weight: 800; }
     </style>
 </head>
 <body>
@@ -124,16 +97,14 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15 19l-7-7 7-7" />
             </svg>
         </a>
-        <h1 id="page-title" class="font-bold text-xs tracking-widest">
-            Tirage au sort d'un prénom
+        <h1 id="page-title" class="font-black text-xs tracking-widest uppercase">
+            Tirage au sort
         </h1>
         <div class="w-10"></div> 
     </div>
 
-    <div class="card">
-        <div id="result-container">
-            <div id="result-display">PRÊT</div>
-        </div>
+    <div class="light-card">
+        <div class="result-box" id="result-display">PRÊT</div>
         <button id="draw-btn" class="main-btn" onclick="drawName()">Tirer un prénom</button>
         <div class="stats" id="counter">--</div>
     </div>
@@ -142,12 +113,11 @@
         <div id="listeContainer"></div>
 
         <div class="max-w-md mx-auto flex gap-3 mt-8 mb-10">
-            <button class="btn-nav bg-red-500 text-rose-100 w-full" onclick="resetDrawing()">RàZ Tirage</button>
+            <button class="btn-nav bg-red-600 text-white w-full uppercase" onclick="resetDrawing()">RàZ Tirage</button>
         </div>
     </div>
 
     <script>
-        // --- GESTION DU THÈME DYNAMIQUE ---
         const themePrefs = JSON.parse(localStorage.getItem('theme_tuiles')) || {};
         const couleurTirage = themePrefs.tirage || 'pink';
 
@@ -157,29 +127,24 @@
             const display = document.getElementById('result-display');
             const btnRetour = document.getElementById('btn-retour');
 
-            // Couleur du titre
-            title.classList.add(`text-${couleurTirage}-400`);
+            title.classList.add(`text-${couleurTirage}-500`);
 
-            // Application au bouton Retour Iconique
             if (btnRetour) {
-                btnRetour.classList.add(`bg-${couleurTirage}-600`);
-                btnRetour.classList.add(`border`, `border-${couleurTirage}-400/30`);
+                btnRetour.classList.add(`bg-${couleurTirage}-600`, `border`, `border-${couleurTirage}-400/30`);
             }
 
-            // Couleur du bouton Tirer
-            btn.classList.add(`bg-${couleurTirage}-500`);
-            
+            // Style du bouton comme sur 108h
+            btn.classList.add(`bg-${couleurTirage}-600`);
             if(['yellow', 'lime', 'amber', 'cyan'].includes(couleurTirage)) {
                 btn.classList.add('text-black');
             } else {
                 btn.classList.add('text-white');
             }
 
-            // Couleur du prénom tiré
-            display.classList.add(`text-${couleurTirage}-500`);
+            // Couleur du texte du gagnant
+            display.classList.add(`text-${couleurTirage}-600`);
         }
 
-        // --- LOGIQUE DE TIRAGE ---
         function formatName(fullName) {
             const parts = fullName.trim().split(" ");
             return parts[0].charAt(0).toUpperCase() + parts[0].slice(1).toLowerCase();
@@ -205,7 +170,7 @@
 
             const nomsNiveaux = Object.keys(groupes).sort();
 
-            niveauxElements = nomsNiveaux.forEach(niv => {
+            nomsNiveaux.forEach(niv => {
                 const section = document.createElement('div');
                 section.className = "level-section";
                 section.innerHTML = `<div class="level-title">${niv}</div>`;

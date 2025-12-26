@@ -24,14 +24,22 @@
         .card-input:checked + .card-label { background: #111827; border-color: #111827; color: #fff; transform: scale(0.98); }
 
         /* DEUX COLONNES MOBILE */
-        .level-column { background: #f3f4f6; color: #111827; border-radius: 1.2rem; padding: 10px; border: 1px solid #ffffff; display: flex; flex-direction: column; }
+        .level-column { 
+            background: #f3f4f6; color: #111827; border-radius: 1.2rem; 
+            padding: 10px; border: 1px solid #ffffff; 
+            display: flex; flex-direction: column; 
+            justify-content: flex-start;
+            align-self: start;
+        }
         
         .progress-container { width: 100%; background: #d1d5db; height: 7px; border-radius: 10px; margin: 6px 0; overflow: hidden; }
         .progress-bar { height: 100%; transition: width 0.5s ease-in-out; }
 
         .reunion-item { 
             background: #ffffff; padding: 6px; border-radius: 0.6rem; 
-            margin-bottom: 5px; border-left: 3px solid #db2777;
+            margin-bottom: 5px; 
+            /* La bordure gauche est maintenant gérée via JS pour la couleur */
+            border-left-width: 3px;
             box-shadow: 0 1px 2px rgba(0,0,0,0.05); font-size: 0.6rem;
         }
 
@@ -49,7 +57,7 @@
         .toggle-list-btn {
             width: 100%; font-size: 7px; font-weight: 800; text-transform: uppercase;
             color: #4b5563; padding: 5px; border: 1px dashed #9ca3af;
-            border-radius: 0.5rem; margin-top: auto;
+            border-radius: 0.5rem; margin-top: 4px;
         }
 
         .hidden-list { display: none; margin-top: 8px; }
@@ -85,7 +93,7 @@
                     </div>
                 </div>
                 <input type="text" id="comm" placeholder="Commentaire..." class="input-field">
-                <button type="submit" class="bg-indigo-600 text-white font-black py-2 rounded-full uppercase text-[10px] active:scale-95 transition-transform">Enregistrer</button>
+                <button type="submit" id="submitBtn" class="bg-indigo-600 text-white font-black py-2 rounded-full uppercase text-[10px] active:scale-95 transition-transform">Enregistrer</button>
             </form>
         </div>
 
@@ -103,11 +111,11 @@
             </div>
         </div>
 
-        <div id="displayContainer" class="grid grid-cols-2 gap-3"></div>
+        <div id="displayContainer" class="grid grid-cols-2 gap-3 items-start"></div>
 
         <footer class="bottom-nav">
-            <button onclick="exportData()" class="nav-btn bg-zinc-800 text-white flex-1">👆exporter .txt👆</button>
-            <label class="nav-btn bg-zinc-800 text-white cursor-pointer text-center flex-1">
+            <button onclick="exportData()" class="nav-btn bg-neutral-800 text-white flex-1">👆exporter .txt👆</button>
+            <label class="nav-btn bg-neutral-800 text-white cursor-pointer text-center flex-1">
                 👇importer .yxy👇
                 <input type="file" id="importFile" class="hidden" accept=".txt">
             </label>
@@ -124,30 +132,29 @@
     const LABELS = { "APC": "APC", "PEDAGO": "Réunions", "FORM": "Formation", "CONSEIL": "Conseils d'école" };
 
     let reunions = JSON.parse(localStorage.getItem('mesHeuresReu')) || [];
+    let editId = null; 
 
     window.addEventListener('DOMContentLoaded', () => {
         const titrePage = document.querySelector('h1');
-        if (titrePage) {
-            titrePage.classList.add(`text-${couleurH108}-500`);
-        }
+        if (titrePage) titrePage.classList.add(`text-${couleurH108}-500`);
 
-        // Application au bouton Retour Iconique
         const btnRetour = document.getElementById('btn-retour');
         if (btnRetour) {
-            btnRetour.classList.add(`bg-${couleurH108}-600`);
-            btnRetour.classList.add(`border`, `border-${couleurH108}-400/30`);
+            btnRetour.classList.add(`bg-${couleurH108}-600`, `border`, `border-${couleurH108}-400/30`);
         }
 
-        const btnEnregistrer = document.querySelector('#heuresForm button[type="submit"]');
+        updateSubmitButtonStyle();
+    });
+
+    function updateSubmitButtonStyle() {
+        const btnEnregistrer = document.getElementById('submitBtn');
         if (btnEnregistrer) {
-            btnEnregistrer.classList.remove('bg-indigo-600');
-            btnEnregistrer.classList.add(`bg-${couleurH108}-600`);
-            
+            btnEnregistrer.className = `bg-${couleurH108}-600 text-white font-black py-2 rounded-full uppercase text-[10px] active:scale-95 transition-transform w-full`;
             if(['yellow', 'lime', 'amber', 'cyan'].includes(couleurH108)) {
                 btnEnregistrer.classList.replace('text-white', 'text-black');
             }
         }
-    });
+    }
 
     document.getElementById('heuresForm').addEventListener('submit', (e) => {
         e.preventDefault();
@@ -156,9 +163,35 @@
         const h = parseInt(document.getElementById('h').value) || 0;
         const m = parseInt(document.getElementById('m').value) || 0;
         const comm = document.getElementById('comm').value.trim();
-        reunions.push({ id: Date.now(), cat, date, minutes: (h * 60) + m, comm });
-        sauvegarder(); e.target.reset(); initDate();
+        const minutes = (h * 60) + m;
+
+        if (editId) {
+            reunions = reunions.map(r => r.id === editId ? { ...r, cat, date, minutes, comm } : r);
+            editId = null;
+            document.getElementById('submitBtn').innerText = "Enregistrer";
+        } else {
+            reunions.push({ id: Date.now(), cat, date, minutes, comm });
+        }
+        
+        sauvegarder(); 
+        e.target.reset(); 
+        initDate();
     });
+
+    function chargerPourEdition(id) {
+        const r = reunions.find(item => item.id === id);
+        if (!r) return;
+
+        document.querySelector(`input[name="cat"][value="${r.cat}"]`).checked = true;
+        document.getElementById('dateReu').value = r.date;
+        document.getElementById('h').value = Math.floor(r.minutes / 60);
+        document.getElementById('m').value = r.minutes % 60;
+        document.getElementById('comm').value = r.comm;
+
+        editId = id;
+        document.getElementById('submitBtn').innerText = "Mettre à jour";
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
 
     function formatDuree(totalMinutes) {
         const h = Math.floor(Math.abs(totalMinutes) / 60);
@@ -167,7 +200,14 @@
     }
 
     function sauvegarder() { localStorage.setItem('mesHeuresReu', JSON.stringify(reunions)); render(); }
-    function supprimer(id) { if(confirm("Supprimer ?")) { reunions = reunions.filter(r => r.id !== id); sauvegarder(); } }
+    
+    function supprimer(id) { 
+        if(confirm("Supprimer ?")) { 
+            reunions = reunions.filter(r => r.id !== id); 
+            if(editId === id) { editId = null; document.getElementById('heuresForm').reset(); document.getElementById('submitBtn').innerText = "Enregistrer"; }
+            sauvegarder(); 
+        } 
+    }
 
     function toggleListe(catKey) {
         const listDiv = document.getElementById(`list-${catKey}`);
@@ -195,7 +235,6 @@
             
             const col = document.createElement('div');
             col.className = "level-column";
-            
             let colorBar = restant <= 0 ? "bg-green-600" : `bg-${couleurH108}-600`;
 
             col.innerHTML = `
@@ -215,13 +254,13 @@
             reuCat.sort((a,b) => new Date(b.date) - new Date(a.date)).forEach(r => {
                 const dateFmt = new Date(r.date).toLocaleDateString('fr-FR', {day:'2-digit', month:'2-digit'});
                 listDiv.innerHTML += `
-                    <div class="reunion-item flex justify-between items-start">
-                        <div class="flex-1 overflow-hidden">
-                            <span class="font-black text-pink-700">${dateFmt}</span> - 
+                    <div class="reunion-item flex justify-between items-start border-${couleurH108}-600">
+                        <div class="flex-1 overflow-hidden cursor-pointer" onclick="chargerPourEdition(${r.id})">
+                            <span class="font-black text-${couleurH108}-700">${dateFmt}</span> - 
                             <span class="font-bold text-gray-900">${formatDuree(r.minutes)}</span>
                             <div class="text-gray-500 italic truncate">${r.comm || ''}</div>
                         </div>
-                        <button onclick="supprimer(${r.id})" class="text-gray-400 font-black ml-1 text-sm leading-none">&times;</button>
+                        <button onclick="supprimer(${r.id}); event.stopPropagation();" class="text-gray-400 font-black ml-1 text-sm leading-none">&times;</button>
                     </div>`;
             });
             container.appendChild(col);
@@ -230,8 +269,6 @@
         const globalReste = TOTAL_ANNUEL - minutesGlobales;
         const globalPercent = Math.min((minutesGlobales / TOTAL_ANNUEL) * 100, 100);
         
-        const statsCard = document.getElementById('globalStats');
-        statsCard.querySelector('span.text-indigo-700, span[class*="text-"]').className = `text-[10px] font-black uppercase tracking-widest text-${couleurH108}-700`;
         document.getElementById('globalReste').className = `text-[10px] font-black text-${couleurH108}-900`;
         document.getElementById('globalPercent').className = `text-${couleurH108}-700`;
 
