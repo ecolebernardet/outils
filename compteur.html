@@ -80,7 +80,7 @@
         .text-boy { color: #2563eb; }  
 
         .bottom-nav {
-            display: flex; gap: 10px; width: 100%; max-width: 400px;
+            display: flex; gap: 10px; width: 100%; max-width: 300px;
             margin: 25px auto 0 auto; padding-bottom: 60px;
         }
         
@@ -117,8 +117,8 @@
         </main>
 
         <div class="bottom-nav">
-            <button id="reset-button" class="nav-btn bg-red-600 text-white shadow-lg active:scale-95 uppercase">
-                Réinitialiser (RàZ)
+            <button id="reset-button" class="nav-btn bg-red-500 text-red-50 shadow-lg active:scale-95 ">
+                RàZ
             </button>
         </div>
     </div>
@@ -152,9 +152,8 @@
         function formatNameDisplay(fullName) {
             const parts = fullName.trim().split(' ');
             if (parts.length === 0) return "";
-            const firstName = parts[0].charAt(0).toUpperCase() + parts[0].slice(1).toLowerCase();
-            const lastName = parts.slice(1).join(' ').toUpperCase();
-            return `${firstName} ${lastName}`;
+            // Ne retourne que le prénom formaté
+            return parts[0].charAt(0).toUpperCase() + parts[0].slice(1).toLowerCase();
         }
 
         const saveState = () => {
