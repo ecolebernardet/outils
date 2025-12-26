@@ -3,108 +3,135 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Mes Liens Éducatifs</title>
+    <title>Mes Liens</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
-        :root { --primary: #4ade80; --bg-dark: #121212; --card-bg: #1e1e1e; --text-light: #e0e0e0; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
         
         body { 
             font-family: 'Inter', sans-serif; 
-            background: var(--bg-dark); 
-            color: var(--text-light); 
-            margin: 0; padding: 12px; box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
+            background: #000; 
+            color: #eee; 
+            margin: 0; padding: 8px; 
+            display: flex;
+            flex-direction: column;
+            align-items: center; /* Centre tout le contenu horizontalement */
         }
-        .container { max-width: 600px; margin: 0 auto; }
 
-        /* Onglets */
-        .tabs-container { 
-            display: flex; gap: 8px; overflow-x: auto; 
-            padding-bottom: 12px; margin-bottom: 16px;
-            scrollbar-width: none;
+        .main-wrapper {
+            width: 100%;
+            max-width: 450px; /* Largeur max pour garder l'aspect mobile centré */
         }
-		
-        .tabs-container::-webkit-scrollbar { display: none; }
+
+        /* FORMULAIRE */
+        .light-card { 
+            background: #e5e7eb; 
+            color: #111827; 
+            border-radius: 1.2rem; 
+            padding: 12px; 
+            margin-bottom: 12px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        .input-field { 
+            background: #ffffff; 
+            border: 1px solid #9ca3af; 
+            border-radius: 0.6rem; 
+            padding: 8px; 
+            font-size: 0.75rem; 
+            font-weight: 600; 
+            width: 100%;
+            margin-bottom: 6px;
+            color: #111827;
+        }
+
+        /* GRILLE DE LIENS CENTRÉE */
+        #linksList {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            justify-content: center; /* Centre les colonnes entre elles */
+            width: 100%;
+        }
+
+        .link-item {
+            background: #f3f4f6; 
+            border-radius: 0.8rem; 
+            padding: 8px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center;
+            width: 100%; /* S'assure que les deux colonnes sont égales */
+        }
+
+        .link-info { flex: 1; cursor: pointer; overflow: hidden; }
+        .link-name { font-weight: 800; font-size: 10px; display: block; color: #111827; text-transform: uppercase; line-height: 1.1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .link-url { font-size: 8px; color: #6b7280; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+        .btn-add { width: 100%; padding: 10px; border-radius: 50px; font-weight: 900; font-size: 9px; text-transform: uppercase; }
         
+        .btn-del { color: #9ca3af; font-size: 16px; padding-left: 5px; cursor: pointer; font-weight: 900; }
+
+        /* ONGLETS */
+        .tabs-container { 
+            display: flex; gap: 5px; overflow-x: auto; 
+            padding-bottom: 8px; margin-bottom: 12px;
+            scrollbar-width: none;
+            justify-content: center; /* Centre les onglets si assez de place */
+        }
         .tab-btn {
             background: #282828; border: 1px solid #3a3a3a;
-            color: #888; padding: 8px 16px; border-radius: 20px;
-            font-size: 11px; font-weight: 600; white-space: nowrap; cursor: pointer;
+            color: #888; padding: 6px 12px; border-radius: 20px;
+            font-size: 9px; font-weight: 800; white-space: nowrap; text-transform: uppercase;
         }
 
-        /* Liste des liens */
-        .link-item {
-            background: var(--card-bg); border: 1px solid #333;
-            border-radius: 12px; padding: 12px; margin-bottom: 8px;
-            display: flex; justify-content: space-between; align-items: center;
-        }
-        .link-info { flex: 1; cursor: pointer; }
-        .link-name { font-weight: 700; font-size: 14px; display: block; color: #fff; }
-        .link-url { font-size: 11px; color: #666; display: block; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-
-        /* Formulaire */
-        .add-box { 
-            background: #282828; border-radius: 12px; padding: 15px; 
-            margin-bottom: 20px; border: 1px solid #3a3a3a; box-shadow: 0 4px 15px rgba(0,0,0,0.4);
-        }
-        .add-box input, .add-box select {
-            width: 100%; background: #1a1a1a; border: 1px solid #444;
-            color: white; padding: 10px; border-radius: 8px;
-            margin-bottom: 10px; font-size: 14px; outline: none;
-        }
-        .btn-add { color: #064e3b; width: 100%; padding: 12px; border-radius: 8px; font-weight: bold; font-size: 12px; }
-        
-        .btn-del { color: #ff5a5a; font-size: 20px; padding-left: 15px; cursor: pointer; font-weight: bold; }
-
-        .bottom-nav { width: 100%; max-width: 500px; margin: 25px auto 0; padding-bottom: 40px; display: flex; gap: 8px; }
-        .nav-btn { font-weight: 900; border-radius: 50px; font-size: 10px; padding: 12px; border: none; flex: 1; display: flex; align-items: center; justify-content: center; gap: 5px; cursor: pointer; }
+        .bottom-nav { width: 100%; display: flex; gap: 6px; margin-top: 20px; padding-bottom: 30px; }
+        .nav-btn { font-weight: 900; border-radius: 50px; font-size: 8px; padding: 10px; flex: 1; text-align: center; text-transform: uppercase; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <div class="flex items-center justify-between py-2 mb-4">
-        <a href="index.html" id="btn-retour" class="flex items-center justify-center w-10 h-10 rounded-full transition-all duration-300">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+<div class="main-wrapper">
+    <div class="flex items-center justify-between py-2 mb-1 px-2">
+        <a href="index.html" id="btn-retour" class="flex items-center justify-center w-8 h-8 rounded-full transition-all duration-300">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15 19l-7-7 7-7" />
             </svg>
         </a>
-        <h1 id="mainTitle" class="font-black text-2xl tracking-widest">Liens</h1>
-        <div class="w-10"></div> 
+        <h1 id="mainTitle" class="font-black text-xs tracking-widest uppercase">Liens</h1>
+        <div class="w-8"></div> 
     </div>
 
-    <div class="add-box">
-        <input type="text" id="linkName" placeholder="Nom du site (ex: Vikidia)">
-        <input type="text" id="linkUrl" placeholder="Adresse URL (https://...)">
-        <select id="linkCat">
-            <option value="Ressources">📚 Ressources pédagogiques</option>
+    <div class="light-card">
+        <input type="text" id="linkName" class="input-field" placeholder="Nom du site...">
+        <input type="text" id="linkUrl" class="input-field" placeholder="URL (https://...)">
+        <select id="linkCat" class="input-field">
+            <option value="Ressources">📚 Ressources</option>
             <option value="Institutionnel">🔢 Institutionnel</option>
             <option value="Autre">🌍 Autre</option>
         </select>
-        <button id="mainAddBtn" onclick="addLink()" class="btn-add uppercase tracking-tighter">Ajouter à ma bibliothèque</button>
+        <button id="mainAddBtn" onclick="addLink()" class="btn-add mt-1">Ajouter</button>
     </div>
 
     <div class="tabs-container" id="tabs">
         <button class="tab-btn active" onclick="filterCat('Tous')">Tous</button>
         <button class="tab-btn" onclick="filterCat('Ressources')">Ressources</button>
-        <button class="tab-btn" onclick="filterCat('Institutionnel')">Institutionnel</button>
+        <button class="tab-btn" onclick="filterCat('Institutionnel')">Instit.</button>
         <button class="tab-btn" onclick="filterCat('Autre')">Autre</button>
     </div>
 
-    <div id="linksList" class="mb-6"></div>
+    <div id="linksList"></div>
 
     <footer class="bottom-nav">
-        <button onclick="exportData()" class="nav-btn bg-zinc-800 text-white flex-1">👆exporter .txt👆</button>
-        <label class="nav-btn bg-zinc-800 text-white cursor-pointer flex-1 text-center">
-            👇importer .txt👇
+        <button onclick="exportData()" class="nav-btn bg-zinc-800 text-white">Exporter .txt</button>
+        <label class="nav-btn bg-zinc-800 text-white cursor-pointer">
+            Importer .txt
             <input type="file" id="importFile" class="hidden" accept=".txt">
         </label>
     </footer>
 </div>
 
 <script>
-    // --- GESTION DU THÈME ---
     const themePrefs = JSON.parse(localStorage.getItem('theme_tuiles')) || {};
     const couleurLiens = themePrefs.liens || 'green';
 
@@ -113,40 +140,25 @@
         const btn = document.getElementById('mainAddBtn');
         const btnRetour = document.getElementById('btn-retour');
         
-        if(title) title.className = `font-bold text-xs uppercase tracking-widest text-${couleurLiens}-400`;
-        
-        if(btnRetour) {
-            btnRetour.classList.add(`bg-${couleurLiens}-600`);
-            btnRetour.classList.add(`border`, `border-${couleurLiens}-400/30`);
-        }
-
-        if(btn) {
-            btn.className = `btn-add uppercase tracking-tighter bg-${couleurLiens}-500 text-white`;
-            if(['yellow', 'lime', 'amber', 'cyan'].includes(couleurLiens)) {
-                btn.classList.add('text-black');
-                btn.classList.remove('text-white');
-            }
-        }
-        // Appliquer aux onglets actifs
+        title.classList.add(`text-${couleurLiens}-500`);
+        btnRetour.classList.add(`bg-${couleurLiens}-600`, `border`, `border-${couleurLiens}-400/30`);
+        btn.classList.add(`bg-${couleurLiens}-600`, `text-white`);
+        if(['yellow', 'lime', 'amber', 'cyan'].includes(couleurLiens)) btn.classList.replace('text-white', 'text-black');
         updateTabColors();
     }
 
     function updateTabColors() {
-        const colorClassActive = `bg-${couleurLiens}-500`;
-        const textClassActive = ['yellow', 'lime', 'amber', 'cyan'].includes(couleurLiens) ? 'text-black' : 'text-white';
-        const borderClassActive = `border-${couleurLiens}-500`;
-
+        const activeClass = `bg-${couleurLiens}-600`;
+        const activeText = ['yellow', 'lime', 'amber', 'cyan'].includes(couleurLiens) ? 'text-black' : 'text-white';
         document.querySelectorAll('.tab-btn').forEach(btn => {
             if (btn.classList.contains('active')) {
-                btn.className = `tab-btn active ${colorClassActive} ${textClassActive} ${borderClassActive}`;
+                btn.className = `tab-btn active ${activeClass} ${activeText} border-none`;
             } else {
                 btn.className = `tab-btn`;
-                btn.style.backgroundColor = ""; 
             }
         });
     }
 
-    // --- LOGIQUE ORIGINALE ---
     let links = JSON.parse(localStorage.getItem('eduLinksList')) || [];
     let currentFilter = 'Tous';
 
@@ -155,15 +167,16 @@
         listDiv.innerHTML = '';
         const filtered = currentFilter === 'Tous' ? links : links.filter(l => l.cat === currentFilter);
 
-        filtered.forEach((link, index) => {
+        filtered.forEach((link) => {
             const item = document.createElement('div');
-            item.className = 'link-item shadow-sm';
+            item.className = 'link-item';
+            const realIndex = links.indexOf(link);
             item.innerHTML = `
                 <div class="link-info" onclick="window.open('${link.url}', '_blank')">
-                    <span class="link-name">${link.name}</span>
+                    <span class="link-name text-${couleurLiens}-700">${link.name}</span>
                     <span class="link-url">${link.url}</span>
                 </div>
-                <div class="btn-del" onclick="deleteLink(${index})">×</div>
+                <div class="btn-del" onclick="deleteLink(${realIndex})">×</div>
             `;
             listDiv.appendChild(item);
         });
@@ -175,16 +188,18 @@
         const cat = document.getElementById('linkCat').value;
         if (name && url) {
             links.unshift({ name, url, cat });
-            save();
+            localStorage.setItem('eduLinksList', JSON.stringify(links));
             document.getElementById('linkName').value = '';
             document.getElementById('linkUrl').value = '';
+            render();
         }
     }
 
     function deleteLink(index) {
-        if(confirm("Supprimer ce lien ?")) {
+        if(confirm("Supprimer ?")) {
             links.splice(index, 1);
-            save();
+            localStorage.setItem('eduLinksList', JSON.stringify(links));
+            render();
         }
     }
 
@@ -192,14 +207,9 @@
         currentFilter = cat;
         document.querySelectorAll('.tab-btn').forEach(btn => {
             btn.classList.remove('active');
-            if(btn.innerText.includes(cat)) btn.classList.add('active');
+            if(btn.innerText.toLowerCase().includes(cat.toLowerCase().substring(0,4))) btn.classList.add('active');
         });
         updateTabColors(); 
-        render();
-    }
-
-    function save() {
-        localStorage.setItem('eduLinksList', JSON.stringify(links));
         render();
     }
 
@@ -207,7 +217,7 @@
         const blob = new Blob([JSON.stringify(links, null, 2)], { type: 'text/plain' });
         const a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
-        a.download = `mes_liens_${new Date().toISOString().split('T')[0]}.txt`;
+        a.download = `liens.txt`;
         a.click();
     }
 
@@ -218,17 +228,13 @@
         reader.onload = function(e) {
             try {
                 const data = JSON.parse(e.target.result);
-                if (Array.isArray(data) && confirm("Importer ces liens ? (écrase la liste actuelle)")) {
-                    links = data;
-                    save();
-                }
-            } catch (err) { alert("Fichier invalide."); }
+                if (Array.isArray(data)) { links = data; localStorage.setItem('eduLinksList', JSON.stringify(links)); render(); }
+            } catch (err) { alert("Erreur."); }
         };
         reader.readAsText(file);
     });
 
-    window.addEventListener('DOMContentLoaded', appliquerTheme);
-    render();
+    window.onload = () => { appliquerTheme(); render(); };
 </script>
 </body>
 </html>
