@@ -63,7 +63,7 @@
                 <button type="submit" id="btn-submit" class="font-black py-3 rounded-full uppercase text-xs active:scale-95 transition-transform mt-1">Enregistrer</button>
 
                 <div class="pt-3 border-t border-zinc-800 text-center">
-                    <label id="label-import" class="text-[8px] font-bold uppercase block mb-1">Importer .txt (Prénom;NOM;sexe;niveau)</label>
+                    <label id="label-import" class="text-[9px] font-bold  block mb-1">Importer un fichier .txt (Prénom;NOM;sexe;niveau)</label>
                     <input type="file" id="fileInput" accept=".txt,.csv" class="text-[9px] text-zinc-600">
                 </div>
             </form>
@@ -72,7 +72,7 @@
         <div id="listeContainer"></div>
 
         <div class="max-w-md mx-auto flex gap-4 mt-6 mb-10">
-            <button onclick="toutEffacer()" class="btn-nav bg-red-600/20 text-red-500 border border-red-900/50 text-[9px] uppercase">RàZ de la liste</button>
+            <button onclick="toutEffacer()" class="btn-nav bg-red-500 text-red-50 text-[9px] uppercase">RàZ de la liste</button>
         </div>
     </div>
 
@@ -181,7 +181,7 @@
                 const textColClass = `text-${couleurInscr}-500`;
                 
                 col.innerHTML = `
-                    <h3 class="text-[9px] font-black uppercase mb-3 text-center tracking-widest pb-1 border-b border-zinc-800/50 ${textColClass}">
+                    <h3 class="text-[11px] font-black uppercase mb-1 text-center tracking-widest pb-1 ${textColClass}">
                         ${niv} — ${groupes[niv].length}
                     </h3>`;
                 
@@ -189,7 +189,7 @@
                 groupes[niv].sort((a,b) => a.identite.localeCompare(b.identite)).forEach(el => {
                     list.innerHTML += `
                         <div class="student-item">
-                            <span class="text-[10px] font-bold truncate pr-2 text-${el.sexe}">${el.identite}</span>
+                            <span class="text-[9px] font-bold truncate pr-2 text-${el.sexe}">${el.identite}</span>
                             <button onclick="supprimer(${el.id})" class="opacity-40 hover:opacity-100 transition-opacity p-1 text-zinc-400">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
