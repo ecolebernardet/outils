@@ -21,10 +21,11 @@
 
         .level-column { background: rgba(24, 24, 27, 0.6); border: none; border-radius: 1.5rem; padding: 12px; height: fit-content; }
 
-        .bg-m { background: #dbeafe; color: #1e3a8a; } 
-        .bg-f { background: #fce7f3; color: #831843; } 
+        /* Couleurs de police pour les prénoms */
+        .text-m { color: #2563eb; } 
+        .text-f { color: #db2777; } 
         
-        .student-item { padding: 8px 12px; border-radius: 1rem; display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+        .student-item { background: #fff; padding: 8px 12px; border-radius: 1rem; display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
         .btn-nav { font-weight: 800; padding: 14px 4px; border-radius: 50px; font-size: 10px; text-align: center; border: none; cursor: pointer; flex: 1; }
     </style>
 </head>
@@ -32,12 +33,12 @@
     <div class="max-w-4xl mx-auto">
         
         <div class="flex items-center justify-between py-4 mb-2">
-            <a href="index.html" id="btn-retour" class="flex items-center justify-center w-10 h-10 rounded-full transition-all duration-300">
+            <a href="index.html" id="btn-retour" class="flex items-center justify-center w-10 h-10 rounded-full transition-all duration-300 shadow-lg">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15 19l-7-7 7-7" />
                 </svg>
             </a>
-            <h1 class="text-xl font-black tracking-tighter">Enregistrement des élèves</h1>
+            <h1 class="text-xl font-black tracking-tighter uppercase">Enregistrement des élèves</h1>
             <div class="w-10"></div> 
         </div>
         
@@ -60,10 +61,10 @@
                     <label><input type="radio" name="niveau" value="AUTRE" class="card-input"><div class="card-label">Autre</div></label>
                 </div>
 
-                <button type="submit" class="bg-pink-500 text-white font-black py-4 rounded-full uppercase text-sm active:scale-95 transition-transform">Enregistrer</button>
+                <button type="submit" id="btn-submit" class="font-black py-4 rounded-full uppercase text-sm active:scale-95 transition-transform">Enregistrer</button>
 
                 <div class="mt-2 pt-4 border-t border-zinc-800 text-center">
-                    <label class="text-[9px] font-bold text-zinc-500 uppercase block mb-2">Importer liste .txt (Prénom;NOM;sexe;niveau)</label>
+                    <label id="label-import" class="text-[9px] font-bold uppercase block mb-2">Importer liste .txt (Prénom;NOM;sexe;niveau)</label>
                     <input type="file" id="fileInput" accept=".txt,.csv" class="text-[10px] text-zinc-600">
                 </div>
             </form>
@@ -72,41 +73,39 @@
         <div id="listeContainer"></div>
 
         <div class="max-w-md mx-auto flex gap-4 mt-8 mb-20">
-            <button onclick="toutEffacer()" class="btn-nav bg-red-500 text-rose-100 flex-1">RàZ de la liste</button>
+            <button onclick="toutEffacer()" class="btn-nav bg-red-600 text-white flex-1 active:scale-95">RàZ de la liste</button>
         </div>
     </div>
 
     <script>
-        // 1. Récupération de la couleur choisie pour "inscriptions"
         const themePrefs = JSON.parse(localStorage.getItem('theme_tuiles')) || {};
         const couleurInscr = themePrefs.inscr || 'lime';
 
-        // 2. Application dynamique au chargement
-        window.addEventListener('DOMContentLoaded', () => {
-            // Application au Titre "Inscriptions"
-            const titrePage = document.querySelector('h1');
-            if (titrePage) {
-                titrePage.classList.add(`text-${couleurInscr}-500`);
+        function appliquerCouleurs() {
+            const h1 = document.querySelector('h1');
+            const btnRetour = document.getElementById('btn-retour');
+            const btnSubmit = document.getElementById('btn-submit');
+            const labelImport = document.getElementById('label-import');
+
+            if (h1) h1.classList.add(`text-${couleurInscr}-500`);
+            
+            if (labelImport) {
+                labelImport.classList.add(`text-${couleurInscr}-500`);
             }
 
-            // Application au bouton Retour Iconique
-            const btnRetour = document.getElementById('btn-retour');
             if (btnRetour) {
                 btnRetour.classList.add(`bg-${couleurInscr}-600`);
                 btnRetour.classList.add(`border`, `border-${couleurInscr}-400/30`);
             }
-
-            // Application au bouton "Enregistrer"
-            const btnEnregistrer = document.querySelector('#eleveForm button[type="submit"]');
-            if (btnEnregistrer) {
-                btnEnregistrer.classList.remove('bg-pink-500');
-                btnEnregistrer.classList.add(`bg-${couleurInscr}-500`);
-                
+            if (btnSubmit) {
+                btnSubmit.classList.add(`bg-${couleurInscr}-500`);
                 if(['yellow', 'lime', 'amber', 'cyan'].includes(couleurInscr)) {
-                    btnEnregistrer.classList.replace('text-white', 'text-black');
+                    btnSubmit.classList.add('text-black');
+                } else {
+                    btnSubmit.classList.add('text-white');
                 }
             }
-        });
+        }
 
         let eleves = JSON.parse(localStorage.getItem('maListeEleves')) || [];
 
@@ -178,7 +177,9 @@
             const nomsNiveaux = Object.keys(groupes).sort();
             
             if (nomsNiveaux.length === 2) {
-                container.className = "grid grid-cols-2 gap-4 items-start";
+                container.className = "grid grid-cols-2 gap-2 items-start";
+            } else if (nomsNiveaux.length >= 3) {
+                container.className = "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 items-start";
             } else {
                 container.className = "flex flex-col gap-6 max-w-md mx-auto";
             }
@@ -186,14 +187,24 @@
             nomsNiveaux.forEach(niv => {
                 const col = document.createElement('div');
                 col.className = "level-column";
-                col.innerHTML = `<h3 class="text-[10px] font-black text-zinc-500 uppercase mb-4 text-center tracking-widest pb-1">${niv} — ${groupes[niv].length}</h3>`;
+                
+                const textColClass = `text-${couleurInscr}-500`;
+                
+                col.innerHTML = `
+                    <h3 class="text-[12px] font-black uppercase mb-4 text-center tracking-widest pb-1 border-b border-zinc-800/50 ${textColClass}">
+                        ${niv} — ${groupes[niv].length}
+                    </h3>`;
                 
                 const list = document.createElement('div');
                 groupes[niv].sort((a,b) => a.identite.localeCompare(b.identite)).forEach(el => {
                     list.innerHTML += `
-                        <div class="student-item bg-${el.sexe}">
-                            <span class="text-[10px] font-bold truncate pr-2">${el.identite}</span>
-                            <button onclick="supprimer(${el.id})" class="text-lg opacity-40 hover:opacity-100">&times;</button>
+                        <div class="student-item">
+                            <span class="text-[10px] font-bold truncate pr-2 text-${el.sexe}">${el.identite}</span>
+                            <button onclick="supprimer(${el.id})" class="opacity-100 hover:opacity-100 transition-opacity p-1 text-zinc-400">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                </svg>
+                            </button>
                         </div>`;
                 });
                 col.appendChild(list);
@@ -201,10 +212,24 @@
             });
         }
 
-        function supprimer(id) { eleves = eleves.filter(e => e.id !== id); sauvegarder(); }
-        function toutEffacer() { if(confirm("Supprimer toute la liste ?")) { eleves = []; sauvegarder(); } }
+        function supprimer(id) {
+            if(confirm("Supprimer cet élève ?")) {
+                eleves = eleves.filter(e => e.id !== id);
+                sauvegarder();
+            }
+        }
 
-        render();
+        function toutEffacer() {
+            if(confirm("Attention : Supprimer toute la liste d'élèves ?")) {
+                eleves = [];
+                sauvegarder();
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            appliquerCouleurs();
+            render();
+        });
     </script>
 </body>
 </html>
