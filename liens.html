@@ -11,73 +11,58 @@
         
         body { 
             font-family: 'Inter', sans-serif; 
-            background: #000; 
-            color: #eee; 
+            background: #000; color: #eee; 
             margin: 0; padding: 10px; 
-            display: flex;
-            flex-direction: column;
-            align-items: center; /* Centre tout le bloc wrapper */
+            display: flex; flex-direction: column; align-items: center; 
         }
 
-        .main-wrapper {
-            width: 100%;
-            max-width: 400px; /* Largeur idéale pour mobile */
-            display: flex;
-            flex-direction: column;
-        }
+        .main-wrapper { width: 100%; max-width: 400px; display: flex; flex-direction: column; }
 
-        /* FORMULAIRE CLAIR */
+        /* FORMULAIRE CLAIR RÉTABLI */
         .light-card { 
-            background: #e5e7eb; 
-            color: #111827; 
-            border-radius: 1.2rem; 
-            padding: 12px; 
-            margin-bottom: 12px; 
-            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+            background: #e5e7eb; color: #111827; 
+            border-radius: 1.2rem; padding: 12px; 
+            margin-bottom: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.4);
         }
 
         .input-field { 
-            background: #ffffff; 
-            border: 1px solid #9ca3af; 
-            border-radius: 0.6rem; 
-            padding: 8px; 
-            font-size: 0.75rem; 
-            font-weight: 600; 
-            width: 100%;
-            margin-bottom: 6px;
-            color: #111827;
+            background: #ffffff; border: 1px solid #9ca3af; 
+            border-radius: 0.6rem; padding: 8px; 
+            font-size: 0.75rem; font-weight: 600; 
+            width: 100%; margin-bottom: 6px; color: #111827;
         }
 
-        /* GRILLE DE LIENS PARFAITEMENT CENTRÉE */
+        /* GRILLE DE LIENS OPTIMISÉE POUR NE PAS DÉBORDER */
         .links-grid {
             display: grid;
-            grid-template-columns: repeat(2, 1fr); /* 2 colonnes égales */
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
             gap: 8px;
             width: 100%;
-            justify-content: center;
         }
 
         .link-item {
-            background: #f3f4f6; 
-            border-radius: 0.8rem; 
-            padding: 8px; 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center;
-            width: 100%;
-            cursor: grab;
-            touch-action: none;
+            background: #f3f4f6; border-radius: 0.8rem; 
+            padding: 8px; display: flex; 
+            justify-content: space-between; align-items: center;
+            cursor: grab; touch-action: none;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            min-width: 0; /* Empêche le débordement */
         }
 
-        .sortable-ghost { opacity: 0.3; background: #94a3b8; }
-
-        .link-info { flex: 1; cursor: pointer; overflow: hidden; }
-        .link-name { font-weight: 800; font-size: 10px; display: block; color: #111827; text-transform: uppercase; line-height: 1.1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .link-url { font-size: 8px; color: #6b7280; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .link-info { flex: 1; cursor: pointer; min-width: 0; }
+        .link-name { 
+            font-weight: 800; font-size: 10px; display: block; 
+            color: #111827; text-transform: uppercase; 
+            line-height: 1.1; overflow: hidden; 
+            text-overflow: ellipsis; white-space: nowrap; 
+        }
+        .link-url { 
+            font-size: 8px; color: #6b7280; display: block; 
+            overflow: hidden; text-overflow: ellipsis; white-space: nowrap; 
+        }
 
         .btn-add { width: 100%; padding: 10px; border-radius: 50px; font-weight: 900; font-size: 9px; text-transform: uppercase; }
-        .btn-del { color: #9ca3af; font-size: 16px; padding-left: 5px; cursor: pointer; font-weight: 900; }
+        .btn-del { color: #9ca3af; padding-left: 5px; flex-shrink: 0; }
 
         /* ONGLETS */
         .tabs-container { 
@@ -93,7 +78,7 @@
         }
 
         .bottom-nav { width: 100%; display: flex; gap: 6px; margin-top: 20px; padding-bottom: 30px; }
-        .nav-btn { font-weight: 900; border-radius: 50px; font-size: 10px; padding: 10px; flex: 1; text-align: center}
+        .nav-btn { font-weight: 900; border-radius: 50px; font-size: 10px; padding: 10px; flex: 1; text-align: center; background: #27272a; color: white; }
     </style>
 </head>
 <body>
@@ -130,8 +115,8 @@
     <div id="linksList" class="links-grid"></div>
 
     <footer class="bottom-nav">
-        <button onclick="exportData()" class="nav-btn bg-zinc-800 text-white">👆exporter .txt👆</button>
-        <label class="nav-btn bg-zinc-800 text-white cursor-pointer">
+        <button onclick="exportData()" class="nav-btn">👆exporter .txt👆</button>
+        <label class="nav-btn cursor-pointer">
             👇importer .txt👇
             <input type="file" id="importFile" class="hidden" accept=".txt">
         </label>
@@ -163,15 +148,15 @@
         });
     }
 
-    // SortableJS
     const el = document.getElementById('linksList');
     const sortable = new Sortable(el, {
         animation: 150,
         ghostClass: 'sortable-ghost',
         onEnd: function() {
             if (currentFilter !== 'Tous') return;
+            const items = document.querySelectorAll('.link-item');
             const newOrder = [];
-            document.querySelectorAll('.link-item').forEach(item => {
+            items.forEach(item => {
                 newOrder.push(links[item.getAttribute('data-index')]);
             });
             links = newOrder;
@@ -193,7 +178,11 @@
                     <span class="link-name text-${couleurLiens}-700">${link.name}</span>
                     <span class="link-url">${link.url}</span>
                 </div>
-                <div class="btn-del" onclick="event.stopPropagation(); deleteLink(${idx})">×</div>
+                <div class="btn-del" onclick="event.stopPropagation(); deleteLink(${idx})">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                </div>
             `;
             listDiv.appendChild(item);
         });
