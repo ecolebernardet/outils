@@ -10,38 +10,12 @@
         :root { --primary: #ff637e; --bg-dark: #000000; }
         body { font-family: 'Inter', sans-serif; background: var(--bg-dark); margin: 0; padding: 10px; min-height: 100vh; color: white; }
         
-        /* HEADER AVEC BOUTON RETOUR */
-        .header-nav {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            width: 100%;
-            max-width: 500px;
-            margin: 10px auto 20px auto;
-            padding: 0 10px;
-        }
-        #btn-retour {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            transition: all 0.3s ease;
-        }
-
-        #mainTitle {
-            text-align: center;
-            font-weight: 800;
-            font-size: 0.9rem;
-            letter-spacing: 1.5px;
-            margin: 0;
-            flex-grow: 1;
-        }
+        .header-nav { display: flex; align-items: center; justify-content: space-between; width: 100%; max-width: 500px; margin: 10px auto 20px auto; padding: 0 10px; }
+        #btn-retour { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%; transition: all 0.3s ease; }
+        #mainTitle { text-align: center; font-weight: 800; font-size: 0.9rem; letter-spacing: 1.5px; margin: 0; flex-grow: 1; }
 
         .columns-container { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; max-width: 500px; margin: 0 auto; }
         
-        /* STYLE CADRE BLANC */
         .student-item { 
             background-color: #ffffff; 
             padding: 6px 10px; 
@@ -57,12 +31,11 @@
         .text-girl { color: #db2777; } 
         .text-boy { color: #2563eb; } 
         
-        .is-absent { opacity: 0.25 !important; filter: grayscale(1); text-decoration: line-through; }
+        /* Suppression de la classe is-absent ici pour garder tout le monde visible */
         
         .student-name { font-weight: 800; font-size: 0.7rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .status-icon { font-size: 0.7rem; opacity: 0.8; }
 
-        /* MODAL */
         .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(4px); }
         .modal-content { background: #1a1a1a; padding: 20px; border-radius: 20px; width: 92%; max-width: 400px; border: 1px solid #333; }
         textarea { width: 100%; margin: 10px 0; padding: 12px; border-radius: 12px; border: 1px solid #333; font-size: 0.8rem; background: #000; color: #fff; outline: none; }
@@ -71,7 +44,6 @@
         .btn-save { background: var(--primary); color: white; }
         .btn-cancel { background: #333; color: #ccc; }
 
-        /* NAV BAS */
         .bottom-nav { width: 100%; max-width: 500px; margin: 25px auto 0; padding-bottom: 40px; }
         .nav-btn { font-weight: 900; border-radius: 50px; font-size: 10px; padding: 12px; border: none; flex: 1; display: flex; align-items: center; justify-content: center; gap: 5px; }
         .no-select { -webkit-tap-highlight-color: transparent; user-select: none; }
@@ -113,7 +85,6 @@
     <script>
         let elevesInscrits = JSON.parse(localStorage.getItem('maListeEleves')) || [];
         let savedComments = JSON.parse(localStorage.getItem('studentObservations')) || {};
-        let absentsList = JSON.parse(localStorage.getItem('absentsList')) || [];
         let currentStudentId = "";
 
         const mapCouleurs = {
@@ -134,21 +105,14 @@
             const btnSave = document.querySelector('.btn-save');
 
             if(mainTitle) mainTitle.style.color = couleurHexa;
-            
             if(btnRetour) {
                 btnRetour.style.backgroundColor = couleurHexa;
                 btnRetour.style.border = "1px solid rgba(255,255,255,0.2)";
             }
-
             if(btnSave) {
                 btnSave.style.backgroundColor = couleurHexa;
-                if(['yellow', 'lime', 'amber', 'cyan'].includes(nomCouleur)) {
-                    btnSave.style.color = 'black';
-                } else {
-                    btnSave.style.color = 'white';
-                }
+                btnSave.style.color = ['yellow', 'lime', 'amber', 'cyan'].includes(nomCouleur) ? 'black' : 'white';
             }
-            
             document.documentElement.style.setProperty('--primary', couleurHexa);
         }
 
@@ -178,30 +142,23 @@
             ["CE2", "CM2"].forEach(niv => {
                 const col = document.createElement('div');
                 col.className = "flex flex-col";
-                
                 const colorTitle = (niv === 'CE2') ? 'text-yellow-400' : 'text-green-500';
                 col.innerHTML = `<h2 class="${colorTitle} text-[12px] font-black uppercase tracking-[0.2em] text-center mb-3">${niv}</h2>`;
                 
                 const listWrapper = document.createElement('div');
-                
                 groupes[niv].sort((a,b) => a.identite.localeCompare(b.identite)).forEach(el => {
-                    const isAbs = absentsList.includes(el.id);
                     const genderClass = (el.sexe.toLowerCase() === 'f') ? 'text-girl' : 'text-boy';
-                    
                     const item = document.createElement('div');
-                    item.className = `student-item no-select ${genderClass} ${isAbs ? 'is-absent' : ''}`;
+                    item.className = `student-item no-select ${genderClass}`;
                     
                     const hasNote = (savedComments[el.id] || "").trim().length > 0;
-                    
                     item.innerHTML = `
                         <span class="student-name">${formatName(el.identite)}</span>
                         <span class="status-icon">${hasNote ? '🔎' : '＋'}</span>
                     `;
-                    
                     item.onclick = () => openCommentModal(el.id, formatName(el.identite));
                     listWrapper.appendChild(item);
                 });
-                
                 col.appendChild(listWrapper); 
                 container.appendChild(col);
             });
@@ -231,7 +188,6 @@
             const bundle = {
                 eleves: elevesInscrits,
                 observations: cleanedComments,
-                absents: absentsList,
                 date: new Date().toLocaleDateString()
             };
             const blob = new Blob([JSON.stringify(bundle, null, 2)], { type: 'text/plain' });
@@ -250,10 +206,9 @@
             reader.onload = function(e) {
                 try {
                     const data = JSON.parse(e.target.result);
-                    if (data.eleves && confirm("Écraser les données actuelles par celles du fichier ?")) {
+                    if (data.eleves && confirm("Écraser les données actuelles ?")) {
                         localStorage.setItem('maListeEleves', JSON.stringify(data.eleves));
                         localStorage.setItem('studentObservations', JSON.stringify(data.observations || {}));
-                        localStorage.setItem('absentsList', JSON.stringify(data.absents || []));
                         window.location.reload();
                     }
                 } catch (err) { alert("Fichier invalide."); }

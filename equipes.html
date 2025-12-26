@@ -15,11 +15,27 @@
         
         #attendance-container { width: 100%; max-width: 600px; margin: 0 auto; }
         
+        /* RETOUR À 5 COLONNES COMME AVANT */
         .attendance-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; margin-bottom: 20px; width: 100%; }
         
         .level-label { text-align: center; font-size: 9px; font-weight: 900; color: #444; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; }
 
-        .student-item { padding: 8px 2px; border-radius: 10px; font-size: 0.55rem; font-weight: 800; text-align: center; cursor: pointer; border: 1px solid transparent; transition: all 0.2s; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        /* TAILLE REDUITE DES TUILES */
+        .student-item { 
+            padding: 8px 2px; 
+            border-radius: 10px; 
+            font-size: 0.55rem; 
+            font-weight: 800; 
+            text-align: center; 
+            cursor: pointer; 
+            border: 1px solid transparent; 
+            transition: all 0.2s; 
+            white-space: nowrap; 
+            overflow: hidden; 
+            text-overflow: ellipsis; 
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
         
         .bg-f { background: #fce7f3; color: #831843; } 
         .bg-m { background: #dbeafe; color: #1e3a8a; } 
@@ -55,9 +71,7 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15 19l-7-7 7-7" />
             </svg>
         </a>
-        <h1 id="mainTitle" class="font-bold text-xs tracking-widest">
-            Générer des équipes équilibrées
-        </h1>
+        <h1 id="mainTitle" class="font-bold text-xs tracking-widest uppercase">Générer des équipes</h1>
         <div class="w-10"></div> 
     </div>
 
@@ -76,7 +90,6 @@
     </div>
 
 <script>
-    // --- GESTION DU THÈME ---
     const mapCouleurs = {
         'red': '#ef4444', 'orange': '#f97316', 'amber': '#f59e0b', 'yellow': '#eab308',
         'lime': '#84cc16', 'green': '#22c55e', 'emerald': '#10b981', 'teal': '#14b8a6',
@@ -85,37 +98,25 @@
         'rose': '#f43f5e', 'gray': '#6b7280'
     };
 
+    let selectedNumTeams = 4;
+    let ALL_STUDENTS = JSON.parse(localStorage.getItem('maListeEleves')) || [];
+    let absents = new Set(JSON.parse(localStorage.getItem('absents_session_equipes')) || []);
+
     function appliquerTheme() {
         const themePrefs = JSON.parse(localStorage.getItem('theme_tuiles')) || {};
         const couleurNom = themePrefs.equipes || 'pink';
         const couleurHex = mapCouleurs[couleurNom] || '#ec4899';
-
         const title = document.getElementById('mainTitle');
         const genBtn = document.getElementById('main-generate-btn');
         const btnRetour = document.getElementById('btn-retour');
         
         if(title) title.style.color = couleurHex;
-
-        if (btnRetour) {
-            btnRetour.style.backgroundColor = couleurHex;
-            btnRetour.style.border = `1px solid rgba(255,255,255,0.2)`;
-        }
-
+        if(btnRetour) btnRetour.style.backgroundColor = couleurHex;
         if(genBtn) {
             genBtn.style.backgroundColor = couleurHex;
-            if(['yellow', 'lime', 'amber', 'cyan'].includes(couleurNom)) {
-                genBtn.style.color = 'black';
-            } else {
-                genBtn.style.color = 'white';
-            }
+            genBtn.style.color = ['yellow', 'lime', 'amber', 'cyan'].includes(couleurNom) ? 'black' : 'white';
         }
     }
-
-    // --- LOGIQUE ÉQUIPES ---
-    let selectedNumTeams = 4;
-    let ALL_STUDENTS = JSON.parse(localStorage.getItem('maListeEleves')) || [];
-    let savedAbsents = JSON.parse(localStorage.getItem('absentsList')) || [];
-    let absents = new Set(savedAbsents);
 
     function init() {
         appliquerTheme();
@@ -138,32 +139,21 @@
     function selectNum(n) {
         selectedNumTeams = n;
         const themePrefs = JSON.parse(localStorage.getItem('theme_tuiles')) || {};
-        const couleurNom = themePrefs.equipes || 'pink';
-        const activeColor = mapCouleurs[couleurNom] || '#ec4899';
-
+        const activeColor = mapCouleurs[themePrefs.equipes || 'pink'] || '#ec4899';
         document.querySelectorAll('.num-btn').forEach(b => {
             b.style.backgroundColor = "#222";
             b.style.borderColor = "#444";
-            b.style.color = "white";
         });
-        
         const activeBtn = document.getElementById('btn-' + n);
         if (activeBtn) {
             activeBtn.style.backgroundColor = activeColor;
             activeBtn.style.borderColor = activeColor;
-            if(['yellow', 'lime', 'amber', 'cyan'].includes(couleurNom)) {
-                activeBtn.style.color = "black";
-            } else {
-                activeBtn.style.color = "white";
-            }
         }
     }
 
     function renderAttendance() {
         const container = document.getElementById('attendance-container');
-        if(!container) return;
         container.innerHTML = '';
-
         const groupes = {};
         ALL_STUDENTS.forEach(s => {
             const niv = s.niveau.toUpperCase();
@@ -178,11 +168,17 @@
             grid.className = "attendance-grid";
 
             groupes[niv].sort((a,b) => a.identite.localeCompare(b.identite)).forEach(s => {
-                const isAbs = absents.has(s.id);
+                const isAbs = absents.has(String(s.id));
                 const div = document.createElement('div');
-                div.className = `student-item bg-${s.sexe.toLowerCase()} ${isAbs ? 'absent' : ''}`;
+                div.className = `student-item bg-${s.sexe.toLowerCase().startsWith('f') ? 'f' : 'm'} ${isAbs ? 'absent' : ''}`;
                 div.innerText = s.identite.split(" ")[0];
-                div.onclick = () => toggleAbs(s.id);
+                div.onclick = () => {
+                    const sid = String(s.id);
+                    if(absents.has(sid)) absents.delete(sid);
+                    else absents.add(sid);
+                    localStorage.setItem('absents_session_equipes', JSON.stringify(Array.from(absents)));
+                    renderAttendance();
+                };
                 grid.appendChild(div);
             });
             levelSection.appendChild(grid);
@@ -190,21 +186,15 @@
         });
     }
 
-    function toggleAbs(id) {
-        if(absents.has(id)) { absents.delete(id); } else { absents.add(id); }
-        localStorage.setItem('absentsList', JSON.stringify(Array.from(absents)));
-        renderAttendance();
-    }
-
     const getStats = (team) => ({
-        f: team.filter(s => s.sexe.toLowerCase()==='f').length,
+        f: team.filter(s => s.sexe.toLowerCase().startsWith('f')).length,
         ce2: team.filter(s => s.niveau.toUpperCase().includes('CE2')).length,
         cm2: team.filter(s => s.niveau.toUpperCase().includes('CM2')).length,
         total: team.length
     });
 
     function generateAndFix() {
-        let presents = ALL_STUDENTS.filter(s => !absents.has(s.id));
+        let presents = ALL_STUDENTS.filter(s => !absents.has(String(s.id)));
         if (presents.length < selectedNumTeams) return alert("Effectif insuffisant.");
 
         let teams = Array.from({ length: selectedNumTeams }, () => []);
@@ -252,10 +242,10 @@
                 </div>`;
             team.forEach(eleve => {
                 const isCE2 = eleve.niveau.toUpperCase().includes('CE2');
-                const prenom = eleve.identite.split(" ")[0];
+                const p = eleve.identite.split(" ")[0];
                 html += `<div class="flex items-center mb-1 text-[0.65rem] font-bold">
                     <span class="tag ${isCE2?'tag-ce2':'tag-cm2'}">${isCE2?'CE2':'CM2'}</span>
-                    <span class="${eleve.sexe.toLowerCase()==='f'?'name-f':'name-g'}">${prenom}</span>
+                    <span class="${eleve.sexe.toLowerCase().startsWith('f')?'name-f':'name-g'}">${p}</span>
                 </div>`;
             });
             results.innerHTML += html + `</div>`;
@@ -263,7 +253,7 @@
     }
 
     function resetTeams() {
-        if(confirm("Effacer les équipes actuelles ?")) {
+        if(confirm("Effacer les résultats ?")) {
             localStorage.removeItem('savedTeams');
             document.getElementById('results').innerHTML = '';
         }
