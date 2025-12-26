@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Mes Liens</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
         
@@ -12,18 +13,20 @@
             font-family: 'Inter', sans-serif; 
             background: #000; 
             color: #eee; 
-            margin: 0; padding: 8px; 
+            margin: 0; padding: 10px; 
             display: flex;
             flex-direction: column;
-            align-items: center; /* Centre tout le contenu horizontalement */
+            align-items: center; /* Centre tout le bloc wrapper */
         }
 
         .main-wrapper {
             width: 100%;
-            max-width: 450px; /* Largeur max pour garder l'aspect mobile centré */
+            max-width: 400px; /* Largeur idéale pour mobile */
+            display: flex;
+            flex-direction: column;
         }
 
-        /* FORMULAIRE */
+        /* FORMULAIRE CLAIR */
         .light-card { 
             background: #e5e7eb; 
             color: #111827; 
@@ -45,13 +48,13 @@
             color: #111827;
         }
 
-        /* GRILLE DE LIENS CENTRÉE */
-        #linksList {
+        /* GRILLE DE LIENS PARFAITEMENT CENTRÉE */
+        .links-grid {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
+            grid-template-columns: repeat(2, 1fr); /* 2 colonnes égales */
             gap: 8px;
-            justify-content: center; /* Centre les colonnes entre elles */
             width: 100%;
+            justify-content: center;
         }
 
         .link-item {
@@ -61,15 +64,19 @@
             display: flex; 
             justify-content: space-between; 
             align-items: center;
-            width: 100%; /* S'assure que les deux colonnes sont égales */
+            width: 100%;
+            cursor: grab;
+            touch-action: none;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
+
+        .sortable-ghost { opacity: 0.3; background: #94a3b8; }
 
         .link-info { flex: 1; cursor: pointer; overflow: hidden; }
         .link-name { font-weight: 800; font-size: 10px; display: block; color: #111827; text-transform: uppercase; line-height: 1.1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .link-url { font-size: 8px; color: #6b7280; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
         .btn-add { width: 100%; padding: 10px; border-radius: 50px; font-weight: 900; font-size: 9px; text-transform: uppercase; }
-        
         .btn-del { color: #9ca3af; font-size: 16px; padding-left: 5px; cursor: pointer; font-weight: 900; }
 
         /* ONGLETS */
@@ -77,23 +84,23 @@
             display: flex; gap: 5px; overflow-x: auto; 
             padding-bottom: 8px; margin-bottom: 12px;
             scrollbar-width: none;
-            justify-content: center; /* Centre les onglets si assez de place */
+            justify-content: center;
         }
         .tab-btn {
             background: #282828; border: 1px solid #3a3a3a;
-            color: #888; padding: 6px 12px; border-radius: 20px;
+            color: #888; padding: 6px 10px; border-radius: 20px;
             font-size: 9px; font-weight: 800; white-space: nowrap; text-transform: uppercase;
         }
 
         .bottom-nav { width: 100%; display: flex; gap: 6px; margin-top: 20px; padding-bottom: 30px; }
-        .nav-btn { font-weight: 900; border-radius: 50px; font-size: 8px; padding: 10px; flex: 1; text-align: center; text-transform: uppercase; }
+        .nav-btn { font-weight: 900; border-radius: 50px; font-size: 10px; padding: 10px; flex: 1; text-align: center}
     </style>
 </head>
 <body>
 
 <div class="main-wrapper">
-    <div class="flex items-center justify-between py-2 mb-1 px-2">
-        <a href="index.html" id="btn-retour" class="flex items-center justify-center w-8 h-8 rounded-full transition-all duration-300">
+    <div class="flex items-center justify-between py-2 mb-1 px-1">
+        <a href="index.html" id="btn-retour" class="flex items-center justify-center w-8 h-8 rounded-full">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15 19l-7-7 7-7" />
             </svg>
@@ -120,12 +127,12 @@
         <button class="tab-btn" onclick="filterCat('Autre')">Autre</button>
     </div>
 
-    <div id="linksList"></div>
+    <div id="linksList" class="links-grid"></div>
 
     <footer class="bottom-nav">
-        <button onclick="exportData()" class="nav-btn bg-zinc-800 text-white">Exporter .txt</button>
+        <button onclick="exportData()" class="nav-btn bg-zinc-800 text-white">👆exporter .txt👆</button>
         <label class="nav-btn bg-zinc-800 text-white cursor-pointer">
-            Importer .txt
+            👇importer .txt👇
             <input type="file" id="importFile" class="hidden" accept=".txt">
         </label>
     </footer>
@@ -134,12 +141,13 @@
 <script>
     const themePrefs = JSON.parse(localStorage.getItem('theme_tuiles')) || {};
     const couleurLiens = themePrefs.liens || 'green';
+    let links = JSON.parse(localStorage.getItem('eduLinksList')) || [];
+    let currentFilter = 'Tous';
 
     function appliquerTheme() {
         const title = document.getElementById('mainTitle');
         const btn = document.getElementById('mainAddBtn');
         const btnRetour = document.getElementById('btn-retour');
-        
         title.classList.add(`text-${couleurLiens}-500`);
         btnRetour.classList.add(`bg-${couleurLiens}-600`, `border`, `border-${couleurLiens}-400/30`);
         btn.classList.add(`bg-${couleurLiens}-600`, `text-white`);
@@ -151,32 +159,41 @@
         const activeClass = `bg-${couleurLiens}-600`;
         const activeText = ['yellow', 'lime', 'amber', 'cyan'].includes(couleurLiens) ? 'text-black' : 'text-white';
         document.querySelectorAll('.tab-btn').forEach(btn => {
-            if (btn.classList.contains('active')) {
-                btn.className = `tab-btn active ${activeClass} ${activeText} border-none`;
-            } else {
-                btn.className = `tab-btn`;
-            }
+            btn.className = btn.classList.contains('active') ? `tab-btn active ${activeClass} ${activeText} border-none` : `tab-btn`;
         });
     }
 
-    let links = JSON.parse(localStorage.getItem('eduLinksList')) || [];
-    let currentFilter = 'Tous';
+    // SortableJS
+    const el = document.getElementById('linksList');
+    const sortable = new Sortable(el, {
+        animation: 150,
+        ghostClass: 'sortable-ghost',
+        onEnd: function() {
+            if (currentFilter !== 'Tous') return;
+            const newOrder = [];
+            document.querySelectorAll('.link-item').forEach(item => {
+                newOrder.push(links[item.getAttribute('data-index')]);
+            });
+            links = newOrder;
+            localStorage.setItem('eduLinksList', JSON.stringify(links));
+            render();
+        }
+    });
 
     function render() {
         const listDiv = document.getElementById('linksList');
         listDiv.innerHTML = '';
-        const filtered = currentFilter === 'Tous' ? links : links.filter(l => l.cat === currentFilter);
-
-        filtered.forEach((link) => {
+        links.forEach((link, idx) => {
+            if (currentFilter !== 'Tous' && link.cat !== currentFilter) return;
             const item = document.createElement('div');
             item.className = 'link-item';
-            const realIndex = links.indexOf(link);
+            item.setAttribute('data-index', idx);
             item.innerHTML = `
                 <div class="link-info" onclick="window.open('${link.url}', '_blank')">
                     <span class="link-name text-${couleurLiens}-700">${link.name}</span>
                     <span class="link-url">${link.url}</span>
                 </div>
-                <div class="btn-del" onclick="deleteLink(${realIndex})">×</div>
+                <div class="btn-del" onclick="event.stopPropagation(); deleteLink(${idx})">×</div>
             `;
             listDiv.appendChild(item);
         });
@@ -195,9 +212,9 @@
         }
     }
 
-    function deleteLink(index) {
+    function deleteLink(idx) {
         if(confirm("Supprimer ?")) {
-            links.splice(index, 1);
+            links.splice(idx, 1);
             localStorage.setItem('eduLinksList', JSON.stringify(links));
             render();
         }
@@ -211,6 +228,7 @@
         });
         updateTabColors(); 
         render();
+        sortable.option("disabled", currentFilter !== 'Tous');
     }
 
     function exportData() {
@@ -227,8 +245,9 @@
         const reader = new FileReader();
         reader.onload = function(e) {
             try {
-                const data = JSON.parse(e.target.result);
-                if (Array.isArray(data)) { links = data; localStorage.setItem('eduLinksList', JSON.stringify(links)); render(); }
+                links = JSON.parse(e.target.result);
+                localStorage.setItem('eduLinksList', JSON.stringify(links));
+                render();
             } catch (err) { alert("Erreur."); }
         };
         reader.readAsText(file);
