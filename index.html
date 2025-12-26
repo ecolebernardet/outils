@@ -12,18 +12,18 @@
             font-family: 'Inter', sans-serif; 
             background-color: black; 
             overflow-y: auto; 
+            -webkit-tap-highlight-color: transparent; /* Supprime le flash bleu au clic sur mobile */
         }
         .menu-card { 
             transition: transform 0.1s; 
             border-radius: 30% 0% 30% 0%; 
             border-width: 2px; 
-            cursor: grab;
-            touch-action: none; /* Empêche le scroll pendant le drag sur mobile */
+            cursor: pointer;
+            touch-action: auto !important; /* Rend le défilement et le clic plus naturels */
         }
-        .menu-card:active { transform: scale(0.95); cursor: grabbing; }
-        .icon-bg { border-width: 1px; }
+        .menu-card:active { transform: scale(0.95); }
+        .icon-bg { border-width: 1px; pointer-events: none; } /* Empêche l'icône de bloquer le clic */
         
-        /* Style de la tuile fantôme pendant le déplacement */
         .sortable-ghost {
             opacity: 0.3;
             transform: scale(0.9);
@@ -50,87 +50,80 @@
                 <div class="icon-bg w-12 h-12 flex items-center justify-center rounded-full mb-1">
                     <span class="text-2xl">📝</span>
                 </div>
-                <h2 class="text-black font-semibold text-[11px]">Inscriptions</h2>
-                <h3 class="text-gray-600 text-[9px]">Gestion de la liste</h3>
+                <h2 class="text-black font-semibold text-[11px] pointer-events-none">Inscriptions</h2>
+                <h3 class="text-gray-600 text-[9px] pointer-events-none">Gestion de la liste</h3>
             </a>          
 
             <a href="liens.html" id="tile-liens" data-id="liens" class="menu-card flex flex-col items-center justify-center text-center p-3">
                 <div class="icon-bg w-12 h-12 flex items-center justify-center rounded-full mb-1">
                     <span class="text-2xl">🔗</span>
                 </div>
-                <h2 class="text-black font-semibold text-[11px]">Liens</h2>
-                <h3 class="text-gray-600 text-[9px]">Bibliothèque</h3>
+                <h2 class="text-black font-semibold text-[11px] pointer-events-none">Liens</h2>
+                <h3 class="text-gray-600 text-[9px] pointer-events-none">Bibliothèque</h3>
             </a>
 
             <a href="108heures.html" id="tile-h108" data-id="h108" class="menu-card flex flex-col items-center justify-center text-center p-3">
                 <div class="icon-bg w-12 h-12 flex items-center justify-center rounded-full mb-1">
                     <span class="text-2xl">⏲️</span>
                 </div>
-                <h2 class="text-black font-semibold text-[11px]">108 heures</h2>
-                <h3 class="text-gray-600 text-[9px]">Suivi des réunions</h3>
+                <h2 class="text-black font-semibold text-[11px] pointer-events-none">108 heures</h2>
+                <h3 class="text-gray-600 text-[9px] pointer-events-none">Suivi des réunions</h3>
             </a>
 
             <a href="notes.html" id="tile-notes" data-id="memos" class="menu-card flex flex-col items-center justify-center text-center p-3">
                 <div class="icon-bg w-12 h-12 flex items-center justify-center rounded-full mb-1">
                     <span class="text-2xl">📒</span>
                 </div>
-                <h2 class="text-black font-semibold text-[11px]">Mémos</h2>
-                <h3 class="text-gray-600 text-[9px]">Pense-bête</h3>
+                <h2 class="text-black font-semibold text-[11px] pointer-events-none">Mémos</h2>
+                <h3 class="text-gray-600 text-[9px] pointer-events-none">Pense-bête</h3>
             </a>
 
             <a href="tirage.html" id="tile-tirage" data-id="tirage" class="menu-card flex flex-col items-center justify-center text-center p-3">
                 <div class="icon-bg w-12 h-12 flex items-center justify-center rounded-full mb-1">
                     <span class="text-2xl">🎲</span>
                 </div>
-                <h2 class="text-black font-semibold text-[11px]">Tirage</h2>
-                <h3 class="text-gray-600 text-[9px]">Prénom au hasard</h3>
+                <h2 class="text-black font-semibold text-[11px] pointer-events-none">Tirage</h2>
+                <h3 class="text-gray-600 text-[9px] pointer-events-none">Prénom au hasard</h3>
             </a>      
 
             <a href="equipes.html" id="tile-equipes" data-id="equipes" class="menu-card flex flex-col items-center justify-center text-center p-3">
                 <div class="icon-bg w-12 h-12 flex items-center justify-center rounded-full mb-1">
                     <span class="text-2xl">👥</span>
                 </div>
-                <h2 class="text-black font-semibold text-[11px]">Équipes</h2>
-                <h3 class="text-gray-600 text-[9px]">Groupes mixtes</h3>
+                <h2 class="text-black font-semibold text-[11px] pointer-events-none">Équipes</h2>
+                <h3 class="text-gray-600 text-[9px] pointer-events-none">Groupes mixtes</h3>
             </a>
 
             <a href="observations.html" id="tile-obs" data-id="obs" class="menu-card flex flex-col items-center justify-center text-center p-3">
                 <div class="icon-bg w-12 h-12 flex items-center justify-center rounded-full mb-1">
                     <span class="text-2xl">✏️</span>
                 </div>
-                <h2 class="text-black font-semibold text-[11px]">Observations</h2>
-                <h3 class="text-gray-600 text-[9px]">Infos élèves</h3>
+                <h2 class="text-black font-semibold text-[11px] pointer-events-none">Observations</h2>
+                <h3 class="text-gray-600 text-[9px] pointer-events-none">Infos élèves</h3>
             </a>
     
             <a href="compteur.html" id="tile-compt" data-id="compt" class="menu-card flex flex-col items-center justify-center text-center p-3">
                 <div class="icon-bg w-12 h-12 flex items-center justify-center rounded-full mb-1">
                     <span class="text-2xl">🚥</span>
                 </div>
-                <h2 class="text-black font-semibold text-[11px]">Compteur</h2>
-                <h3 class="text-gray-600 text-[9px]">Comportement</h3>
+                <h2 class="text-black font-semibold text-[11px] pointer-events-none">Compteur</h2>
+                <h3 class="text-gray-600 text-[9px] pointer-events-none">Comportement</h3>
             </a>
         </nav>
     </div>
 
 <script>
     const tuilesMap = {
-        'tile-inscr': 'inscr',
-        'tile-h108': 'h108',
-        'tile-liens': 'liens',
-        'tile-tirage': 'tirage',
-        'tile-equipes': 'equipes',
-        'tile-notes': 'memos',
-        'tile-obs': 'obs',
-        'tile-compt': 'compt'
+        'tile-inscr': 'inscr', 'tile-h108': 'h108', 'tile-liens': 'liens',
+        'tile-tirage': 'tirage', 'tile-equipes': 'equipes', 'tile-notes': 'memos',
+        'tile-obs': 'obs', 'tile-compt': 'compt'
     };
 
     const defaultColors = {
-        inscr: 'lime', h108: 'orange', 
-        liens: 'indigo', tirage: 'yellow', equipes: 'rose', 
-        memos: 'purple', obs: 'green', compt: 'sky'
+        inscr: 'lime', h108: 'orange', liens: 'indigo', tirage: 'yellow', 
+        equipes: 'rose', memos: 'purple', obs: 'green', compt: 'sky'
     };
 
-    // --- CHARGEMENT ET APPLICATION DU THÈME ---
     const prefs = JSON.parse(localStorage.getItem('theme_tuiles')) || defaultColors;
 
     Object.keys(tuilesMap).forEach(id => {
@@ -139,16 +132,11 @@
             const colorName = prefs[tuilesMap[id]] || 'gray';
             el.classList.add(`bg-${colorName}-200`, `border-${colorName}-900`);
             const iconCircle = el.querySelector('.icon-bg');
-            if (iconCircle) {
-                iconCircle.classList.add(`bg-${colorName}-500`, `border-${colorName}-900`);
-            }
+            if (iconCircle) iconCircle.classList.add(`bg-${colorName}-500`, `border-${colorName}-900`);
         }
     });
 
-    // --- GESTION DE L'ORDRE ET DRAG & DROP ---
     const gridMenu = document.getElementById('grid-menu');
-    
-    // Charger l'ordre sauvegardé
     const savedOrder = JSON.parse(localStorage.getItem('menu_order'));
     if (savedOrder) {
         savedOrder.forEach(id => {
@@ -157,18 +145,17 @@
         });
     }
 
-    // Initialisation de Sortable
     new Sortable(gridMenu, {
         animation: 150,
+        delay: 150, // CRUCIAL : Délai de 150ms pour différencier le clic du drag
+        delayOnTouchOnly: true, // Applique le délai uniquement sur mobile
+        touchStartThreshold: 5, // Sensibilité au mouvement
         ghostClass: 'sortable-ghost',
-        chosenClass: 'sortable-chosen',
         onEnd: function() {
-            // Sauvegarder le nouvel ordre
             const order = Array.from(gridMenu.children).map(child => child.getAttribute('data-id'));
             localStorage.setItem('menu_order', JSON.stringify(order));
         }
     });
 </script>
-
 </body>
 </html>
