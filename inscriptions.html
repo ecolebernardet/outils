@@ -12,47 +12,46 @@
         .card-input { display: none; }
         .card-label {
             display: flex; align-items: center; justify-content: center;
-            background: #1a1a1a; border: 2px solid #333;
-            padding: 12px 5px; border-radius: 1rem; cursor: pointer;
-            font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
+            background: #1a1a1a; border: 1px solid #333;
+            padding: 8px 4px; border-radius: 0.75rem; cursor: pointer;
+            font-size: 0.65rem; font-weight: 700; text-transform: uppercase;
             transition: all 0.2s;
         }
         .card-input:checked + .card-label { background: #fff; border-color: #fff; color: #000; transform: scale(0.98); }
 
-        .level-column { background: rgba(24, 24, 27, 0.6); border: none; border-radius: 1.5rem; padding: 12px; height: fit-content; }
+        .level-column { background: rgba(24, 24, 27, 0.6); border: none; border-radius: 1.25rem; padding: 10px; height: fit-content; }
 
-        /* Couleurs de police pour les prénoms */
         .text-m { color: #2563eb; } 
         .text-f { color: #db2777; } 
         
-        .student-item { background: #fff; padding: 8px 12px; border-radius: 1rem; display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
-        .btn-nav { font-weight: 800; padding: 14px 4px; border-radius: 50px; font-size: 10px; text-align: center; border: none; cursor: pointer; flex: 1; }
+        .student-item { background: #fff; padding: 6px 10px; border-radius: 0.75rem; display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+        .btn-nav { font-weight: 800; padding: 12px 4px; border-radius: 50px; font-size: 10px; text-align: center; border: none; cursor: pointer; flex: 1; }
     </style>
 </head>
 <body>
     <div class="max-w-4xl mx-auto">
         
-        <div class="flex items-center justify-between py-4 mb-2">
-            <a href="index.html" id="btn-retour" class="flex items-center justify-center w-10 h-10 rounded-full transition-all duration-300 shadow-lg">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <div class="flex items-center justify-between py-2 mb-2">
+            <a href="index.html" id="btn-retour" class="flex items-center justify-center w-8 h-8 rounded-full shadow-lg">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15 19l-7-7 7-7" />
                 </svg>
             </a>
-            <h1 class="text-xl font-black tracking-tighter uppercase">Enregistrement des élèves</h1>
-            <div class="w-10"></div> 
+            <h1 class="text-lg font-black tracking-tighter uppercase">Inscriptions</h1>
+            <div class="w-8"></div> 
         </div>
         
-        <div class="max-w-md mx-auto bg-zinc-900 border border-zinc-800 rounded-[2rem] p-5 mb-10 shadow-2xl">
-            <form id="eleveForm" class="flex flex-col gap-5">
+        <div class="max-w-md mx-auto bg-zinc-900 border border-zinc-800 rounded-[1.5rem] p-4 mb-6 shadow-2xl">
+            <form id="eleveForm" class="flex flex-col gap-3">
                 <input type="text" id="nomComplet" placeholder="Prénom NOM" 
-                    class="bg-black border border-zinc-700 text-white rounded-xl p-4 outline-none focus:border-white" required>
+                    class="bg-black border border-zinc-700 text-white text-sm rounded-lg p-3 outline-none focus:border-white" required>
                 
-                <div class="grid grid-cols-2 gap-3">
+                <div class="grid grid-cols-2 gap-2">
                     <label><input type="radio" name="sexe" value="m" class="card-input" checked><div class="card-label">Garçon</div></label>
                     <label><input type="radio" name="sexe" value="f" class="card-input"><div class="card-label">Fille</div></label>
                 </div>
 
-                <div class="grid grid-cols-3 gap-2">
+                <div class="grid grid-cols-3 gap-1.5">
                     <label><input type="radio" name="niveau" value="CP" class="card-input"><div class="card-label">CP</div></label>
                     <label><input type="radio" name="niveau" value="CE1" class="card-input"><div class="card-label">CE1</div></label>
                     <label><input type="radio" name="niveau" value="CE2" class="card-input" checked><div class="card-label">CE2</div></label>
@@ -61,19 +60,19 @@
                     <label><input type="radio" name="niveau" value="AUTRE" class="card-input"><div class="card-label">Autre</div></label>
                 </div>
 
-                <button type="submit" id="btn-submit" class="font-black py-4 rounded-full uppercase text-sm active:scale-95 transition-transform">Enregistrer</button>
+                <button type="submit" id="btn-submit" class="font-black py-3 rounded-full uppercase text-xs active:scale-95 transition-transform mt-1">Enregistrer</button>
 
-                <div class="mt-2 pt-4 border-t border-zinc-800 text-center">
-                    <label id="label-import" class="text-[9px] font-bold uppercase block mb-2">Importer liste .txt (Prénom;NOM;sexe;niveau)</label>
-                    <input type="file" id="fileInput" accept=".txt,.csv" class="text-[10px] text-zinc-600">
+                <div class="pt-3 border-t border-zinc-800 text-center">
+                    <label id="label-import" class="text-[8px] font-bold uppercase block mb-1">Importer .txt (Prénom;NOM;sexe;niveau)</label>
+                    <input type="file" id="fileInput" accept=".txt,.csv" class="text-[9px] text-zinc-600">
                 </div>
             </form>
         </div>
 
         <div id="listeContainer"></div>
 
-        <div class="max-w-md mx-auto flex gap-4 mt-8 mb-20">
-            <button onclick="toutEffacer()" class="btn-nav bg-red-600 text-white flex-1 active:scale-95">RàZ de la liste</button>
+        <div class="max-w-md mx-auto flex gap-4 mt-6 mb-10">
+            <button onclick="toutEffacer()" class="btn-nav bg-red-600/20 text-red-500 border border-red-900/50 text-[9px] uppercase">RàZ de la liste</button>
         </div>
     </div>
 
@@ -88,10 +87,7 @@
             const labelImport = document.getElementById('label-import');
 
             if (h1) h1.classList.add(`text-${couleurInscr}-500`);
-            
-            if (labelImport) {
-                labelImport.classList.add(`text-${couleurInscr}-500`);
-            }
+            if (labelImport) labelImport.classList.add(`text-${couleurInscr}-500`);
 
             if (btnRetour) {
                 btnRetour.classList.add(`bg-${couleurInscr}-600`);
@@ -123,12 +119,7 @@
             const sexe = document.querySelector('input[name="sexe"]:checked').value;
             const niveau = document.querySelector('input[name="niveau"]:checked').value;
             
-            eleves.push({ 
-                id: Date.now(), 
-                identite: formaterIdentite(prenom, nom), 
-                sexe, 
-                niveau 
-            });
+            eleves.push({ id: Date.now(), identite: formaterIdentite(prenom, nom), sexe, niveau });
             sauvegarder();
             e.target.reset();
         });
@@ -177,21 +168,20 @@
             const nomsNiveaux = Object.keys(groupes).sort();
             
             if (nomsNiveaux.length === 2) {
-                container.className = "grid grid-cols-2 gap-2 items-start";
+                container.className = "grid grid-cols-2 gap-3 items-start";
             } else if (nomsNiveaux.length >= 3) {
-                container.className = "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 items-start";
+                container.className = "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 items-start";
             } else {
-                container.className = "flex flex-col gap-6 max-w-md mx-auto";
+                container.className = "flex flex-col gap-4 max-w-md mx-auto";
             }
 
             nomsNiveaux.forEach(niv => {
                 const col = document.createElement('div');
                 col.className = "level-column";
-                
                 const textColClass = `text-${couleurInscr}-500`;
                 
                 col.innerHTML = `
-                    <h3 class="text-[12px] font-black uppercase mb-4 text-center tracking-widest pb-1 border-b border-zinc-800/50 ${textColClass}">
+                    <h3 class="text-[9px] font-black uppercase mb-3 text-center tracking-widest pb-1 border-b border-zinc-800/50 ${textColClass}">
                         ${niv} — ${groupes[niv].length}
                     </h3>`;
                 
@@ -200,8 +190,8 @@
                     list.innerHTML += `
                         <div class="student-item">
                             <span class="text-[10px] font-bold truncate pr-2 text-${el.sexe}">${el.identite}</span>
-                            <button onclick="supprimer(${el.id})" class="opacity-100 hover:opacity-100 transition-opacity p-1 text-zinc-400">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <button onclick="supprimer(${el.id})" class="opacity-40 hover:opacity-100 transition-opacity p-1 text-zinc-400">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                 </svg>
                             </button>
