@@ -105,13 +105,13 @@
 
         <footer class="bottom-nav flex flex-col gap-2">
             <div class="flex gap-2 w-full">
-                <button onclick="exportNotesToFile()" class="nav-btn bg-zinc-800 text-white flex-1">👆export .txt👆</button>
                 <label class="nav-btn bg-zinc-800 text-white cursor-pointer flex-1">
-                    👇import .txt👇
+                    👇importer .txt👇
                     <input type="file" id="importNotesFile" class="hidden" accept=".txt">
                 </label>
+                <button onclick="exportNotesToFile()" class="nav-btn bg-zinc-800 text-white flex-1">👆exporter .txt👆</button>
             </div>
-            <button onclick="resetAllNotes()" class="nav-btn bg-red-500 text-rose-100 border border-rose-900/50 w-full">⚠️ RàZ des mémos ⚠</button>
+            <button onclick="resetAllNotes()" class="nav-btn bg-red-500 text-rose-100 border border-rose-900/50 w-full">⚠️ effacer tous les mémos</button>
         </footer>
     </div>
 
@@ -221,9 +221,7 @@
                     if(note.color === '#4b5563') card.classList.add('dark-note');
                     card.style.backgroundColor = note.color || '#fef08a';
                     
-                    // On place le onclick sur la carte entière
                     card.onclick = (e) => {
-                        // Empêcher l'ouverture si on clique sur la poignée de drag
                         if (!e.target.closest('.drag-handle')) {
                             openEditModal(index);
                         }
