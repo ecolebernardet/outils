@@ -15,12 +15,10 @@
         
         #attendance-container { width: 100%; max-width: 600px; margin: 0 auto; }
         
-        /* RETOUR À 5 COLONNES COMME AVANT */
         .attendance-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; margin-bottom: 20px; width: 100%; }
         
-        .level-label { text-align: center; font-size: 9px; font-weight: 900; color: #444; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; }
+        .level-label { text-align: center; font-size: 10px; font-weight: 900; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; }
 
-        /* TAILLE REDUITE DES TUILES */
         .student-item { 
             padding: 8px 2px; 
             border-radius: 10px; 
@@ -75,7 +73,6 @@
         <div class="w-10"></div> 
     </div>
 
-    <p class="section-title">Appel (Absents en gris)</p>
     <div id="attendance-container"></div>
 
     <p class="section-title">Nombre d'équipes</p>
@@ -154,16 +151,37 @@
     function renderAttendance() {
         const container = document.getElementById('attendance-container');
         container.innerHTML = '';
+        
+        // Palette dynamique
+        const paletteNiveaux = JSON.parse(localStorage.getItem('palette_niveaux')) || {};
+        
+        // Couleurs forcées si la palette est vide
+        const couleursDecidees = {
+            "CP": "#ec4899", "CE1": "#3b82f6", "CE2": "#eab308", 
+            "CM1": "#ef4444", "CM2": "#22c55e", "AUTRE": "#a855f7"
+        };
+
         const groupes = {};
         ALL_STUDENTS.forEach(s => {
-            const niv = s.niveau.toUpperCase();
+            const niv = s.niveau.trim().toUpperCase();
             if (!groupes[niv]) groupes[niv] = [];
             groupes[niv].push(s);
         });
 
-        Object.keys(groupes).sort().forEach(niv => {
+        const ordreNiveaux = ["CP", "CE1", "CE2", "CM1", "CM2", "AUTRE"];
+        const niveauxTries = Object.keys(groupes).sort((a, b) => {
+            let indexA = ordreNiveaux.indexOf(a);
+            let indexB = ordreNiveaux.indexOf(b);
+            if (indexA === -1) indexA = 99;
+            if (indexB === -1) indexB = 99;
+            return indexA - indexB;
+        });
+
+        niveauxTries.forEach(niv => {
             const levelSection = document.createElement('div');
-            levelSection.innerHTML = `<div class="level-label">${niv}</div>`;
+            const couleurNiveau = paletteNiveaux[niv] || paletteNiveaux[niv.toLowerCase()] || couleursDecidees[niv] || '#555';
+            
+            levelSection.innerHTML = `<div class="level-label" style="color: ${couleurNiveau} !important;">${niv}</div>`;
             const grid = document.createElement('div');
             grid.className = "attendance-grid";
 
@@ -241,7 +259,8 @@
                     <span class="team-stats">${s.f}F/${s.total-s.f}G • ${s.ce2}CE2/${s.cm2}CM2</span>
                 </div>`;
             team.forEach(eleve => {
-                const isCE2 = eleve.niveau.toUpperCase().includes('CE2');
+                const niv = eleve.niveau.toUpperCase();
+                const isCE2 = niv.includes('CE2');
                 const p = eleve.identite.split(" ")[0];
                 html += `<div class="flex items-center mb-1 text-[0.65rem] font-bold">
                     <span class="tag ${isCE2?'tag-ce2':'tag-cm2'}">${isCE2?'CE2':'CM2'}</span>
