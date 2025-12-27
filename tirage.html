@@ -20,7 +20,7 @@
         }
 
         /* STYLE ISSU DE 108H */
-        .light-card { background: #e5e7eb; color: #111827; border-radius: 1.5rem; width: 100%; max-width: 400px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); text-align: center; margin-bottom: 20px; }
+        .light-card { background: #e5e7eb; color: #111827; border-radius: 1.5rem; width: 100%; max-width: 400px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); text-align: center; margin-top: 20px; margin-bottom: 20px; }
         
         .result-box { 
             background: #ffffff; 
@@ -39,13 +39,13 @@
         .bg-m { background: #dbeafe; color: #1e3a8a; } 
         .bg-f { background: #fce7f3; color: #831843; } 
         
-        .level-section { width: 100%; margin-bottom: 20px; }
-        .level-title { text-align: center; font-size: 10px; font-weight: 900; color: #555; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 10px; }
+        .level-title { text-align: center; font-size: 9px; font-weight: 900; color: #555; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; }
 
         .student-grid {
             display: grid;
             grid-template-columns: repeat(5, 1fr);
             gap: 5px;
+            margin-bottom: 20px;
             width: 100%;
         }
 
@@ -53,15 +53,16 @@
             padding: 8px 2px;
             border-radius: 10px;
             font-size: 0.55rem;
-            font-weight: 700;
+            font-weight: 800;
             text-align: center;
             cursor: pointer;
             transition: all 0.2s;
             border: 1px solid transparent;
-            text-transform: capitalize;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
         }
 
         .drawn {
@@ -69,6 +70,7 @@
             color: #777777 !important; 
             text-decoration: line-through;
             opacity: 0.7;
+            transform: scale(0.9);
             border-color: #333;
         }
 
@@ -85,7 +87,7 @@
         }
         .main-btn:active { transform: scale(0.95); }
 
-        .btn-nav { font-weight: 800; padding: 14px; border-radius: 50px; font-size: 9px; cursor: pointer; border: none; flex: 1; }
+        .btn-nav { width: 100%; max-width: 400px; font-weight: 800; padding: 14px; border-radius: 50px; font-size: 10px; cursor: pointer; border: none; }
         .stats { margin-top: 8px; font-size: 0.6rem; color: #666; text-transform: uppercase; font-weight: 800; }
     </style>
 </head>
@@ -103,18 +105,16 @@
         <div class="w-10"></div> 
     </div>
 
+    <div class="w-full max-w-md" id="listeContainer"></div>
+
     <div class="light-card">
         <div class="result-box" id="result-display">PRÊT</div>
         <button id="draw-btn" class="main-btn" onclick="drawName()">Tirer un prénom</button>
         <div class="stats" id="counter">--</div>
     </div>
 
-    <div class="w-full max-w-2xl">
-        <div id="listeContainer"></div>
-
-        <div class="max-w-md mx-auto flex gap-3 mt-8 mb-10">
-            <button class="btn-nav bg-red-600 text-white w-full uppercase" onclick="resetDrawing()">RàZ Tirage</button>
-        </div>
+    <div class="max-w-md mx-auto flex justify-center mt-4 mb-10 w-full px-4">
+        <button class="btn-nav bg-red-500 text-white" onclick="resetDrawing()">RàZ Tirage</button>
     </div>
 
     <script>
@@ -133,7 +133,6 @@
                 btnRetour.classList.add(`bg-${couleurTirage}-600`, `border`, `border-${couleurTirage}-400/30`);
             }
 
-            // Style du bouton comme sur 108h
             btn.classList.add(`bg-${couleurTirage}-600`);
             if(['yellow', 'lime', 'amber', 'cyan'].includes(couleurTirage)) {
                 btn.classList.add('text-black');
@@ -141,13 +140,12 @@
                 btn.classList.add('text-white');
             }
 
-            // Couleur du texte du gagnant
             display.classList.add(`text-${couleurTirage}-600`);
         }
 
         function formatName(fullName) {
             const parts = fullName.trim().split(" ");
-            return parts[0].charAt(0).toUpperCase() + parts[0].slice(1).toLowerCase();
+            return parts[0];
         }
 
         let rawData = JSON.parse(localStorage.getItem('maListeEleves')) || [];
@@ -168,12 +166,9 @@
                 groupes[niv].push(el);
             });
 
-            const nomsNiveaux = Object.keys(groupes).sort();
-
-            nomsNiveaux.forEach(niv => {
-                const section = document.createElement('div');
-                section.className = "level-section";
-                section.innerHTML = `<div class="level-title">${niv}</div>`;
+            Object.keys(groupes).sort().forEach(niv => {
+                const levelSection = document.createElement('div');
+                levelSection.innerHTML = `<div class="level-title">${niv}</div>`;
                 
                 const grid = document.createElement('div');
                 grid.className = "student-grid";
@@ -181,14 +176,14 @@
                 groupes[niv].sort((a,b) => a.identite.localeCompare(b.identite)).forEach(el => {
                     const isDrawn = !remaining.includes(el.id);
                     const item = document.createElement('div');
-                    item.className = `student-item bg-${el.sexe} ${isDrawn ? 'drawn' : ''}`;
+                    item.className = `student-item bg-${el.sexe.toLowerCase().startsWith('f') ? 'f' : 'm'} ${isDrawn ? 'drawn' : ''}`;
                     item.innerText = formatName(el.identite);
                     item.onclick = () => toggleStudent(el.id);
                     grid.appendChild(item);
                 });
                 
-                section.appendChild(grid);
-                container.appendChild(section);
+                levelSection.appendChild(grid);
+                container.appendChild(levelSection);
             });
 
             const total = rawData.length;
@@ -223,6 +218,8 @@
             const btn = document.getElementById('draw-btn');
             btn.disabled = true;
 
+            display.style.color = "#9ca3af";
+
             let iterations = 0;
             const interval = setInterval(() => {
                 const randomIndex = Math.floor(Math.random() * remaining.length);
@@ -235,7 +232,10 @@
                     const finalIndex = Math.floor(Math.random() * remaining.length);
                     const winnerId = remaining.splice(finalIndex, 1)[0];
                     const winner = rawData.find(s => s.id === winnerId);
+                    
                     display.innerText = formatName(winner.identite);
+                    display.style.color = ""; 
+                    
                     saveState();
                     renderList();
                     btn.disabled = (remaining.length === 0);
