@@ -18,22 +18,28 @@
             transition: transform 0.1s; 
             border-radius: 30% 0% 30% 0%; 
             border-width: 2px;
-            overflow: hidden; /* Assure que rien ne dépasse des coins arrondis */
+            overflow: hidden;
         }
         .menu-card:active { transform: scale(0.98); }
         
-        /* La poignée positionnée tout en haut à droite */
+        /* Structure de la poignée à 9 points */
         .drag-handle {
             position: absolute;
-            top: 4px;
-            right: 6px;
-            font-size: 16px;
+            top: 8px;
+            right: 8px;
+            display: grid;
+            grid-template-columns: repeat(3, 3px);
+            gap: 2px;
             opacity: 0.4;
             cursor: grab;
-            padding: 4px;
             z-index: 30;
-            line-height: 1;
-            color: #000;
+            padding: 4px;
+        }
+        .drag-handle span {
+            width: 3px;
+            height: 3px;
+            background-color: #000;
+            border-radius: 50%;
         }
         .drag-handle:active { cursor: grabbing; opacity: 0.8; }
 
@@ -50,7 +56,7 @@
 
         <nav id="grid-menu" class="grid grid-cols-2 gap-4 mb-6">
             <div data-id="inscr" class="menu-card flex flex-col items-center justify-center text-center p-3 pt-5">
-                <div class="drag-handle">⠿</div>
+                <div class="drag-handle"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
                 <a href="inscriptions.html" class="w-full h-full flex flex-col items-center">
                     <div class="icon-bg w-12 h-12 flex items-center justify-center rounded-full mb-1 border shadow-inner">
                         <span class="text-2xl">📝</span>
@@ -61,7 +67,7 @@
             </div>
 
             <div data-id="liens" class="menu-card flex flex-col items-center justify-center text-center p-3 pt-5">
-                <div class="drag-handle">⠿</div>
+                <div class="drag-handle"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
                 <a href="liens.html" class="w-full h-full flex flex-col items-center">
                     <div class="icon-bg w-12 h-12 flex items-center justify-center rounded-full mb-1 border shadow-inner">
                         <span class="text-2xl">🔗</span>
@@ -72,7 +78,7 @@
             </div>
 
             <div data-id="h108" class="menu-card flex flex-col items-center justify-center text-center p-3 pt-5">
-                <div class="drag-handle">⠿</div>
+                <div class="drag-handle"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
                 <a href="108heures.html" class="w-full h-full flex flex-col items-center">
                     <div class="icon-bg w-12 h-12 flex items-center justify-center rounded-full mb-1 border shadow-inner">
                         <span class="text-2xl">⏲️</span>
@@ -83,7 +89,7 @@
             </div>
 
             <div data-id="memos" class="menu-card flex flex-col items-center justify-center text-center p-3 pt-5">
-                <div class="drag-handle">⠿</div>
+                <div class="drag-handle"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
                 <a href="memos.html" class="w-full h-full flex flex-col items-center">
                     <div class="icon-bg w-12 h-12 flex items-center justify-center rounded-full mb-1 border shadow-inner">
                         <span class="text-2xl">📒</span>
@@ -94,7 +100,7 @@
             </div>
 
             <div data-id="tirage" class="menu-card flex flex-col items-center justify-center text-center p-3 pt-5">
-                <div class="drag-handle">⠿</div>
+                <div class="drag-handle"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
                 <a href="tirage.html" class="w-full h-full flex flex-col items-center">
                     <div class="icon-bg w-12 h-12 flex items-center justify-center rounded-full mb-1 border shadow-inner">
                         <span class="text-2xl">🎲</span>
@@ -105,7 +111,7 @@
             </div>
 
             <div data-id="equipes" class="menu-card flex flex-col items-center justify-center text-center p-3 pt-5">
-                <div class="drag-handle">⠿</div>
+                <div class="drag-handle"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
                 <a href="equipes.html" class="w-full h-full flex flex-col items-center">
                     <div class="icon-bg w-12 h-12 flex items-center justify-center rounded-full mb-1 border shadow-inner">
                         <span class="text-2xl">👥</span>
@@ -116,7 +122,7 @@
             </div>
 
             <div data-id="obs" class="menu-card flex flex-col items-center justify-center text-center p-3 pt-5">
-                <div class="drag-handle">⠿</div>
+                <div class="drag-handle"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
                 <a href="observations.html" class="w-full h-full flex flex-col items-center">
                     <div class="icon-bg w-12 h-12 flex items-center justify-center rounded-full mb-1 border shadow-inner">
                         <span class="text-2xl">✏️</span>
@@ -127,7 +133,7 @@
             </div>
 
             <div data-id="compt" class="menu-card flex flex-col items-center justify-center text-center p-3 pt-5">
-                <div class="drag-handle">⠿</div>
+                <div class="drag-handle"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
                 <a href="compteur.html" class="w-full h-full flex flex-col items-center">
                     <div class="icon-bg w-12 h-12 flex items-center justify-center rounded-full mb-1 border shadow-inner">
                         <span class="text-2xl">🚥</span>

@@ -47,12 +47,13 @@
             border-left: 4px solid transparent;
         }
 
+        /* POIGNÉE À 9 POINTS (3x3) */
         .drag-handle {
             cursor: grab;
             padding: 5px 10px 5px 0;
             color: #9ca3af;
             display: grid;
-            grid-template-columns: repeat(2, 3px);
+            grid-template-columns: repeat(3, 3px); /* 3 colonnes au lieu de 2 */
             gap: 3px;
             flex-shrink: 0;
         }
@@ -175,9 +176,7 @@
         ghostClass: 'sortable-ghost',
         handle: '.drag-handle',
         onEnd: function() {
-            // Le tri manuel n'est possible qu'en mode "Tous"
             if (currentFilter !== 'Tous') return;
-            
             const items = document.querySelectorAll('.link-item');
             const newOrder = [];
             items.forEach(item => {
@@ -187,7 +186,6 @@
             });
             links = newOrder;
             localStorage.setItem('eduLinksList', JSON.stringify(links));
-            // On ne fait pas de render() complet ici pour éviter de casser l'animation de Sortable
         }
     });
 
@@ -195,7 +193,6 @@
         const listDiv = document.getElementById('linksList');
         listDiv.innerHTML = '';
         
-        // On s'assure que chaque lien a un ID unique pour le tri
         links.forEach((link, idx) => {
             if(!link.id) link.id = Date.now() + idx;
         });
@@ -207,14 +204,14 @@
             
             const item = document.createElement('div');
             item.className = 'link-item';
-            item.setAttribute('data-id', link.id); // Utilisation d'un ID stable
+            item.setAttribute('data-id', link.id);
             item.style.borderLeftColor = styleCat.border;
 
             item.innerHTML = `
                 <div class="drag-handle">
-                    <span></span><span></span>
-                    <span></span><span></span>
-                    <span></span><span></span>
+                    <span></span><span></span><span></span>
+                    <span></span><span></span><span></span>
+                    <span></span><span></span><span></span>
                 </div>
                 <div class="link-info" onclick="window.open('${link.url}', '_blank')">
                     <span class="link-name ${styleCat.text}">${link.name}</span>
@@ -260,12 +257,11 @@
             const text = btn.innerText.toLowerCase();
             if(cat === 'Tous' && text === 'tous') btn.classList.add('active');
             else if(cat === 'Ressources' && text === 'ressources') btn.classList.add('active');
-            else if(cat === 'Institutionnel' && text === 'instit.') btn.classList.add('active');
+            else if(cat === 'Institutionnel' && text === 'institutionnel') btn.classList.add('active');
             else if(cat === 'Autre' && text === 'autre') btn.classList.add('active');
         });
         updateTabColors(); 
         render();
-        // Désactiver le tri si on filtre
         sortable.option("disabled", currentFilter !== 'Tous');
     }
 
