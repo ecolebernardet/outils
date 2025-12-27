@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Générateur Équilibre Absolu</title>
+    <title>Générateur Équipes</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
@@ -50,9 +50,7 @@
         .team-title { font-weight: 900; font-size: 0.65rem; color: #fff; text-transform: uppercase; }
         .team-stats { font-size: 0.45rem; color: #aaa; display: block; line-height: 1.4; }
         
-        .tag { font-size: 0.45rem; font-weight: 900; margin-right: 5px; padding: 2px 4px; border-radius: 3px; color: #000; }
-        .tag-ce2 { background: #fbbf24; } 
-        .tag-cm2 { background: #4ade80; }
+        .tag { font-size: 0.45rem; font-weight: 900; margin-right: 8px; padding: 2px 6px; border-radius: 3px; color: #000; min-width: 35px; text-align: center; }
         
         .name-f { color: var(--pink); } 
         .name-g { color: var(--blue-light); }
@@ -93,6 +91,16 @@
         'cyan': '#06b6d4', 'sky': '#0ea5e9', 'blue': '#3b82f6', 'indigo': '#6366f1',
         'violet': '#8b5cf6', 'purple': '#a855f7', 'fuchsia': '#d946ef', 'pink': '#ec4899',
         'rose': '#f43f5e', 'gray': '#6b7280'
+    };
+
+    const ordreNiveaux = ["CP", "CE1", "CE2", "CM1", "CM2", "AUTRE"];
+    const couleursNiveaux = {
+        "CP": "#ec4899",   // rose
+        "CE1": "#3b82f6",  // bleu
+        "CE2": "#eab308",  // jaune
+        "CM1": "#ef4444",  // rouge
+        "CM2": "#22c55e",  // vert
+        "AUTRE": "#a855f7" // violet
     };
 
     let selectedNumTeams = 4;
@@ -152,15 +160,6 @@
         const container = document.getElementById('attendance-container');
         container.innerHTML = '';
         
-        // Palette dynamique
-        const paletteNiveaux = JSON.parse(localStorage.getItem('palette_niveaux')) || {};
-        
-        // Couleurs forcées si la palette est vide
-        const couleursDecidees = {
-            "CP": "#ec4899", "CE1": "#3b82f6", "CE2": "#eab308", 
-            "CM1": "#ef4444", "CM2": "#22c55e", "AUTRE": "#a855f7"
-        };
-
         const groupes = {};
         ALL_STUDENTS.forEach(s => {
             const niv = s.niveau.trim().toUpperCase();
@@ -168,7 +167,6 @@
             groupes[niv].push(s);
         });
 
-        const ordreNiveaux = ["CP", "CE1", "CE2", "CM1", "CM2", "AUTRE"];
         const niveauxTries = Object.keys(groupes).sort((a, b) => {
             let indexA = ordreNiveaux.indexOf(a);
             let indexB = ordreNiveaux.indexOf(b);
@@ -179,7 +177,7 @@
 
         niveauxTries.forEach(niv => {
             const levelSection = document.createElement('div');
-            const couleurNiveau = paletteNiveaux[niv] || paletteNiveaux[niv.toLowerCase()] || couleursDecidees[niv] || '#555';
+            const couleurNiveau = couleursNiveaux[niv] || '#555';
             
             levelSection.innerHTML = `<div class="level-label" style="color: ${couleurNiveau} !important;">${niv}</div>`;
             const grid = document.createElement('div');
@@ -206,8 +204,6 @@
 
     const getStats = (team) => ({
         f: team.filter(s => s.sexe.toLowerCase().startsWith('f')).length,
-        ce2: team.filter(s => s.niveau.toUpperCase().includes('CE2')).length,
-        cm2: team.filter(s => s.niveau.toUpperCase().includes('CM2')).length,
         total: team.length
     });
 
@@ -227,13 +223,13 @@
                 for(let j=0; j < teams.length; j++) {
                     if(i === j) continue;
                     let sI = getStats(teams[i]), sJ = getStats(teams[j]);
-                    if (Math.abs(sI.f-sJ.f)>1 || Math.abs(sI.ce2-sJ.ce2)>1) {
+                    if (Math.abs(sI.f-sJ.f)>1) {
                         for(let x=0; x<teams[i].length; x++) {
                             for(let y=0; y<teams[j].length; y++) {
-                                let oldDiff = Math.abs(sI.f-sJ.f) + Math.abs(sI.ce2-sJ.ce2);
+                                let oldDiff = Math.abs(sI.f-sJ.f);
                                 [teams[i][x], teams[j][y]] = [teams[j][y], teams[i][x]];
                                 let nI = getStats(teams[i]), nJ = getStats(teams[j]);
-                                let newDiff = Math.abs(nI.f-nJ.f) + Math.abs(nI.ce2-nJ.ce2);
+                                let newDiff = Math.abs(nI.f-nJ.f);
                                 if(newDiff < oldDiff) { improved = true; break; }
                                 else { [teams[i][x], teams[j][y]] = [teams[j][y], teams[i][x]]; }
                             }
@@ -250,23 +246,36 @@
     function renderTeams(teams) {
         const results = document.getElementById('results');
         results.innerHTML = '';
+
         teams.forEach((team, i) => {
-            team.sort((a, b) => a.niveau.localeCompare(b.niveau));
+            // TRI PAR NIVEAU SELON L'ORDRE CP, CE1...
+            team.sort((a, b) => {
+                let indexA = ordreNiveaux.indexOf(a.niveau.toUpperCase());
+                let indexB = ordreNiveaux.indexOf(b.niveau.toUpperCase());
+                if (indexA === -1) indexA = 99;
+                if (indexB === -1) indexB = 99;
+                if (indexA !== indexB) return indexA - indexB;
+                return a.identite.localeCompare(b.identite);
+            });
+
             const s = getStats(team);
             let html = `<div class="team-card">
                 <div class="team-header">
                     <span class="team-title">Équipe ${i+1}</span>
-                    <span class="team-stats">${s.f}F/${s.total-s.f}G • ${s.ce2}CE2/${s.cm2}CM2</span>
+                    <span class="team-stats">${s.f}F/${s.total-s.f}G • ${s.total} élèves</span>
                 </div>`;
+
             team.forEach(eleve => {
                 const niv = eleve.niveau.toUpperCase();
-                const isCE2 = niv.includes('CE2');
-                const p = eleve.identite.split(" ")[0];
+                const prenom = eleve.identite.split(" ")[0];
+                const couleurTag = couleursNiveaux[niv] || '#666';
+                
                 html += `<div class="flex items-center mb-1 text-[0.65rem] font-bold">
-                    <span class="tag ${isCE2?'tag-ce2':'tag-cm2'}">${isCE2?'CE2':'CM2'}</span>
-                    <span class="${eleve.sexe.toLowerCase().startsWith('f')?'name-f':'name-g'}">${p}</span>
+                    <span class="tag" style="background-color: ${couleurTag};">${niv}</span>
+                    <span class="${eleve.sexe.toLowerCase().startsWith('f')?'name-f':'name-g'}">${prenom}</span>
                 </div>`;
             });
+            
             results.innerHTML += html + `</div>`;
         });
     }
