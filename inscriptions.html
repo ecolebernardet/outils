@@ -36,7 +36,7 @@
         .text-f { color: #db2777; } 
         
         .student-item { background: #fff; padding: 6px 10px; border-radius: 0.75rem; display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
-        .btn-nav { font-weight: 800; padding: 12px 4px; border-radius: 50px; font-size: 9px; text-align: center; text-transform: uppercase; flex: 1; }
+        .btn-nav { font-weight: 800; padding: 12px 4px; border-radius: 50px; font-size: 9px; text-align: center; flex: 1; }
         
         .input-field { background: #ffffff; border: 1px solid #9ca3af; color: #111827; border-radius: 0.75rem; padding: 10px; outline: none; font-size: 0.75rem; font-weight: 600; }
     </style>
@@ -50,7 +50,7 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15 19l-7-7 7-7" />
                 </svg>
             </a>
-            <h1 id="page-title" class="text-lg font-black tracking-tighter uppercase">Inscriptions</h1>
+            <h1 id="page-title" class="text-lg font-black tracking-tighter uppercase">Enregistrement des élèves</h1>
             <div class="w-8"></div> 
         </div>
         
@@ -84,8 +84,8 @@
         <div id="listeContainer"></div>
 
         <div class="max-w-md mx-auto flex gap-3 mt-6 mb-10">
-            <button onclick="exporterListe()" class="btn-nav bg-zinc-800 text-white border border-zinc-700">Exporter .txt</button>
-            <button onclick="toutEffacer()" class="btn-nav bg-red-900/40 text-red-500 border border-red-900/50">Vider la liste</button>
+            <button onclick="exporterListe()" class="btn-nav bg-neutral-800 text-white">👆exporter la liste .txt👆 </button>
+            <button onclick="toutEffacer()" class="btn-nav bg-red-500 text-red-100">Effacer la liste</button>
         </div>
     </div>
 
@@ -98,15 +98,17 @@
             'rose': '#f43f5e', 'gray': '#6b7280'
         };
 
-        // Table de correspondance Niveau -> Couleur (pour l'affichage de la liste)
         const couleurParNiveau = {
-            'CP': '#ec4899',    // Rose
-            'CE1': '#3b82f6',   // Bleu
-            'CE2': '#eab308',   // Jaune
-            'CM1': '#ef4444',   // Rouge
-            'CM2': '#22c55e',   // Vert
-            'AUTRE': '#8b5cf6'  // Violet
+            'CP': '#ec4899',
+            'CE1': '#3b82f6',
+            'CE2': '#eab308',
+            'CM1': '#ef4444',
+            'CM2': '#22c55e',
+            'AUTRE': '#8b5cf6'
         };
+
+        // Ordre imposé pour l'affichage
+        const ordreNiveaux = ['CP', 'CE1', 'CE2', 'CM1', 'CM2', 'AUTRE'];
 
         const themePrefs = JSON.parse(localStorage.getItem('theme_tuiles')) || {};
         const couleurInscr = themePrefs.inscr || 'lime';
@@ -191,22 +193,22 @@
                 groupes[niv].push(el);
             });
 
-            const nomsNiveaux = Object.keys(groupes).sort();
+            // Tri des niveaux selon l'ordre défini dans ordreNiveaux
+            const nomsNiveauxPresents = Object.keys(groupes).sort((a, b) => {
+                return ordreNiveaux.indexOf(a) - ordreNiveaux.indexOf(b);
+            });
             
-            // Layout de la grille
-            if (nomsNiveaux.length === 2) {
+            if (nomsNiveauxPresents.length === 2) {
                 container.className = "grid grid-cols-2 gap-3 items-start";
-            } else if (nomsNiveaux.length >= 3) {
+            } else if (nomsNiveauxPresents.length >= 3) {
                 container.className = "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 items-start";
             } else {
                 container.className = "flex flex-col gap-4 max-w-md mx-auto";
             }
 
-            nomsNiveaux.forEach(niv => {
+            nomsNiveauxPresents.forEach(niv => {
                 const col = document.createElement('div');
                 col.className = "level-column";
-                
-                // On utilise la couleur spécifique au niveau pour le titre de la colonne
                 const colColor = couleurParNiveau[niv] || hexaTheme;
                 
                 col.innerHTML = `
