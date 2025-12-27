@@ -90,6 +90,9 @@
         let savedComments = JSON.parse(localStorage.getItem('studentObservations')) || {};
         let currentStudentId = "";
 
+        // Ordre de tri spécifique
+        const ordreNiveaux = ['CP', 'CE1', 'CE2', 'CM1', 'CM2', 'AUTRE'];
+
         const couleurParNiveau = {
             'CP': '#ec4899',
             'CE1': '#3b82f6',
@@ -149,9 +152,12 @@
                 groupes[niv].push(el);
             });
 
-            const niveauxTries = Object.keys(groupes).sort();
+            // Tri des niveaux selon l'ordre personnalisé
+            const niveauxPresents = Object.keys(groupes).sort((a, b) => {
+                return ordreNiveaux.indexOf(a) - ordreNiveaux.indexOf(b);
+            });
 
-            niveauxTries.forEach(niv => {
+            niveauxPresents.forEach(niv => {
                 const levelWrapper = document.createElement('div');
                 levelWrapper.className = "level-group";
                 const colorTitle = couleurParNiveau[niv] || '#ffffff';
