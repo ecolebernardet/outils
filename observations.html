@@ -90,7 +90,6 @@
         let savedComments = JSON.parse(localStorage.getItem('studentObservations')) || {};
         let currentStudentId = "";
 
-        // Ordre de tri spécifique
         const ordreNiveaux = ['CP', 'CE1', 'CE2', 'CM1', 'CM2', 'AUTRE'];
 
         const couleurParNiveau = {
@@ -152,7 +151,6 @@
                 groupes[niv].push(el);
             });
 
-            // Tri des niveaux selon l'ordre personnalisé
             const niveauxPresents = Object.keys(groupes).sort((a, b) => {
                 return ordreNiveaux.indexOf(a) - ordreNiveaux.indexOf(b);
             });
@@ -162,7 +160,8 @@
                 levelWrapper.className = "level-group";
                 const colorTitle = couleurParNiveau[niv] || '#ffffff';
                 
-                levelWrapper.innerHTML = `<h2 style="color:${colorTitle}" class="text-[11px] font-black uppercase tracking-widest text-center mb-2 border-b border-white/10 pb-1">${niv}</h2>`;
+                // MODIFICATION ICI : retrait des classes de bordure et padding bottom
+                levelWrapper.innerHTML = `<h2 style="color:${colorTitle}" class="text-[11px] font-black uppercase tracking-widest text-center mb-2">${niv}</h2>`;
                 
                 const list = document.createElement('div');
                 groupes[niv].sort((a,b) => a.identite.localeCompare(b.identite)).forEach(el => {

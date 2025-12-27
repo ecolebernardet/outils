@@ -7,76 +7,40 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-        body { 
-            font-family: 'Inter', sans-serif; 
-            touch-action: manipulation;
-            background-color: #000;
+        :root { --primary: #0ea5e9; --bg-dark: #000000; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg-dark); margin: 0; padding: 10px; min-height: 100vh; color: white; touch-action: manipulation; }
+
+        .header-nav { display: flex; align-items: center; justify-content: space-between; width: 100%; max-width: 500px; margin: 10px auto 20px auto; padding: 0 10px; }
+        #btn-retour { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%; transition: all 0.3s ease; }
+        #mainTitle { text-align: center; font-weight: 800; font-size: 0.9rem; letter-spacing: 1.5px; margin: 0; flex-grow: 1; text-transform: uppercase;}
+
+        .columns-container { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%; max-width: 600px; margin: 0 auto; align-items: start; }
+        .level-group { margin-bottom: 20px; }
+
+        .student-item { 
+            background-color: #ffffff; 
+            padding: 6px 10px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            cursor: pointer; 
+            border-radius: 50px; 
+            margin-bottom: 4px; 
+            transition: all 0.1s;
         }
 
-        .header-nav {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            width: 100%;
-            max-width: 500px;
-            margin: 10px auto 20px auto;
-            padding: 0 10px;
-        }
-        #btn-retour {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            transition: all 0.3s ease;
-        }
-
-        #mainTitle {
-            text-align: center;
-            font-weight: 800;
-            font-size: 0.9rem;
-            letter-spacing: 1.5px;
-            margin: 0;
-            text-transform: uppercase;
-            flex-grow: 1;
-        }
+        .text-girl { color: #db2777; } 
+        .text-boy { color: #2563eb; } 
         
-        .level-title {
-            text-align: center;
-            font-size: 11px;
-            font-weight: 900;
-            margin-bottom: 12px;
-            margin-top: 15px;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            width: 100%;
-        }
-
-        /* Grille des élèves (toujours sur 2 colonnes à l'intérieur d'un niveau) */
-        .student-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 8px;
-            margin-bottom: 20px;
-        }
-
-        /* Conteneur spécial si 2 niveaux uniquement */
-        .main-grid-2-cols {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            align-items: start;
-        }
+        .student-name { font-weight: 800; font-size: 0.65rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
         .counter-badge {
             width: 1.1rem; height: 1.1rem; min-width: 1.1rem;
             display: flex; align-items: center; justify-content: center;
-            border-radius: 50%; font-weight: 800; font-size: 0.85rem;
+            border-radius: 50%; font-weight: 800; font-size: 0.75rem;
             transition: all 0.1s ease; border: 1px solid rgba(0,0,0,0.1);
             background-color: #f3f4f6; color: #9ca3af;
         }
-        
         .count-1 { color: #000; background-color: #aee386; }
         .count-2 { color: #000; background-color: #fcff21; }
         .count-3 { color: #000; background-color: #ffc20a; }
@@ -90,52 +54,28 @@
         @keyframes pulse { from { transform: scale(1); } to { transform: scale(1.05); } }
         .no-select { -webkit-tap-highlight-color: transparent; user-select: none; }
 
-        .student-card {
-            background-color: #ffffff;
-            padding: 6px 10px; 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            cursor: pointer; 
-            border-radius: 50px; 
-            transition: all 0.1s;
-        }
-
-        .text-girl { color: #db2777; } 
-        .text-boy { color: #2563eb; }  
-
-        .bottom-nav {
-            display: flex; gap: 10px; width: 100%; max-width: 350px;
-            margin: 25px auto 0 auto; padding-bottom: 60px;
-        }
-        
-        .nav-btn {
-            flex: 1; font-weight: 800; padding: 10px; border-radius: 50px;
-            font-size: 9px; text-align: center; border: none;
-            cursor: pointer; letter-spacing: 1px;
-        }
+        .bottom-nav { width: 100%; max-width: 350px; margin: 25px auto 0 auto; padding-bottom: 60px; }
+        .nav-btn { font-weight: 800; border-radius: 50px; font-size: 9px; padding: 12px; border: none; width: 100%; display: flex; align-items: center; justify-content: center; }
     </style>
 </head>
-<body class="min-h-screen">
-    <div class="p-2 max-w-2xl mx-auto"> 
+<body>
 
-        <header class="header-nav">
-            <a href="index.html" id="btn-retour">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15 19l-7-7 7-7" />
-                </svg>
-            </a>
-            <h1 id="mainTitle">Suivi du comportement</h1>
-            <div style="width: 40px;"></div>
-        </header>
+    <header class="header-nav">
+        <a href="index.html" id="btn-retour">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15 19l-7-7 7-7" />
+            </svg>
+        </a>
+        <h1 id="mainTitle">Suivi du comportement</h1>
+        <div style="width: 40px;"></div>
+    </header>
 
-        <main id="mainContent"></main>
+    <div id="mainContent" class="columns-container"></div>
 
-        <div class="bottom-nav">
-            <button id="reset-button" class="nav-btn bg-red-500 text-red-50 shadow-lg active:scale-95 ">
-                ⚠️ RàZ des données
-            </button>
-        </div>
+    <div class="bottom-nav">
+        <button id="reset-button" class="nav-btn bg-red-500 text-red-50 shadow-lg active:scale-95">
+            ⚠️ RàZ des données
+        </button>
     </div>
 
     <script>
@@ -148,24 +88,27 @@
             'rose': '#f43f5e', 'gray': '#6b7280'
         };
 
+        const couleursDecidees = {
+            "CP": "#ec4899", "CE1": "#3b82f6", "CE2": "#eab308", 
+            "CM1": "#ef4444", "CM2": "#22c55e", "AUTRE": "#a855f7"
+        };
+
         function appliquerTheme() {
             const prefs = JSON.parse(localStorage.getItem('theme_tuiles')) || {};
             const nomCouleur = prefs['compt'] || 'sky';
             const couleurHexa = mapCouleurs[nomCouleur] || '#0ea5e9';
-            
             const titre = document.getElementById('mainTitle');
             const btnRetour = document.getElementById('btn-retour');
-
             if (titre) titre.style.color = couleurHexa;
-            if (btnRetour) {
-                btnRetour.style.backgroundColor = couleurHexa;
-            }
+            if (btnRetour) btnRetour.style.backgroundColor = couleurHexa;
         }
 
         function formatNameDisplay(fullName) {
             const parts = fullName.trim().split(' ');
             if (parts.length === 0) return "";
-            return parts[0].charAt(0).toUpperCase() + parts[0].slice(1).toLowerCase();
+            const first = parts[0].charAt(0).toUpperCase() + parts[0].slice(1).toLowerCase();
+            const last = parts.slice(1).join(' ').toUpperCase();
+            return (first + ' ' + last).trim();
         }
 
         const saveState = () => {
@@ -202,10 +145,10 @@
         function createRow(name, sexe) {
             const card = document.createElement('div');
             const genderClass = (sexe && sexe.toLowerCase() === 'f') ? 'text-girl' : 'text-boy';
-            card.className = `student-card no-select ${genderClass}`;
+            card.className = `student-item no-select ${genderClass}`;
 
-            const nameEl = document.createElement('div');
-            nameEl.className = 'font-extrabold text-[11px] leading-tight pr-2 truncate';
+            const nameEl = document.createElement('span');
+            nameEl.className = 'student-name';
             nameEl.innerText = formatNameDisplay(name);
 
             const badge = document.createElement('div');
@@ -261,11 +204,6 @@
             const allStudents = JSON.parse(localStorage.getItem('maListeEleves')) || [];
             const paletteNiveaux = JSON.parse(localStorage.getItem('palette_niveaux')) || {};
             
-            const couleursDecidees = {
-                "CP": "#ec4899", "CE1": "#3b82f6", "CE2": "#eab308", 
-                "CM1": "#ef4444", "CM2": "#22c55e", "AUTRE": "#a855f7"
-            };
-
             const groupes = {};
             allStudents.forEach(s => {
                 const niv = s.niveau.trim().toUpperCase();
@@ -282,33 +220,21 @@
                 return indexA - indexB;
             });
 
-            // LOGIQUE 2 COLONNES : Si exactement 2 niveaux, on ajoute la classe grid au main
-            if (niveauxTries.length === 2) {
-                mainContent.className = "main-grid-2-cols";
-            } else {
-                mainContent.className = "";
-            }
-
             niveauxTries.forEach(niv => {
-                const section = document.createElement('div');
-                const couleurNiveau = paletteNiveaux[niv] || paletteNiveaux[niv.toLowerCase()] || couleursDecidees[niv] || '#555';
+                const levelWrapper = document.createElement('div');
+                levelWrapper.className = "level-group";
+                const couleurNiveau = paletteNiveaux[niv] || couleursDecidees[niv] || '#ffffff';
                 
-                section.innerHTML = `<div class="level-title" style="color: ${couleurNiveau} !important;">${niv}</div>`;
+                // MODIFICATION ICI : Retrait des classes border-b et padding
+                levelWrapper.innerHTML = `<h2 style="color:${couleurNiveau}" class="text-[11px] font-black uppercase tracking-widest text-center mb-2">${niv}</h2>`;
                 
-                const grid = document.createElement('div');
-                grid.className = "student-grid";
-
-                // Ajustement : si le main est déjà en 2 colonnes, on passe les grids internes en 1 seule colonne pour éviter d'être trop serré
-                if (niveauxTries.length === 2) {
-                    grid.style.gridTemplateColumns = "1fr";
-                }
-
+                const list = document.createElement('div');
                 groupes[niv].sort((a,b) => a.identite.localeCompare(b.identite)).forEach(student => {
-                    grid.appendChild(createRow(student.identite, student.sexe));
+                    list.appendChild(createRow(student.identite, student.sexe));
                 });
 
-                section.appendChild(grid);
-                mainContent.appendChild(section);
+                levelWrapper.appendChild(list);
+                mainContent.appendChild(levelWrapper);
             });
 
             loadState();
