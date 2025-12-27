@@ -44,9 +44,9 @@
             justify-content: space-between; align-items: center;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             min-width: 0;
+            border-left: 4px solid transparent; /* Changé dynamiquement en JS */
         }
 
-        /* POIGNÉE À 6 POINTS */
         .drag-handle {
             cursor: grab;
             padding-right: 10px;
@@ -66,7 +66,7 @@
         .link-info { flex: 1; cursor: pointer; min-width: 0; }
         .link-name { 
             font-weight: 800; font-size: 10px; display: block; 
-            color: #111827; text-transform: uppercase; 
+            text-transform: uppercase; 
             line-height: 1.1; overflow: hidden; 
             text-overflow: ellipsis; white-space: nowrap; 
         }
@@ -123,7 +123,7 @@
     <div class="tabs-container" id="tabs">
         <button class="tab-btn active" onclick="filterCat('Tous')">Tous</button>
         <button class="tab-btn" onclick="filterCat('Ressources')">Ressources</button>
-        <button class="tab-btn" onclick="filterCat('Institutionnel')">Instit.</button>
+        <button class="tab-btn" onclick="filterCat('Institutionnel')">Institutionnel</button>
         <button class="tab-btn" onclick="filterCat('Autre')">Autre</button>
     </div>
 
@@ -143,6 +143,13 @@
     const couleurLiens = themePrefs.liens || 'green';
     let links = JSON.parse(localStorage.getItem('eduLinksList')) || [];
     let currentFilter = 'Tous';
+
+    // Configuration des couleurs par catégorie (Tailwind)
+    const configCouleurs = {
+        'Ressources': { text: 'text-blue-600', border: '#2563eb' },
+        'Institutionnel': { text: 'text-purple-600', border: '#9333ea' },
+        'Autre': { text: 'text-emerald-600', border: '#10b981' }
+    };
 
     function appliquerTheme() {
         const title = document.getElementById('mainTitle');
@@ -187,9 +194,15 @@
         listDiv.innerHTML = '';
         links.forEach((link, idx) => {
             if (currentFilter !== 'Tous' && link.cat !== currentFilter) return;
+            
+            // Récupération du style spécifique à la catégorie
+            const styleCat = configCouleurs[link.cat] || { text: 'text-gray-600', border: '#9ca3af' };
+            
             const item = document.createElement('div');
             item.className = 'link-item';
             item.setAttribute('data-index', idx);
+            item.style.borderLeftColor = styleCat.border;
+
             item.innerHTML = `
                 <div class="drag-handle">
                     <span></span><span></span>
@@ -197,7 +210,7 @@
                     <span></span><span></span>
                 </div>
                 <div class="link-info" onclick="window.open('${link.url}', '_blank')">
-                    <span class="link-name text-${couleurLiens}-700">${link.name}</span>
+                    <span class="link-name ${styleCat.text}">${link.name}</span>
                     <span class="link-url">${link.url}</span>
                 </div>
                 <div class="btn-del" onclick="event.stopPropagation(); deleteLink(${idx})">
@@ -236,7 +249,12 @@
         currentFilter = cat;
         document.querySelectorAll('.tab-btn').forEach(btn => {
             btn.classList.remove('active');
-            if(btn.innerText.toLowerCase().includes(cat.toLowerCase().substring(0,4))) btn.classList.add('active');
+            // On compare avec le texte du bouton (Instit. correspond à Institutionnel)
+            const text = btn.innerText.toLowerCase();
+            if(cat === 'Tous' && text === 'tous') btn.classList.add('active');
+            else if(cat === 'Ressources' && text === 'ressources') btn.classList.add('active');
+            else if(cat === 'Institutionnel' && text === 'institutionnel') btn.classList.add('active');
+            else if(cat === 'Autre' && text === 'autre') btn.classList.add('active');
         });
         updateTabColors(); 
         render();
