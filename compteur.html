@@ -53,11 +53,20 @@
             width: 100%;
         }
 
+        /* Grille des élèves (toujours sur 2 colonnes à l'intérieur d'un niveau) */
         .student-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 8px;
             margin-bottom: 20px;
+        }
+
+        /* Conteneur spécial si 2 niveaux uniquement */
+        .main-grid-2-cols {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            align-items: start;
         }
 
         .counter-badge {
@@ -252,13 +261,11 @@
             const allStudents = JSON.parse(localStorage.getItem('maListeEleves')) || [];
             const paletteNiveaux = JSON.parse(localStorage.getItem('palette_niveaux')) || {};
             
-            // Couleurs par défaut si vide
             const couleursDecidees = {
                 "CP": "#ec4899", "CE1": "#3b82f6", "CE2": "#eab308", 
                 "CM1": "#ef4444", "CM2": "#22c55e", "AUTRE": "#a855f7"
             };
 
-            // Groupement par niveau
             const groupes = {};
             allStudents.forEach(s => {
                 const niv = s.niveau.trim().toUpperCase();
@@ -266,7 +273,6 @@
                 groupes[niv].push(s);
             });
 
-            // Ordre de tri
             const ordreNiveaux = ["CP", "CE1", "CE2", "CM1", "CM2", "AUTRE"];
             const niveauxTries = Object.keys(groupes).sort((a, b) => {
                 let indexA = ordreNiveaux.indexOf(a);
@@ -276,6 +282,13 @@
                 return indexA - indexB;
             });
 
+            // LOGIQUE 2 COLONNES : Si exactement 2 niveaux, on ajoute la classe grid au main
+            if (niveauxTries.length === 2) {
+                mainContent.className = "main-grid-2-cols";
+            } else {
+                mainContent.className = "";
+            }
+
             niveauxTries.forEach(niv => {
                 const section = document.createElement('div');
                 const couleurNiveau = paletteNiveaux[niv] || paletteNiveaux[niv.toLowerCase()] || couleursDecidees[niv] || '#555';
@@ -284,6 +297,11 @@
                 
                 const grid = document.createElement('div');
                 grid.className = "student-grid";
+
+                // Ajustement : si le main est déjà en 2 colonnes, on passe les grids internes en 1 seule colonne pour éviter d'être trop serré
+                if (niveauxTries.length === 2) {
+                    grid.style.gridTemplateColumns = "1fr";
+                }
 
                 groupes[niv].sort((a,b) => a.identite.localeCompare(b.identite)).forEach(student => {
                     grid.appendChild(createRow(student.identite, student.sexe));
