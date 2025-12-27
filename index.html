@@ -22,7 +22,6 @@
         }
         .menu-card:active { transform: scale(0.98); }
         
-        /* Poignée à 9 points fins en gris */
         .drag-handle {
             position: absolute;
             top: 8px;
@@ -30,7 +29,7 @@
             display: grid;
             grid-template-columns: repeat(3, 2px);
             gap: 3px;
-            opacity: 0.3; /* Gris discret */
+            opacity: 0.3;
             cursor: grab;
             z-index: 30;
             padding: 4px;
@@ -38,11 +37,10 @@
         .drag-handle span {
             width: 2px;
             height: 2px;
-            background-color: #000; /* Retour au noir avec opacité pour l'effet gris */
+            background-color: #000;
             border-radius: 50%;
         }
         .drag-handle:active { cursor: grabbing; opacity: 0.8; }
-
         .sortable-ghost { opacity: 0.1; }
     </style>
 </head>
@@ -142,13 +140,24 @@
                     <h3 class="text-gray-600 text-[9px]">Comportement</h3>
                 </a>
             </div>
+
+            <div data-id="docs" class="menu-card flex flex-col items-center justify-center text-center p-3 pt-5">
+                <div class="drag-handle"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+                <a href="documents.html" class="w-full h-full flex flex-col items-center">
+                    <div class="icon-bg w-12 h-12 flex items-center justify-center rounded-full mb-1 border shadow-inner">
+                        <span class="text-2xl">📂</span>
+                    </div>
+                    <h2 class="text-black font-semibold text-[11px]">Documents</h2>
+                    <h3 class="text-gray-600 text-[9px]">Mes ressources</h3>
+                </a>
+            </div>
         </nav>
     </div>
 
 <script>
     const defaultColors = {
         inscr: 'lime', h108: 'orange', liens: 'indigo', tirage: 'yellow', 
-        equipes: 'rose', memos: 'purple', obs: 'green', compt: 'sky'
+        equipes: 'rose', memos: 'purple', obs: 'green', compt: 'sky', docs: 'red'
     };
 
     const prefs = JSON.parse(localStorage.getItem('theme_tuiles')) || defaultColors;
