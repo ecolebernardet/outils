@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Mes Notes - CE2/CM2</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
         
@@ -23,16 +24,47 @@
         .note-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
         @media (min-width: 480px) { .note-grid { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); } }
 
-        .note-card { border-radius: 12px; padding: 10px; min-height: 90px; cursor: pointer; color: #121212; border: 1px solid rgba(0,0,0,0.1); display: flex; flex-direction: column; justify-content: space-between; }
+        .note-card { border-radius: 12px; padding: 10px; min-height: 90px; color: #121212; border: 1px solid rgba(0,0,0,0.1); display: flex; flex-direction: column; position: relative; }
         .note-card.dark-note { color: #ffffff; }
-        .note-card-content { font-size: 11px; font-weight: 500; line-height: 1.3; white-space: pre-wrap; word-break: break-word; }
+        
+        .drag-handle {
+            display: grid;
+            grid-template-columns: repeat(3, 2px);
+            gap: 2px;
+            opacity: 0.3;
+            cursor: grab;
+            padding: 4px;
+            margin-left: 8px;
+            flex-shrink: 0;
+        }
+        .drag-handle span { width: 2px; height: 2px; background-color: currentColor; border-radius: 50%; }
+
+        .note-header { display: flex; align-items: flex-start; justify-content: space-between; border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 4px; margin-bottom: 6px; }
+        .dark-note .note-header { border-bottom: 1px solid rgba(255,255,255,0.2); }
+        
+        /* Titre sur 2 lignes maximum */
+        .note-title { 
+            font-size: 10px; 
+            font-weight: 800; 
+            text-transform: uppercase; 
+            line-height: 1.2;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            white-space: pre-wrap; /* Permet les retours à la ligne */
+            word-break: break-word;
+        }
+
+        .note-card-content { font-size: 11px; font-weight: 500; line-height: 1.3; white-space: pre-wrap; word-break: break-word; cursor: pointer; }
+        .sortable-ghost { opacity: 0.2; transform: scale(0.95); }
 
         .bottom-nav { width: 100%; max-width: 500px; margin: 25px auto 0; padding-bottom: 40px; }
         .nav-btn { font-weight: 900; border-radius: 50px; font-size: 10px; padding: 12px; border: none; flex: 1; display: flex; align-items: center; justify-content: center; gap: 5px; cursor: pointer; }
 
         .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); align-items: center; justify-content: center; z-index: 1000; padding: 15px; }
         .modal-content { background: white; padding: 18px; border-radius: 15px; width: 100%; max-width: 350px; color: #111; max-height: 90vh; overflow-y: auto; }
-        .modal-content textarea { width: 100%; margin: 15px 0; padding: 12px; border-radius: 10px; border: 1px solid #ccc; font-size: 15px; background: #f4f4f4; color: #000 !important; }
+        .modal-content textarea { width: 100%; margin-bottom: 10px; padding: 12px; border-radius: 10px; border: 1px solid #ccc; font-size: 15px; background: #f4f4f4; color: #000 !important; }
         .btns { display: flex; gap: 8px; }
         .modal-btn { flex: 1; padding: 12px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; }
         .btn-cancel { background: #eee; color: #555; }
@@ -52,6 +84,7 @@
         </header>
 
         <div class="light-card p-4 mb-4 shadow-xl">
+            <textarea id="newNoteTitle" class="input-field mb-2 resize-none h-[45px]" placeholder="Titre (max 2 lignes)..."></textarea>
             <textarea id="newNoteInput" class="input-field mb-3 min-h-[60px] resize-none" placeholder="Saisir une note..." oninput="autoExpand(this)"></textarea>
             <div class="flex justify-between items-end">
                 <div class="flex flex-wrap gap-2 max-w-[65%]" id="newColorPicker">
@@ -83,7 +116,8 @@
     <div id="editModal" class="modal-overlay">
         <div class="modal-content">
             <h2 class="text-gray-800 font-black text-xs uppercase tracking-widest mb-1">Modifier</h2>
-            <textarea id="editNoteInput" rows="5"></textarea>
+            <textarea id="editNoteTitle" rows="2" placeholder="Titre" class="resize-none"></textarea>
+            <textarea id="editNoteInput" rows="5" placeholder="Note"></textarea>
             <p class="text-[9px] text-gray-400 uppercase font-bold mb-2">Couleur :</p>
             <div class="flex flex-wrap gap-2 mb-6" id="editColorPicker"></div>
             <div class="btns">
@@ -104,31 +138,22 @@
         };
 
         function appliquerTheme() {
-            // Utilisation de la clé "memos" comme demandé
             const themePrefs = JSON.parse(localStorage.getItem('theme_tuiles')) || {};
             const nomCouleur = themePrefs.memos || 'yellow';
             const hex = mapCouleurs[nomCouleur] || '#eab308';
-
             const title = document.getElementById('pageTitle');
             const btn = document.getElementById('addBtn');
             const modalBtn = document.getElementById('modalSaveBtn');
             const btnRetour = document.getElementById('btn-retour');
-
             const isLight = ['yellow', 'lime', 'amber', 'cyan'].includes(nomCouleur);
 
             if(title) title.style.color = hex;
-            
             if(btnRetour) {
                 btnRetour.style.backgroundColor = hex;
                 btnRetour.style.color = isLight ? 'black' : 'white';
-                btnRetour.style.border = "1px solid rgba(255,255,255,0.2)";
             }
-
             [btn, modalBtn].forEach(el => {
-                if(el) {
-                    el.style.backgroundColor = hex;
-                    el.style.color = isLight ? 'black' : 'white';
-                }
+                if(el) { el.style.backgroundColor = hex; el.style.color = isLight ? 'black' : 'white'; }
             });
         }
 
@@ -137,6 +162,24 @@
         let selectedColorForNew = '#fef08a';
         let selectedColorForEdit = '#fef08a';
         const palette = ['#fef08a', '#fca5a5', '#fdba74', '#86efac', '#7dd3fc', '#ffffff', '#4b5563'];
+
+        function setupSortable() {
+            const grid = document.getElementById('notesGrid');
+            new Sortable(grid, {
+                handle: '.drag-handle',
+                animation: 150,
+                ghostClass: 'sortable-ghost',
+                onEnd: function() {
+                    const newOrder = [];
+                    grid.querySelectorAll('.note-card').forEach(card => {
+                        newOrder.push(notes[card.dataset.index]);
+                    });
+                    notes = newOrder;
+                    localStorage.setItem('myKeepNotes', JSON.stringify(notes));
+                    renderNotes();
+                }
+            });
+        }
 
         function setupColorPickers() {
             document.querySelectorAll('#newColorPicker .color-dot').forEach(dot => {
@@ -165,38 +208,54 @@
         function renderNotes() {
             const grid = document.getElementById('notesGrid');
             grid.innerHTML = '';
-            const searchInput = document.getElementById('searchInput');
-            const search = searchInput ? searchInput.value.toLowerCase() : "";
+            const search = document.getElementById('searchInput').value.toLowerCase();
             
             notes.forEach((note, index) => {
-                if (note.content.toLowerCase().includes(search)) {
+                const searchStr = ((note.title || '') + note.content).toLowerCase();
+                if (searchStr.includes(search)) {
                     const card = document.createElement('div');
                     card.className = 'note-card shadow-sm active:scale-95 transition-transform';
+                    card.dataset.index = index;
                     if(note.color === '#4b5563') card.classList.add('dark-note');
                     card.style.backgroundColor = note.color || '#fef08a';
-                    card.innerHTML = `<div class="note-card-content">${note.content}</div>`;
-                    card.onclick = () => openEditModal(index);
+                    
+                    card.innerHTML = `
+                        <div class="note-header">
+                            <div class="note-title">${note.title || ''}</div>
+                            <div class="drag-handle">
+                                <span></span><span></span><span></span>
+                                <span></span><span></span><span></span>
+                                <span></span><span></span><span></span>
+                            </div>
+                        </div>
+                        <div class="note-card-content" onclick="openEditModal(${index})">${note.content}</div>
+                    `;
                     grid.appendChild(card);
                 }
             });
         }
 
         function addNote() {
-            const input = document.getElementById('newNoteInput');
-            if (input.value.trim()) {
-                notes.unshift({ content: input.value.trim(), color: selectedColorForNew });
+            const titleInput = document.getElementById('newNoteTitle');
+            const contentInput = document.getElementById('newNoteInput');
+            if (contentInput.value.trim()) {
+                notes.unshift({ 
+                    title: titleInput.value.trim(), 
+                    content: contentInput.value.trim(), 
+                    color: selectedColorForNew 
+                });
                 saveAndRender();
-                input.value = ''; input.style.height = '60px';
+                titleInput.value = ''; contentInput.value = ''; contentInput.style.height = '60px';
             }
         }
 
         function openEditModal(index) {
             currentNoteIndex = index;
             const note = notes[index];
+            document.getElementById('editNoteTitle').value = note.title || '';
             document.getElementById('editNoteInput').value = note.content;
             selectedColorForEdit = note.color || '#fef08a';
-            const dots = document.querySelectorAll('#editColorPicker .color-dot');
-            dots.forEach(dot => {
+            document.querySelectorAll('#editColorPicker .color-dot').forEach(dot => {
                 dot.classList.remove('active');
                 if(dot.dataset.color === selectedColorForEdit) dot.classList.add('active');
             });
@@ -204,6 +263,7 @@
         }
 
         function saveEditedNote() {
+            notes[currentNoteIndex].title = document.getElementById('editNoteTitle').value;
             notes[currentNoteIndex].content = document.getElementById('editNoteInput').value;
             notes[currentNoteIndex].color = selectedColorForEdit;
             saveAndRender(); closeModal('editModal');
@@ -233,9 +293,8 @@
             reader.onload = function(e) {
                 try {
                     const data = JSON.parse(e.target.result);
-                    if (Array.isArray(data) && confirm("Importer ces notes ? (Remplacera vos notes actuelles)")) {
-                        notes = data;
-                        saveAndRender();
+                    if (Array.isArray(data) && confirm("Importer ces notes ?")) {
+                        notes = data; saveAndRender();
                     }
                 } catch (err) { alert("Fichier invalide."); }
             };
@@ -249,6 +308,7 @@
             appliquerTheme();
             setupColorPickers();
             renderNotes();
+            setupSortable();
         };
     </script>
 </body>
