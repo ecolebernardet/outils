@@ -14,8 +14,10 @@
         #btn-retour { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%; transition: all 0.3s ease; }
         #mainTitle { text-align: center; font-weight: 800; font-size: 0.9rem; letter-spacing: 1.5px; margin: 0; flex-grow: 1; text-transform: uppercase;}
 
-        .columns-container { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; max-width: 500px; margin: 0 auto; }
+        .columns-container { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%; max-width: 600px; margin: 0 auto; align-items: start; }
         
+        .level-group { margin-bottom: 20px; }
+
         .student-item { 
             background-color: #ffffff; 
             padding: 6px 10px; 
@@ -31,8 +33,8 @@
         .text-girl { color: #db2777; } 
         .text-boy { color: #2563eb; } 
         
-        .student-name { font-weight: 800; font-size: 0.7rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .status-icon { font-size: 0.7rem; opacity: 0.8; }
+        .student-name { font-weight: 800; font-size: 0.65rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .status-icon { font-size: 0.65rem; opacity: 0.8; }
 
         .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(4px); }
         .modal-content { background: #1a1a1a; padding: 20px; border-radius: 20px; width: 92%; max-width: 400px; border: 1px solid #333; }
@@ -43,7 +45,7 @@
         .btn-cancel { background: #333; color: #ccc; }
 
         .bottom-nav { width: 100%; max-width: 500px; margin: 25px auto 0; padding-bottom: 40px; }
-        .nav-btn { font-weight: 900; border-radius: 50px; font-size: 10px; padding: 12px; border: none; flex: 1; display: flex; align-items: center; justify-content: center; gap: 5px; }
+        .nav-btn { font-weight: 900; border-radius: 50px; font-size: 9px; padding: 12px; border: none; flex: 1; display: flex; align-items: center; justify-content: center; gap: 5px; text-transform: uppercase; }
         .no-select { -webkit-tap-highlight-color: transparent; user-select: none; }
     </style>
 </head>
@@ -55,18 +57,18 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15 19l-7-7 7-7" />
             </svg>
         </a>
-        <h1 id="mainTitle">INFOS ÉLÈVES</h1>
+        <h1 id="mainTitle">OBSERVATIONS</h1>
         <div style="width: 40px;"></div>
     </header>
 
     <div id="listeContainer" class="columns-container"></div>
 
     <footer class="bottom-nav flex gap-2 px-2">
-        <button onclick="exportToFile()" class="nav-btn bg-zinc-800 text-white ">👆exporter .txt👆</button>
-        <label class="nav-btn bg-zinc-800 text-white cursor-pointer  text-center">
+        <label class="nav-btn bg-zinc-800 text-white cursor-pointer text-center">
             👇importer .txt👇
             <input type="file" id="importFile" class="hidden" accept=".txt">
         </label>
+        <button onclick="exportToFile()" class="nav-btn bg-zinc-800 text-white ">👆exporter .txt👆</button>
     </footer>
 
     <div id="modal" class="modal-overlay">
@@ -84,6 +86,15 @@
         let elevesInscrits = JSON.parse(localStorage.getItem('maListeEleves')) || [];
         let savedComments = JSON.parse(localStorage.getItem('studentObservations')) || {};
         let currentStudentId = "";
+
+        const couleurParNiveau = {
+            'CP': '#ec4899',    // Rose
+            'CE1': '#3b82f6',   // Bleu
+            'CE2': '#eab308',   // Jaune
+            'CM1': '#ef4444',   // Rouge
+            'CM2': '#22c55e',   // Vert
+            'AUTRE': '#8b5cf6'  // Violet
+        };
 
         const mapCouleurs = {
             'red': '#ef4444', 'orange': '#f97316', 'amber': '#f59e0b', 'yellow': '#eab308',
@@ -103,10 +114,7 @@
             const btnSave = document.querySelector('.btn-save');
 
             if(mainTitle) mainTitle.style.color = couleurHexa;
-            if(btnRetour) {
-                btnRetour.style.backgroundColor = couleurHexa;
-                btnRetour.style.border = "1px solid rgba(255,255,255,0.2)";
-            }
+            if(btnRetour) btnRetour.style.backgroundColor = couleurHexa;
             if(btnSave) {
                 btnSave.style.backgroundColor = couleurHexa;
                 btnSave.style.color = ['yellow', 'lime', 'amber', 'cyan'].includes(nomCouleur) ? 'black' : 'white';
@@ -127,23 +135,27 @@
             container.innerHTML = "";
             
             if (elevesInscrits.length === 0) {
-                container.innerHTML = `<div class="col-span-2 text-center p-10 text-zinc-500 text-[10px] font-bold uppercase">Aucune donnée.</div>`;
+                container.innerHTML = `<div class="col-span-2 text-center p-10 text-zinc-500 text-[10px] font-bold uppercase">Aucun élève inscrit.</div>`;
                 return;
             }
 
-            const groupes = { "CE2": [], "CM2": [] };
+            const groupes = {};
             elevesInscrits.forEach(el => {
-                const niv = el.niveau.toUpperCase().includes('CE2') ? "CE2" : "CM2";
+                const niv = el.niveau.toUpperCase();
+                if (!groupes[niv]) groupes[niv] = [];
                 groupes[niv].push(el);
             });
 
-            ["CE2", "CM2"].forEach(niv => {
-                const col = document.createElement('div');
-                col.className = "flex flex-col";
-                const colorTitle = (niv === 'CE2') ? 'text-yellow-400' : 'text-green-500';
-                col.innerHTML = `<h2 class="${colorTitle} text-[12px] font-black uppercase tracking-[0.2em] text-center mb-3">${niv}</h2>`;
+            const niveauxTries = Object.keys(groupes).sort();
+
+            niveauxTries.forEach(niv => {
+                const levelWrapper = document.createElement('div');
+                levelWrapper.className = "level-group";
+                const colorTitle = couleurParNiveau[niv] || '#ffffff';
                 
-                const listWrapper = document.createElement('div');
+                levelWrapper.innerHTML = `<h2 style="color:${colorTitle}" class="text-[11px] font-black uppercase tracking-widest text-center mb-2 border-b border-white/10 pb-1">${niv}</h2>`;
+                
+                const list = document.createElement('div');
                 groupes[niv].sort((a,b) => a.identite.localeCompare(b.identite)).forEach(el => {
                     const genderClass = (el.sexe.toLowerCase() === 'f') ? 'text-girl' : 'text-boy';
                     const item = document.createElement('div');
@@ -155,10 +167,11 @@
                         <span class="status-icon">${hasNote ? '🔎' : '＋'}</span>
                     `;
                     item.onclick = () => openCommentModal(el.id, formatName(el.identite));
-                    listWrapper.appendChild(item);
+                    list.appendChild(item);
                 });
-                col.appendChild(listWrapper); 
-                container.appendChild(col);
+                
+                levelWrapper.appendChild(list);
+                container.appendChild(levelWrapper);
             });
         }
 
@@ -204,7 +217,7 @@
             reader.onload = function(e) {
                 try {
                     const data = JSON.parse(e.target.result);
-                    if (data.eleves && confirm("Écraser les données actuelles ?")) {
+                    if (data.eleves && confirm("Importer les données du fichier ?")) {
                         localStorage.setItem('maListeEleves', JSON.stringify(data.eleves));
                         localStorage.setItem('studentObservations', JSON.stringify(data.observations || {}));
                         window.location.reload();
