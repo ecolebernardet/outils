@@ -13,7 +13,6 @@
             background-color: #000;
         }
 
-        /* HEADER AVEC BOUTON RETOUR */
         .header-nav {
             display: flex;
             align-items: center;
@@ -39,11 +38,28 @@
             font-size: 0.9rem;
             letter-spacing: 1.5px;
             margin: 0;
-			text-transform: uppercase;
+            text-transform: uppercase;
             flex-grow: 1;
         }
         
-        /* STYLE DES BADGES DE COMPTEUR */
+        .level-title {
+            text-align: center;
+            font-size: 11px;
+            font-weight: 900;
+            margin-bottom: 12px;
+            margin-top: 15px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            width: 100%;
+        }
+
+        .student-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
         .counter-badge {
             width: 1.1rem; height: 1.1rem; min-width: 1.1rem;
             display: flex; align-items: center; justify-content: center;
@@ -73,7 +89,6 @@
             align-items: center; 
             cursor: pointer; 
             border-radius: 50px; 
-            margin-bottom: 4px; 
             transition: all 0.1s;
         }
 
@@ -81,7 +96,7 @@
         .text-boy { color: #2563eb; }  
 
         .bottom-nav {
-            display: flex; gap: 10px; width: 100%; max-width: 300px;
+            display: flex; gap: 10px; width: 100%; max-width: 400px;
             margin: 25px auto 0 auto; padding-bottom: 60px;
         }
         
@@ -105,21 +120,11 @@
             <div style="width: 40px;"></div>
         </header>
 
-        <main class="grid grid-cols-2 gap-3 items-start">
-            <div class="flex flex-col">
-                <h2 class="text-yellow-400 text-[12px] font-black uppercase tracking-[0.2em] text-center mb-3">CE2</h2>
-                <div id="list-left" class="flex flex-col"></div>
-            </div>
-
-            <div class="flex flex-col">
-                <h2 class="text-green-500 text-[12px] font-black uppercase tracking-[0.2em] text-center mb-3">CM2</h2>
-                <div id="list-right" class="flex flex-col"></div>
-            </div>
-        </main>
+        <main id="mainContent"></main>
 
         <div class="bottom-nav">
             <button id="reset-button" class="nav-btn bg-red-500 text-red-50 shadow-lg active:scale-95 ">
-                RàZ
+                ⚠️ RàZ
             </button>
         </div>
     </div>
@@ -134,7 +139,6 @@
             'rose': '#f43f5e', 'gray': '#6b7280'
         };
 
-        // --- GESTION DU THÈME ---
         function appliquerTheme() {
             const prefs = JSON.parse(localStorage.getItem('theme_tuiles')) || {};
             const nomCouleur = prefs['compt'] || 'sky';
@@ -146,14 +150,12 @@
             if (titre) titre.style.color = couleurHexa;
             if (btnRetour) {
                 btnRetour.style.backgroundColor = couleurHexa;
-                btnRetour.style.border = "1px solid rgba(255,255,255,0.2)";
             }
         }
 
         function formatNameDisplay(fullName) {
             const parts = fullName.trim().split(' ');
             if (parts.length === 0) return "";
-            // Ne retourne que le prénom formaté
             return parts[0].charAt(0).toUpperCase() + parts[0].slice(1).toLowerCase();
         }
 
@@ -246,20 +248,51 @@
 
         function initApp() {
             appliquerTheme();
-            const listLeft = document.getElementById('list-left');
-            const listRight = document.getElementById('list-right');
+            const mainContent = document.getElementById('mainContent');
             const allStudents = JSON.parse(localStorage.getItem('maListeEleves')) || [];
-            allStudents.sort((a, b) => a.identite.localeCompare(b.identite));
+            const paletteNiveaux = JSON.parse(localStorage.getItem('palette_niveaux')) || {};
+            
+            // Couleurs par défaut si vide
+            const couleursDecidees = {
+                "CP": "#ec4899", "CE1": "#3b82f6", "CE2": "#eab308", 
+                "CM1": "#ef4444", "CM2": "#22c55e", "AUTRE": "#a855f7"
+            };
 
-            allStudents.forEach(student => {
-                const row = createRow(student.identite, student.sexe);
-                const niv = student.niveau.toUpperCase();
-                if (niv.includes('CE2')) {
-                    listLeft.appendChild(row);
-                } else {
-                    listRight.appendChild(row);
-                }
+            // Groupement par niveau
+            const groupes = {};
+            allStudents.forEach(s => {
+                const niv = s.niveau.trim().toUpperCase();
+                if (!groupes[niv]) groupes[niv] = [];
+                groupes[niv].push(s);
             });
+
+            // Ordre de tri
+            const ordreNiveaux = ["CP", "CE1", "CE2", "CM1", "CM2", "AUTRE"];
+            const niveauxTries = Object.keys(groupes).sort((a, b) => {
+                let indexA = ordreNiveaux.indexOf(a);
+                let indexB = ordreNiveaux.indexOf(b);
+                if (indexA === -1) indexA = 99;
+                if (indexB === -1) indexB = 99;
+                return indexA - indexB;
+            });
+
+            niveauxTries.forEach(niv => {
+                const section = document.createElement('div');
+                const couleurNiveau = paletteNiveaux[niv] || paletteNiveaux[niv.toLowerCase()] || couleursDecidees[niv] || '#555';
+                
+                section.innerHTML = `<div class="level-title" style="color: ${couleurNiveau} !important;">${niv}</div>`;
+                
+                const grid = document.createElement('div');
+                grid.className = "student-grid";
+
+                groupes[niv].sort((a,b) => a.identite.localeCompare(b.identite)).forEach(student => {
+                    grid.appendChild(createRow(student.identite, student.sexe));
+                });
+
+                section.appendChild(grid);
+                mainContent.appendChild(section);
+            });
+
             loadState();
         }
 
