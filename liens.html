@@ -18,7 +18,6 @@
 
         .main-wrapper { width: 100%; max-width: 400px; display: flex; flex-direction: column; }
 
-        /* FORMULAIRE CLAIR RÉTABLI */
         .light-card { 
             background: #e5e7eb; color: #111827; 
             border-radius: 1.2rem; padding: 12px; 
@@ -32,7 +31,6 @@
             width: 100%; margin-bottom: 6px; color: #111827;
         }
 
-        /* GRILLE DE LIENS OPTIMISÉE POUR NE PAS DÉBORDER */
         .links-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
@@ -44,12 +42,21 @@
             background: #f3f4f6; border-radius: 0.8rem; 
             padding: 8px; display: flex; 
             justify-content: space-between; align-items: center;
-            cursor: grab; touch-action: none;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            min-width: 0; /* Empêche le débordement */
+            min-width: 0;
         }
 
-        .link-info { flex: 1; cursor: pointer; min-width: 0; }
+        /* Poignée de déplacement pour éviter le conflit tactile */
+        .drag-handle {
+            cursor: grab;
+            padding-right: 8px;
+            color: #9ca3af;
+            display: flex;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        .link-info { flex: 1; cursor: pointer; min-width: 0; text-decoration: none; }
         .link-name { 
             font-weight: 800; font-size: 10px; display: block; 
             color: #111827; text-transform: uppercase; 
@@ -62,9 +69,8 @@
         }
 
         .btn-add { width: 100%; padding: 10px; border-radius: 50px; font-weight: 900; font-size: 9px; text-transform: uppercase; }
-        .btn-del { color: #9ca3af; padding-left: 5px; flex-shrink: 0; }
+        .btn-del { color: #9ca3af; padding-left: 5px; flex-shrink: 0; cursor: pointer; }
 
-        /* ONGLETS */
         .tabs-container { 
             display: flex; gap: 5px; overflow-x: auto; 
             padding-bottom: 8px; margin-bottom: 12px;
@@ -79,6 +85,8 @@
 
         .bottom-nav { width: 100%; display: flex; gap: 6px; margin-top: 20px; padding-bottom: 30px; }
         .nav-btn { font-weight: 900; border-radius: 50px; font-size: 10px; padding: 10px; flex: 1; text-align: center; background: #27272a; color: white; }
+        
+        .sortable-ghost { opacity: 0.4; background: #d1d5db; }
     </style>
 </head>
 <body>
@@ -152,12 +160,14 @@
     const sortable = new Sortable(el, {
         animation: 150,
         ghostClass: 'sortable-ghost',
+        handle: '.drag-handle', // Correction : Seule la poignée permet de déplacer
         onEnd: function() {
             if (currentFilter !== 'Tous') return;
             const items = document.querySelectorAll('.link-item');
             const newOrder = [];
             items.forEach(item => {
-                newOrder.push(links[item.getAttribute('data-index')]);
+                const idx = item.getAttribute('data-index');
+                newOrder.push(links[idx]);
             });
             links = newOrder;
             localStorage.setItem('eduLinksList', JSON.stringify(links));
@@ -174,6 +184,11 @@
             item.className = 'link-item';
             item.setAttribute('data-index', idx);
             item.innerHTML = `
+                <div class="drag-handle">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16" />
+                    </svg>
+                </div>
                 <div class="link-info" onclick="window.open('${link.url}', '_blank')">
                     <span class="link-name text-${couleurLiens}-700">${link.name}</span>
                     <span class="link-url">${link.url}</span>
@@ -190,9 +205,12 @@
 
     function addLink() {
         const name = document.getElementById('linkName').value.trim();
-        const url = document.getElementById('linkUrl').value.trim();
+        const urlInput = document.getElementById('linkUrl').value.trim();
         const cat = document.getElementById('linkCat').value;
-        if (name && url) {
+        
+        if (name && urlInput) {
+            // S'assurer que l'URL commence par http
+            const url = urlInput.startsWith('http') ? urlInput : 'https://' + urlInput;
             links.unshift({ name, url, cat });
             localStorage.setItem('eduLinksList', JSON.stringify(links));
             document.getElementById('linkName').value = '';
@@ -237,7 +255,7 @@
                 links = JSON.parse(e.target.result);
                 localStorage.setItem('eduLinksList', JSON.stringify(links));
                 render();
-            } catch (err) { alert("Erreur."); }
+            } catch (err) { alert("Erreur de format."); }
         };
         reader.readAsText(file);
     });
