@@ -20,13 +20,17 @@
             transition: all 0.2s; 
         }
 
-        /* Style spécifique pour les boutons de niveaux ronds */
+        /* Cercles plus petits et parfaitement centrés */
         .level-circle {
             border-radius: 9999px;
             aspect-ratio: 1 / 1;
-            width: 100%;
+            width: 80%; /* Taille réduite */
+            margin: 0 auto; /* Centrage horizontal dans la cellule */
             padding: 0;
             font-size: 0.55rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .input-garcon:checked + .card-label { color: #2563eb; border-color: #2563eb; font-weight: 900; }
@@ -77,13 +81,13 @@
                     <label><input type="radio" name="sexe" value="f" class="card-input input-fille"><div class="card-label">Fille</div></label>
                 </div>
 
-                <div class="grid grid-cols-6 gap-2">
-                    <label><input type="radio" name="niveau" value="CP" class="card-input input-cp"><div class="card-label level-circle">CP</div></label>
-                    <label><input type="radio" name="niveau" value="CE1" class="card-input input-ce1"><div class="card-label level-circle">CE1</div></label>
-                    <label><input type="radio" name="niveau" value="CE2" class="card-input input-ce2" checked><div class="card-label level-circle">CE2</div></label>
-                    <label><input type="radio" name="niveau" value="CM1" class="card-input input-cm1"><div class="card-label level-circle">CM1</div></label>
-                    <label><input type="radio" name="niveau" value="CM2" class="card-input input-cm2"><div class="card-label level-circle">CM2</div></label>
-                    <label><input type="radio" name="niveau" value="AUTRE" class="card-input input-autre"><div class="card-label level-circle">??</div></label>
+                <div class="grid grid-cols-6 gap-1 items-center justify-items-center">
+                    <label class="w-full"><input type="radio" name="niveau" value="CP" class="card-input input-cp"><div class="card-label level-circle">CP</div></label>
+                    <label class="w-full"><input type="radio" name="niveau" value="CE1" class="card-input input-ce1"><div class="card-label level-circle">CE1</div></label>
+                    <label class="w-full"><input type="radio" name="niveau" value="CE2" class="card-input input-ce2" checked><div class="card-label level-circle">CE2</div></label>
+                    <label class="w-full"><input type="radio" name="niveau" value="CM1" class="card-input input-cm1"><div class="card-label level-circle">CM1</div></label>
+                    <label class="w-full"><input type="radio" name="niveau" value="CM2" class="card-input input-cm2"><div class="card-label level-circle">CM2</div></label>
+                    <label class="w-full"><input type="radio" name="niveau" value="AUTRE" class="card-input input-autre"><div class="card-label level-circle">Autre</div></label>
                 </div>
 
                 <button type="submit" id="btn-submit" class="font-black py-3 rounded-full uppercase text-xs active:scale-95 transition-transform mt-1">Enregistrer</button>
