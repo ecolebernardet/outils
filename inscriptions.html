@@ -20,6 +20,15 @@
             transition: all 0.2s; 
         }
 
+        /* Style spécifique pour les boutons de niveaux ronds */
+        .level-circle {
+            border-radius: 9999px;
+            aspect-ratio: 1 / 1;
+            width: 100%;
+            padding: 0;
+            font-size: 0.55rem;
+        }
+
         .input-garcon:checked + .card-label { color: #2563eb; border-color: #2563eb; font-weight: 900; }
         .input-fille:checked + .card-label { color: #db2777; border-color: #db2777; font-weight: 900; }
 
@@ -30,22 +39,18 @@
         .input-cm2:checked + .card-label { background: #22c55e; border-color: #22c55e; color: #fff; } 
         .input-autre:checked + .card-label { background: #8b5cf6; border-color: #8b5cf6; color: #fff; } 
 
-        .card-input:checked + .card-label { transform: scale(0.95); box-shadow: inset 0 2px 4px rgba(0,0,0,0.1); }
+        .card-input:checked + .card-label { transform: scale(0.90); box-shadow: inset 0 2px 4px rgba(0,0,0,0.1); }
 
         .level-column { background: rgba(24, 24, 27, 0.6); border: none; border-radius: 1.25rem; padding: 10px; height: fit-content; }
 
         .text-m { color: #2563eb; } 
         .text-f { color: #db2777; } 
         
-        /* Modifié : Ajout d'un curseur pointer et d'un effet hover sur l'étiquette */
         .student-item { background: #fff; padding: 6px 10px; border-radius: 0.75rem; display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; cursor: pointer; transition: background 0.2s; }
         .student-item:hover { background: #f3f4f6; }
 
         .btn-nav { font-weight: 800; padding: 12px 4px; border-radius: 50px; font-size: 9px; text-align: center; width: 100%; }
         .input-field { background: #ffffff; border: 1px solid #9ca3af; color: #111827; border-radius: 0.75rem; padding: 10px; outline: none; font-size: 0.75rem; font-weight: 600; }
-        
-        /* Style spécial quand on est en mode édition */
-        .editing-mode { border: 2px solid #ef4444 !important; }
     </style>
 </head>
 <body class="pb-10">
@@ -72,19 +77,19 @@
                     <label><input type="radio" name="sexe" value="f" class="card-input input-fille"><div class="card-label">Fille</div></label>
                 </div>
 
-                <div class="grid grid-cols-3 gap-1.5">
-                    <label><input type="radio" name="niveau" value="CP" class="card-input input-cp"><div class="card-label">CP</div></label>
-                    <label><input type="radio" name="niveau" value="CE1" class="card-input input-ce1"><div class="card-label">CE1</div></label>
-                    <label><input type="radio" name="niveau" value="CE2" class="card-input input-ce2" checked><div class="card-label">CE2</div></label>
-                    <label><input type="radio" name="niveau" value="CM1" class="card-input input-cm1"><div class="card-label">CM1</div></label>
-                    <label><input type="radio" name="niveau" value="CM2" class="card-input input-cm2"><div class="card-label">CM2</div></label>
-                    <label><input type="radio" name="niveau" value="AUTRE" class="card-input input-autre"><div class="card-label">Autre</div></label>
+                <div class="grid grid-cols-6 gap-2">
+                    <label><input type="radio" name="niveau" value="CP" class="card-input input-cp"><div class="card-label level-circle">CP</div></label>
+                    <label><input type="radio" name="niveau" value="CE1" class="card-input input-ce1"><div class="card-label level-circle">CE1</div></label>
+                    <label><input type="radio" name="niveau" value="CE2" class="card-input input-ce2" checked><div class="card-label level-circle">CE2</div></label>
+                    <label><input type="radio" name="niveau" value="CM1" class="card-input input-cm1"><div class="card-label level-circle">CM1</div></label>
+                    <label><input type="radio" name="niveau" value="CM2" class="card-input input-cm2"><div class="card-label level-circle">CM2</div></label>
+                    <label><input type="radio" name="niveau" value="AUTRE" class="card-input input-autre"><div class="card-label level-circle">??</div></label>
                 </div>
 
                 <button type="submit" id="btn-submit" class="font-black py-3 rounded-full uppercase text-xs active:scale-95 transition-transform mt-1">Enregistrer</button>
 
                 <div class="pt-3 border-t border-gray-300 text-center">
-                    <label id="label-import" class="text-[9px] font-bold block mb-1">Importer un fichier .txt (Prénom;NOM;Genre;Niveau)</label>
+                    <label id="label-import" class="text-[9px] font-bold block mb-1">Importer un fichier .txt</label>
                     <input type="file" id="fileInput" accept=".txt,.csv" class="text-[9px] text-gray-600">
                 </div>
             </form>
@@ -133,20 +138,16 @@
             return p.charAt(0).toUpperCase() + p.slice(1).toLowerCase() + " " + n;
         }
 
-        // FONCTION DE MODIFICATION
         function preparerModification(id) {
             const el = eleves.find(e => e.id === id);
             if (!el) return;
-
             document.getElementById('edit-id').value = el.id;
             document.getElementById('nomComplet').value = el.identite;
             document.querySelector(`input[name="sexe"][value="${el.sexe}"]`).checked = true;
             document.querySelector(`input[name="niveau"][value="${el.niveau}"]`).checked = true;
-            
             const btn = document.getElementById('btn-submit');
             btn.innerText = "Mettre à jour l'élève";
-            btn.classList.add('bg-orange-500'); // Change de couleur pour alerter
-
+            btn.style.backgroundColor = "#f97316";
             document.getElementById('form-container').scrollIntoView({ behavior: 'smooth' });
             document.getElementById('nomComplet').focus();
         }
@@ -161,18 +162,14 @@
             const niveau = document.querySelector('input[name="niveau"]:checked').value;
             
             if (editId) {
-                // Mode mise à jour : on remplace l'ancien par le nouveau
                 const index = eleves.findIndex(el => el.id == editId);
                 eleves[index] = { ...eleves[index], identite: formaterIdentite(prenom, nom), sexe, niveau };
-                // Reset formulaire
                 document.getElementById('edit-id').value = "";
                 document.getElementById('btn-submit').innerText = "Enregistrer";
                 appliquerCouleursTheme();
             } else {
-                // Mode création
                 eleves.push({ id: Date.now(), identite: formaterIdentite(prenom, nom), sexe, niveau });
             }
-            
             sauvegarder();
             e.target.reset();
         });
@@ -213,37 +210,26 @@
                 container.innerHTML = '<p class="text-center text-zinc-600 text-xs py-10 italic">Aucun élève inscrit.</p>';
                 return;
             }
-
             const groupes = {};
             eleves.forEach(el => {
                 const niv = el.niveau.toUpperCase();
                 if (!groupes[niv]) groupes[niv] = [];
                 groupes[niv].push(el);
             });
-
             const nomsNiveauxPresents = Object.keys(groupes).sort((a, b) => ordreNiveaux.indexOf(a) - ordreNiveaux.indexOf(b));
-            
             if (nomsNiveauxPresents.length === 2) container.className = "grid grid-cols-2 gap-3 items-start";
             else if (nomsNiveauxPresents.length >= 3) container.className = "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 items-start";
             else container.className = "flex flex-col gap-4 max-w-md mx-auto";
-
             nomsNiveauxPresents.forEach(niv => {
                 const col = document.createElement('div');
                 col.className = "level-column";
                 const colColor = couleurParNiveau[niv] || hexaTheme;
                 col.innerHTML = `<h3 class="text-[11px] font-black uppercase mb-1 text-center tracking-widest pb-1" style="color:${colColor}">${niv} — ${groupes[niv].length}</h3>`;
-                
                 const list = document.createElement('div');
                 groupes[niv].sort((a,b) => a.identite.localeCompare(b.identite)).forEach(el => {
                     const item = document.createElement('div');
                     item.className = 'student-item';
-                    
-                    // L'étiquette devient cliquable pour modifier
-                    item.onclick = (e) => {
-                        // On vérifie qu'on ne clique pas sur le bouton supprimer
-                        if (!e.target.closest('button')) preparerModification(el.id);
-                    };
-
+                    item.onclick = (e) => { if (!e.target.closest('button')) preparerModification(el.id); };
                     item.innerHTML = `
                         <span class="text-[9px] font-bold pr-2 text-${el.sexe} whitespace-normal break-words leading-tight">${el.identite}</span>
                         <button onclick="supprimer(${el.id})" class="opacity-40 hover:opacity-100 transition-opacity p-1 text-zinc-400 flex-shrink-0">
