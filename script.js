@@ -1,6 +1,5 @@
 // 1. VARIABLES GLOBALES
 let tilesData = JSON.parse(localStorage.getItem('sd_v2_data')) || {};
-
 let config = JSON.parse(localStorage.getItem('sd_v2_config')) || { 
     cols: 4, rows: 4, gap: 15, fontSize: 12, 
     bgColor: '#000000', tileBgColor: '#000000', folderTileBgColor: '#ffd43b' 
@@ -15,7 +14,7 @@ let lastTilesData = null;
 
 const winFolderSVG = `<svg class="folder-icon-bg" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 4C2.89543 4 2 4.89543 2 6V18C2 19.1046 2.89543 20 4 20H20C21.1046 20 22 19.1046 22 18V8C22 6.89543 21.1046 6 20 6H12L10 4H4Z" fill="#ffca28"/><path d="M2 10V18C2 19.1046 2.89543 20 4 20H20C21.1046 20 22 19.1046 22 18V10H2Z" fill="#ffd54f"/></svg>`;
 
-// 2. FONCTIONS UI
+// 2. FONCTIONS UI & UTILITAIRES
 function toggleMenu() {
     document.getElementById('sidebar').classList.toggle('open');
     document.getElementById('overlay').classList.toggle('active');
@@ -53,7 +52,7 @@ function undo() {
     }
 }
 
-// 3. LOGIQUE DE MIGRATION (Répare les dossiers vides)
+// 3. LOGIQUE DE MIGRATION
 function migrateToCoords(data, cols = 4) {
     if (Array.isArray(data)) {
         let newData = {};
@@ -61,7 +60,6 @@ function migrateToCoords(data, cols = 4) {
             if (item) {
                 let x = index % cols;
                 let y = Math.floor(index / cols);
-                // Si l'item est lui-même un dossier, on migre son contenu
                 if (item.type === 'folder' && item.items) {
                     item.items = migrateToCoords(item.items, item.fConfig?.cols || 3);
                 }
@@ -70,7 +68,6 @@ function migrateToCoords(data, cols = 4) {
         });
         return newData;
     } 
-    // Si c'est déjà un objet, on vérifie quand même l'intérieur des dossiers
     if (typeof data === 'object' && data !== null) {
         Object.keys(data).forEach(key => {
             if (data[key] && data[key].type === 'folder' && Array.isArray(data[key].items)) {
@@ -83,10 +80,8 @@ function migrateToCoords(data, cols = 4) {
 
 // 4. RENDU
 function init() {
-    // Migration profonde au lancement
     tilesData = migrateToCoords(tilesData, config.cols);
     saveToLocal();
-
     const bgInput = document.getElementById('bgInput');
     if(bgInput) {
         bgInput.value = config.bgColor;
@@ -105,7 +100,6 @@ function renderGrid() {
     const grid = document.getElementById('grid');
     if(!grid) return;
     grid.innerHTML = '';
-    
     document.documentElement.style.setProperty('--cols', config.cols);
     document.documentElement.style.setProperty('--rows', config.rows);
     document.documentElement.style.setProperty('--gap', config.gap + 'px');
@@ -277,90 +271,127 @@ function handleDropOut(e) {
     }
 }
 
-// 7. ÉDITION
+// 7. ÉDITION (AVEC DOUBLES MODALES)
 function openModal(coords) {
     currentEditingCoords = coords;
     tempBase64 = "";
     const data = (activeFolderCoords !== null) ? tilesData[activeFolderCoords].items[coords] : tilesData[coords];
-    document.getElementById('editName').value = data?.name || '';
-    const urlField = document.getElementById('editUrl');
-    urlField.value = data?.url || '';
-    document.getElementById('editImg').value = data?.img || '';
-    document.getElementById('imgPreview').style.display = data?.img ? "block" : "none";
-    if(data?.img) document.getElementById('imgPreview').src = data.img;
     
-    document.getElementById('modal').style.display = 'flex';
-    setTimeout(() => { urlField.focus(); }, 50);
+    if (data?.type === 'folder') {
+        openFolderModal(data);
+    } else {
+        openLinkModal(data);
+    }
 }
 
-function closeModal() { document.getElementById('modal').style.display = 'none'; renderGrid(); }
+function openLinkModal(data) {
+    document.getElementById('linkName').value = data?.name || '';
+    document.getElementById('linkUrl').value = data?.url || '';
+    document.getElementById('linkImg').value = data?.img || '';
+    const preview = document.getElementById('linkPreview');
+    preview.style.display = data?.img ? "block" : "none";
+    if(data?.img) preview.src = data.img;
+    
+    document.getElementById('modalLink').style.display = 'flex';
+    setTimeout(() => document.getElementById('linkUrl').focus(), 50);
+}
 
-function confirmEdit() {
+function openFolderModal(data) {
+    document.getElementById('folderName').value = data?.name || 'Nouveau Dossier';
+    document.getElementById('folderImg').value = data?.img || '';
+    const preview = document.getElementById('folderPreview');
+    preview.style.display = data?.img ? "block" : "none";
+    if(data?.img) preview.src = data.img;
+    
+    document.getElementById('modalFolder').style.display = 'flex';
+    setTimeout(() => document.getElementById('folderName').focus(), 50);
+}
+
+function closeAllModals() {
+    document.getElementById('modalLink').style.display = 'none';
+    document.getElementById('modalFolder').style.display = 'none';
+}
+
+function searchGoogleImages(type) {
+    let query = "";
+    if (type === 'link') {
+        query = document.getElementById('linkName').value || document.getElementById('linkUrl').value || "icon";
+    } else {
+        query = document.getElementById('folderName').value || "folder icon";
+    }
+    window.open(`https://www.google.com/search?q=${encodeURIComponent(query)}+logo+icon&tbm=isch`, '_blank');
+}
+
+function confirmEditLink() {
     saveSnapshot();
-    const name = document.getElementById('editName').value;
-    let url = document.getElementById('editUrl').value;
-    const img = tempBase64 || document.getElementById('editImg').value;
+    const name = document.getElementById('linkName').value;
+    let url = document.getElementById('linkUrl').value;
+    const img = tempBase64 || document.getElementById('linkImg').value;
     if (url && !url.startsWith('http')) url = 'https://' + url;
 
     const targetStore = (activeFolderCoords !== null) ? tilesData[activeFolderCoords].items : tilesData;
-    const existing = targetStore[currentEditingCoords] || {};
-    
-    targetStore[currentEditingCoords] = { 
-        ...existing, name, url, img, 
-        type: url ? 'link' : 'folder', 
-        items: existing.items || {}, 
-        fConfig: existing.fConfig || {cols:3, rows:2, gap:10, fBgColor:'#1e293b'} 
-    };
+    targetStore[currentEditingCoords] = { name, url, img, type: 'link' };
 
-    saveToLocal(); closeModal();
+    saveToLocal(); closeAllModals();
     if (activeFolderCoords !== null) openFolder(activeFolderCoords);
     else renderGrid();
+}
+
+function confirmEditFolder() {
+    saveSnapshot();
+    const name = document.getElementById('folderName').value;
+    const img = tempBase64 || document.getElementById('folderImg').value;
+    const existing = tilesData[currentEditingCoords] || {};
+    
+    tilesData[currentEditingCoords] = {
+        ...existing, name, img, type: 'folder',
+        items: existing.items || {},
+        fConfig: existing.fConfig || {cols:3, rows:2, gap:10, fBgColor:'#1e293b'}
+    };
+
+    saveToLocal(); closeAllModals();
+    renderGrid();
 }
 
 function deleteItem() {
     saveSnapshot();
     if (activeFolderCoords !== null) delete tilesData[activeFolderCoords].items[currentEditingCoords];
     else delete tilesData[currentEditingCoords];
-    saveToLocal(); closeModal();
+    saveToLocal(); closeAllModals();
     if (activeFolderCoords !== null) openFolder(activeFolderCoords);
     else renderGrid();
 }
 
-// 8. RECHERCHE
+// 8. RECHERCHE & MÉDIAS
 function searchIcons() {
-    const container = document.getElementById('suggestions');
-    container.innerHTML = ''; container.style.display = 'grid';
-    let url = document.getElementById('editUrl').value;
+    let url = document.getElementById('linkUrl').value;
     if (!url) return;
+    const container = document.getElementById('linkSuggestions');
+    container.innerHTML = ''; container.style.display = 'grid';
     try {
         const domain = new URL(url.startsWith('http') ? url : 'https://'+url).hostname;
         const apis = [`https://logo.clearbit.com/${domain}`, `https://icon.horse/icon/${domain}`];
         apis.forEach(src => {
             const img = document.createElement('img');
             img.src = src; img.className = 'suggestion-item';
-            img.addEventListener('click', () => { 
-                document.getElementById('editImg').value = src; 
+            img.onclick = () => { 
+                document.getElementById('linkImg').value = src; 
                 tempBase64 = ""; 
-                document.getElementById('imgPreview').src = src;
-                document.getElementById('imgPreview').style.display = "block";
-            });
+                const prev = document.getElementById('linkPreview');
+                prev.src = src; prev.style.display = "block";
+            };
             container.appendChild(img);
         });
     } catch(e) { console.error("URL Invalide"); }
 }
 
-function searchGoogleImages() {
-    const query = document.getElementById('editName').value || document.getElementById('editUrl').value || "icon";
-    window.open(`https://www.google.com/search?q=${encodeURIComponent(query)}+logo+icon&tbm=isch`, '_blank');
-}
-
-function previewLocalImage(input) {
+function previewLocalImage(input, previewId, textInputId) {
     if (input.files && input.files[0]) {
         const reader = new FileReader();
         reader.onload = (e) => { 
             tempBase64 = e.target.result; 
-            document.getElementById('imgPreview').src = tempBase64; 
-            document.getElementById('imgPreview').style.display = "block"; 
+            const prev = document.getElementById(previewId);
+            prev.src = tempBase64; prev.style.display = "block"; 
         };
         reader.readAsDataURL(input.files[0]);
     }
@@ -412,20 +443,16 @@ document.addEventListener('DOMContentLoaded', () => {
     listen('fGap', 'input', updateFolderSettings);
     listen('fPopBg', 'input', updateFolderSettings);
     listen('folderOverlay', 'click', closeFolder);
-    listen('folderOverlay', 'dragover', (e) => e.preventDefault());
     listen('folderOverlay', 'drop', handleDropOut);
-    listen('folderPopup', 'click', (e) => e.stopPropagation());
-    listen('btn-confirm-edit', 'click', confirmEdit);
-    listen('btn-delete-item', 'click', deleteItem);
-    listen('btn-close-modal', 'click', closeModal);
-    listen('btn-search-icons', 'click', searchIcons);
-    listen('btn-search-google', 'click', searchGoogleImages);
-    listen('editImgFile', 'change', (e) => previewLocalImage(e.target));
-    listen('modal', 'click', closeModal);
-    listen('modal-container', 'click', (e) => e.stopPropagation());
+    listen('folderOverlay', 'dragover', (e) => e.preventDefault());
+    listen('linkImgFile', 'change', (e) => previewLocalImage(e.target, 'linkPreview', 'linkImg'));
+    listen('folderImgFile', 'change', (e) => previewLocalImage(e.target, 'folderPreview', 'folderImg'));
     
     window.addEventListener('keydown', (e) => { 
-        if(e.key === "Escape") { closeModal(); closeFolder(); } 
-        if(e.key === "Enter" && document.getElementById('modal').style.display === 'flex') confirmEdit();
+        if(e.key === "Escape") { closeAllModals(); closeFolder(); } 
+        if(e.key === "Enter") {
+            if(document.getElementById('modalLink').style.display === 'flex') confirmEditLink();
+            if(document.getElementById('modalFolder').style.display === 'flex') confirmEditFolder();
+        }
     });
 });

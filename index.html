@@ -15,8 +15,7 @@
     body { margin: 0; background-color: var(--bg-main); color: var(--text); font-family: 'Segoe UI', sans-serif; overflow: hidden; transition: background-color 0.3s; }
 
     /* --- STRUCTURE --- */
-    /* Suppression du position: fixed pour l'intégrer au flux du footer */
-    .hamburger { z-index: 1001; cursor: pointer; background: var(--sidebar-bg); padding: 10px; border-radius: 8px; border: 1px solid var(--border); display: flex; flex-direction: column; gap: 5px; }
+    .hamburger { z-index: 1001; cursor: pointer; background: var(--sidebar-bg); padding: 10px; border-radius: 8px; border: 1px solid var(--border); display: flex; flex-direction: column; gap: 5px; flex-shrink: 0; }
     .hamburger div { width: 25px; height: 3px; background-color: var(--accent); border-radius: 2px; }
     
     .sidebar { position: fixed; top: 0; left: -320px; width: 300px; height: 100%; background: var(--sidebar-bg); box-shadow: 5px 0 25px rgba(0,0,0,0.6); transition: 0.3s; z-index: 1000; padding: 60px 25px; box-sizing: border-box; overflow-y: auto; }
@@ -46,10 +45,10 @@
     .tile.empty:hover { opacity: 0.5; }
 
     .tile img { 
-        width: auto; height: 50%; max-width: 70%; 
+        width: auto; height: 70%; max-width: 80%; 
         object-fit: contain; pointer-events: none; 
         filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3));
-        margin-bottom: 15px;
+        margin-bottom: 20px;
     }
 
     .tile-label { 
@@ -57,14 +56,14 @@
         background: rgba(0,0,0,0.7); padding: 5px 0; 
         text-align: center; font-size: var(--font-size); 
         pointer-events: none; white-space: nowrap; 
-        overflow: hidden; text-overflow: ellipsis; z-index: 10;
+        overflow: hidden; text-overflow: ellipsis; z-index: 0;
     }
 
     .tile.folder { background: var(--folder-tile-bg); }
 
     .folder-icon-bg { 
-        position: absolute; width: 90%; height: 90%; 
-        top: 5%; left: 5%; z-index: 1; 
+        position: absolute; width: 100%; height: 100%; 
+        top: -10%; left: 0%; z-index: 1; 
         pointer-events: none; 
     }
 
@@ -80,7 +79,7 @@
         filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
     }
 
-    /* --- RECHERCHE --- */
+    /* --- RECHERCHE FOOTER --- */
     .search-footer {
         position: fixed;
         bottom: 0; left: 0;
@@ -90,11 +89,17 @@
         border-top: 1px solid var(--border);
         display: flex;
         align-items: center;
-        justify-content: center;
-        gap: 20px;
+        justify-content: space-between;
         padding: 0 20px;
         box-sizing: border-box;
         z-index: 100;
+    }
+
+    .search-group {
+        display: flex;
+        gap: 20px;
+        justify-content: center;
+        flex-grow: 1;
     }
 
     .search-box {
@@ -123,15 +128,15 @@
     .folder-toolbar input { width: 45px; padding: 3px; font-size: 10px; background: rgba(0,0,0,0.3); border: 1px solid var(--border); color: white; border-radius: 3px; }
     .folder-toolbar input[type="color"] { width: 40px; height: 25px; padding: 0; cursor: pointer; }
 
-    /* --- MODALE --- */
+    /* --- MODALES ÉDITION --- */
     .control-group { margin-bottom: 12px; }
     .control-group label { display: block; font-size: 10px; color: var(--accent); text-transform: uppercase; margin-bottom: 4px; }
     input { width: 100%; padding: 8px; background: #0f172a; border: 1px solid var(--border); color: white; border-radius: 4px; box-sizing: border-box; }
     input[type="color"] { height: 40px; width: 100%; cursor: pointer; padding: 2px; }
-    .btn { width: 100%; padding: 10px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; color: white; }
+    .btn { width: 100%; padding: 10px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; color: white; transition: 0.2s; }
+    .btn:hover { filter: brightness(1.1); }
     .img-suggestions { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-top: 15px; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 10px; border: 1px solid var(--border); }
-    .suggestion-item { width: 100%; aspect-ratio: 1; object-fit: contain; cursor: pointer; background: white; border-radius: 6px; padding: 2px; transition: transform 0.2s; }
-    #imgPreview { max-width: 80px; margin-top: 10px; display: none; border-radius: 8px; }
+    .suggestion-item { width: 100%; aspect-ratio: 1; object-fit: contain; cursor: pointer; background: white; border-radius: 6px; padding: 2px; }
 </style>
 </head>
 <body>
@@ -159,18 +164,22 @@
     <footer class="search-footer" id="search-footer">
         <div class="hamburger" id="btn-hamburger"><div></div><div></div><div></div></div>
 
-        <div class="search-box">
-            <img src="https://www.google.com/favicon.ico" alt="G">
-            <input type="text" placeholder="Google..." onkeypress="if(event.key==='Enter') window.open('https://www.google.com/search?q='+encodeURIComponent(this.value), '_blank')">
+        <div class="search-group">
+            <div class="search-box">
+                <img src="https://www.google.com/favicon.ico" alt="G">
+                <input type="text" placeholder="Google..." onkeypress="if(event.key==='Enter') window.open('https://www.google.com/search?q='+encodeURIComponent(this.value), '_blank')">
+            </div>
+            <div class="search-box">
+                <img src="https://www.gstatic.com/images/branding/product/1x/photos_96dp.png" alt="GI" style="width:16px; height:16px;">
+                <input type="text" placeholder="Google Images..." onkeypress="if(event.key==='Enter') window.open('https://www.google.com/search?tbm=isch&q='+encodeURIComponent(this.value), '_blank')">
+            </div>
+            <div class="search-box">
+                <img src="https://icons.duckduckgo.com/ip3/duckduckgo.com.ico" alt="D">
+                <input type="text" placeholder="DuckDuckGo..." onkeypress="if(event.key==='Enter') window.open('https://duckduckgo.com/?q='+encodeURIComponent(this.value), '_blank')">
+            </div>
         </div>
-        <div class="search-box">
-            <img src="https://www.gstatic.com/images/branding/product/1x/photos_96dp.png" alt="GI" style="width:16px; height:16px;">
-            <input type="text" placeholder="Google Images..." onkeypress="if(event.key==='Enter') window.open('https://www.google.com/search?tbm=isch&q='+encodeURIComponent(this.value), '_blank')">
-        </div>
-        <div class="search-box">
-            <img src="https://icons.duckduckgo.com/ip3/duckduckgo.com.ico" alt="D">
-            <input type="text" placeholder="DuckDuckGo..." onkeypress="if(event.key==='Enter') window.open('https://duckduckgo.com/?q='+encodeURIComponent(this.value), '_blank')">
-        </div>
+        
+        <div style="width: 47px;"></div>
     </footer>
 
     <div id="folderOverlay">
@@ -179,31 +188,50 @@
                 <label>Cols</label><input type="number" id="fCols" min="1">
                 <label>Lignes</label><input type="number" id="fRows" min="1">
                 <label>Espace</label><input type="number" id="fGap" min="0">
-                <label>Fond Fenêtre</label><input type="color" id="fPopBg">
+                <label>Fond</label><input type="color" id="fPopBg">
             </div>
             <div class="folder-content" id="folderGrid"></div>
         </div>
     </div>
 
-    <div id="modal" class="overlay" style="z-index:4000; align-items:center; justify-content:center;">
-        <div style="background:var(--sidebar-bg); padding:25px; border-radius:15px; width:400px; border:1px solid var(--accent); max-height: 90vh; overflow-y: auto;" id="modal-container">
-            <h3 id="modalTitle" style="color:var(--accent); margin-top:0">Édition</h3>
-            <div class="control-group" id="urlGroup"><label>URL</label><input type="text" id="editUrl"></div>
-            <div class="control-group"><label>Nom</label><input type="text" id="editName"></div>
+    <div id="modalLink" class="overlay" style="z-index:4000; align-items:center; justify-content:center;" onclick="closeAllModals()">
+        <div style="background:var(--sidebar-bg); padding:25px; border-radius:15px; width:400px; border:1px solid var(--accent);" onclick="event.stopPropagation()">
+            <h3 style="color:var(--accent); margin-top:0">🔗 Édition Lien</h3>
+            <div class="control-group"><label>URL</label><input type="text" id="linkUrl"></div>
+            <div class="control-group"><label>Nom</label><input type="text" id="linkName"></div>
             <div class="control-group">
                 <label>Image de la tuile</label>
                 <div style="display: flex; gap: 5px; margin-bottom: 10px;">
-                    <input type="file" id="editImgFile" accept="image/*" style="font-size: 10px; flex: 1; width: 50%;">
-                    <button class="btn" style="background:var(--accent); width: auto; font-size: 10px; padding: 5px 10px;" id="btn-search-icons">AUTO</button>
-                    <button class="btn" style="background:#ea4335; width: auto; font-size: 10px; padding: 5px 10px;" id="btn-search-google">GOOGLE</button>
+                    <input type="file" id="linkImgFile" accept="image/*" style="font-size: 10px; flex: 1; width: 40%;">
+                    <button class="btn" style="background:var(--accent); width: auto; font-size: 10px; padding: 5px 10px;" onclick="searchIcons()">AUTO</button>
+                    <button class="btn" style="background:#ea4335; width: auto; font-size: 10px; padding: 5px 10px;" onclick="searchGoogleImages('link')">GOOGLE</button>
                 </div>
-                <input type="text" id="editImg" placeholder="Lien direct de l'image">
-                <div id="suggestions" class="img-suggestions" style="display:none"></div>
-                <center><img id="imgPreview" alt="Aperçu"></center>
+                <input type="text" id="linkImg" placeholder="Lien direct de l'image">
+                <div id="linkSuggestions" class="img-suggestions" style="display:none"></div>
+                <center><img id="linkPreview" style="max-width:80px; margin-top:10px; display:none; border-radius:8px;"></center>
             </div>
-            <button class="btn" style="background:#22c55e; margin-bottom:10px" id="btn-confirm-edit">Valider (Entrée)</button>
-            <button class="btn" style="background:#ef4444; margin-bottom:10px" id="btn-delete-item">Supprimer</button>
-            <button class="btn" style="background:transparent; border:1px solid var(--border)" id="btn-close-modal">Annuler</button>
+            <button class="btn" style="background:#22c55e; margin-bottom:10px" onclick="confirmEditLink()">Valider</button>
+            <button class="btn" style="background:#ef4444; margin-bottom:10px" onclick="deleteItem()">Supprimer</button>
+            <button class="btn" style="background:transparent; border:1px solid var(--border)" onclick="closeAllModals()">Annuler</button>
+        </div>
+    </div>
+
+    <div id="modalFolder" class="overlay" style="z-index:4000; align-items:center; justify-content:center;" onclick="closeAllModals()">
+        <div style="background:var(--sidebar-bg); padding:25px; border-radius:15px; width:400px; border:1px solid #ffd43b;" onclick="event.stopPropagation()">
+            <h3 style="color:#ffd43b; margin-top:0">📂 Édition Dossier</h3>
+            <div class="control-group"><label>Nom du dossier</label><input type="text" id="folderName"></div>
+            <div class="control-group">
+                <label>Image du dossier (optionnel)</label>
+                <div style="display: flex; gap: 5px; margin-bottom: 10px;">
+                    <input type="file" id="folderImgFile" accept="image/*" style="font-size: 10px; flex: 1;">
+                    <button class="btn" style="background:#ea4335; width: auto; font-size: 10px; padding: 5px 10px;" onclick="searchGoogleImages('folder')">GOOGLE</button>
+                </div>
+                <input type="text" id="folderImg" placeholder="Lien direct de l'image">
+                <center><img id="folderPreview" style="max-width:80px; margin-top:10px; display:none; border-radius:8px;"></center>
+            </div>
+            <button class="btn" style="background:#22c55e; margin-bottom:10px" onclick="confirmEditFolder()">Valider</button>
+            <button class="btn" style="background:#ef4444; margin-bottom:10px" onclick="deleteItem()">Supprimer</button>
+            <button class="btn" style="background:transparent; border:1px solid var(--border)" onclick="closeAllModals()">Annuler</button>
         </div>
     </div>
 
