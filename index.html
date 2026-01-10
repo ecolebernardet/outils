@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Speed Dial Perso</title>
+    <style>
+        :root {
+            --bg-main: #000000; --sidebar-bg: #1e293b; --tile-bg: #000000;
+            --accent: #38bdf8; --text: #f8fafc; --border: #475569;
+            --cols: 4; --rows: 2; --gap: 15px; --font-size: 12px;
+            --folder-tile-bg: #ffd43b;
+        }
+
+        body { margin: 0; background-color: var(--bg-main); color: var(--text); font-family: 'Segoe UI', sans-serif; overflow: hidden; transition: background-color 0.3s; }
+
+        .hamburger { position: fixed; top: 20px; left: 20px; z-index: 1001; cursor: pointer; background: var(--sidebar-bg); padding: 10px; border-radius: 8px; border: 1px solid var(--border); display: flex; flex-direction: column; gap: 5px; }
+        .hamburger div { width: 25px; height: 3px; background-color: var(--accent); border-radius: 2px; }
+        
+        .sidebar { position: fixed; top: 0; left: -320px; width: 300px; height: 100%; background: var(--sidebar-bg); box-shadow: 5px 0 25px rgba(0,0,0,0.6); transition: 0.3s; z-index: 1000; padding: 60px 25px; box-sizing: border-box; overflow-y: auto; }
+        .sidebar.open { left: 0; }
+        
+        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none; z-index: 999; }
+        .overlay.active { display: block; }
+
+        .grid-container { display: grid; grid-template-columns: repeat(var(--cols), 1fr); grid-template-rows: repeat(var(--rows), 1fr); width: 100vw; height: 100vh; gap: var(--gap); padding: var(--gap); box-sizing: border-box; }
+
+        .tile { background: var(--tile-bg); border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; overflow: hidden; position: relative; border: 0px solid rgba(255,255,255,0.05); }
+        .tile.folder { background: var(--folder-tile-bg); } 
+        
+        .tile.empty { border: 0px dashed var(--border); background: transparent !important; opacity: 0.1; }
+        
+        .folder-icon-bg { position: absolute; width: 100%; height: 100%; top: -5%; z-index: 1; pointer-events: none; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.4)); }
+        .tile.folder img { z-index: 2; width: 35%; transform: translateY(0px); border-radius: 5px; }
+        .tile.folder .tile-label { z-index: 3; }
+
+        .tile img { position: absolute; bottom: 23px; 
+            width: 70%; height: 50%; max-height: 70%; object-fit: contain; pointer-events: none; 
+            image-rendering: -webkit-optimize-contrast; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3)); 
+        }
+
+        .tile-label { position: absolute; bottom: 0; width: 100%; background: rgba(0,0,0,0.7); padding: 3px 0; text-align: center; font-size: var(--font-size); pointer-events: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .dragging { opacity: 0.2; }
+        .drag-over { background: var(--accent) !important; }
+
+        #folderOverlay { 
+            position: fixed; inset: 0; 
+            background: rgba(0,0,0,0.8); 
+            backdrop-filter: blur(2px); 
+            -webkit-backdrop-filter: blur(8px);
+            display: none; z-index: 2500; 
+        }
+        
+        #folderPopup { 
+            background: var(--sidebar-bg); min-width: 200px; max-width: 95vw; max-height: 90vh; 
+            width: fit-content; height: fit-content; border-radius: 20px; 
+            border: 2px solid var(--accent); 
+            box-shadow: 0 0 80px rgba(0, 0, 0, 0.9), 0 0 10px rgba(56, 189, 248, 0.3); 
+            display: flex; flex-direction: column; position: absolute; overflow: hidden; transition: background-color 0.3s;
+            padding: 15px;
+        }
+
+        .folder-toolbar { display: flex; gap: 10px; padding: 5px 10px; background: rgba(255,255,255,0.05); border-radius: 10px; margin-bottom: 15px; align-items: center; opacity: 0.3; transition: 0.3s; }
+        .folder-toolbar:hover { opacity: 1; }
+        .folder-toolbar label { font-size: 9px; color: var(--accent); text-transform: uppercase; }
+        .folder-toolbar input { width: 45px; padding: 3px; font-size: 10px; background: rgba(0,0,0,0.3); border: 1px solid var(--border); color: white; border-radius: 3px; }
+        .folder-toolbar input[type="color"] { width: 30px; height: 20px; padding: 0; cursor: pointer; }
+        
+        .folder-content { display: grid; box-sizing: border-box; overflow: auto; padding: 5px; }
+        .folder-content .tile { min-width: 120px; min-height: 100px; border: 1px solid rgba(255,255,255,0.1); }
+
+        .control-group { margin-bottom: 12px; }
+        .control-group label { display: block; font-size: 10px; color: var(--accent); text-transform: uppercase; margin-bottom: 4px; }
+        input { width: 100%; padding: 8px; background: #0f172a; border: 1px solid var(--border); color: white; border-radius: 4px; box-sizing: border-box; }
+        input[type="color"] { height: 40px; cursor: pointer; padding: 2px; }
+        .btn { width: 100%; padding: 10px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; color: white; }
+        
+        #imgPreview { width: 50px; height: 50px; object-fit: contain; margin-top: 10px; display: none; border: 1px solid var(--border); border-radius: 8px; background: white; padding: 5px; }
+
+        .img-suggestions { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-top: 15px; background: rgba(0,0,0,0.3); padding: 12px; border-radius: 10px; border: 1px solid var(--border); }
+        .suggestion-item { width: 100%; aspect-ratio: 1; object-fit: contain; cursor: pointer; background: white; border-radius: 6px; padding: 5px; box-sizing: border-box; transition: transform 0.2s, border 0.2s; border: 2px solid transparent; }
+        .suggestion-item:hover { transform: scale(1.15); border-color: var(--accent); z-index: 10; }
+    </style>
+</head>
+<body onkeydown="handleGlobalKey(event)">
+
+    <div class="hamburger" onclick="toggleMenu()"><div></div><div></div><div></div></div>
+    <div class="overlay" id="overlay" onclick="toggleMenu()"></div>
+
+    <nav class="sidebar" id="sidebar">
+        <h2 style="color:var(--accent); margin-top:0">Paramètres</h2>
+        <div class="control-group"><label>Couleur de fond globale</label><input type="color" id="bgInput" oninput="updateGridParams()"></div>
+        <div class="control-group"><label>Couleur des tuiles (Lien)</label><input type="color" id="tileColorInput" oninput="inputGridParams()"></div>
+        <div class="control-group"><label>Couleur des tuiles (Dossier)</label><input type="color" id="folderTileColorInput" oninput="inputGridParams()"></div>
+        <div class="control-group"><label>Colonnes</label><input type="number" id="colsInput" min="1" oninput="inputGridParams()"></div>
+        <div class="control-group"><label>Lignes</label><input type="number" id="rowsInput" min="1" oninput="inputGridParams()"></div>
+        <div class="control-group"><label>Espacement (px)</label><input type="number" id="gapInput" min="0" oninput="inputGridParams()"></div>
+        <div class="control-group"><label>Taille police (px)</label><input type="number" id="fontInput" min="6" oninput="inputGridParams()"></div>
+        <hr style="border:0; border-top:1px solid var(--border); margin: 20px 0;">
+        <button class="btn" style="background:#64748b; margin-bottom:10px" onclick="undo()">↩ ANNULER</button>
+        <button class="btn" style="background:#8b5cf6" onclick="exportData()">📤 EXPORTER CONFIG</button>
+        <button class="btn" style="background:#f59e0b; margin-top:10px" onclick="document.getElementById('importFile').click()">📥 IMPORTER CONFIG</button>
+        <input type="file" id="importFile" style="display:none" onchange="importData(event)">
+    </nav>
+
+    <main class="grid-container" id="grid"></main>
+
+    <div id="folderOverlay" onclick="closeFolder()" ondragover="event.preventDefault();" ondrop="handleDropOut(event)">
+        <div id="folderPopup" onclick="event.stopPropagation()">
+            <div class="folder-toolbar">
+                <label>Cols</label><input type="number" id="fCols" min="1" oninput="updateFolderSettings()">
+                <label>Lignes</label><input type="number" id="fRows" min="1" oninput="updateFolderSettings()">
+                <label>Espace</label><input type="number" id="fGap" min="0" oninput="updateFolderSettings()">
+                <label>Fond Fenêtre</label><input type="color" id="fPopBg" oninput="updateFolderSettings()">
+            </div>
+            <div class="folder-content" id="folderGrid"></div>
+        </div>
+    </div>
+
+    <div id="modal" class="overlay" style="z-index:4000; align-items:center; justify-content:center;" onclick="handleModalExternalClick()">
+        <div style="background:var(--sidebar-bg); padding:25px; border-radius:15px; width:400px; border:1px solid var(--accent); max-height: 90vh; overflow-y: auto;" onclick="event.stopPropagation()">
+            <h3 id="modalTitle" style="color:var(--accent); margin-top:0">Édition</h3>
+            <div class="control-group" id="urlGroup"><label>URL</label><input type="text" id="editUrl"></div>
+            <div class="control-group"><label>Nom</label><input type="text" id="editName"></div>
+            <div class="control-group">
+                <label>Image de la tuile</label>
+                <div style="display: flex; gap: 5px; margin-bottom: 10px;">
+                    <input type="file" id="editImgFile" accept="image/*" onchange="previewLocalImage(this)" style="font-size: 10px; flex: 1; width: 50%;">
+                    <button class="btn" style="background:var(--accent); width: auto; font-size: 10px; padding: 5px 10px;" onclick="searchIcons()">AUTO</button>
+                    <button class="btn" style="background:#ea4335; width: auto; font-size: 10px; padding: 5px 10px;" onclick="searchGoogleImages()">GOOGLE</button>
+                </div>
+                <input type="text" id="editImg" placeholder="Lien direct de l'image">
+                <div id="suggestions" class="img-suggestions" style="display:none"></div>
+                <center><img id="imgPreview"></center>
+            </div>
+            <button class="btn" style="background:#22c55e; margin-bottom:10px" onclick="confirmEdit()">Valider (Entrée)</button>
+            <button class="btn" style="background:#ef4444; margin-bottom:10px" id="deleteBtn" onclick="deleteItem()">Supprimer</button>
+            <button class="btn" style="background:transparent; border:1px solid var(--border)" onclick="closeModal()">Annuler</button>
+        </div>
+    </div>
+
+    <script>
+        let tilesData = JSON.parse(localStorage.getItem('sd_v2_data')) || {};
+        let config = JSON.parse(localStorage.getItem('sd_v2_config')) || { cols: 4, rows: 2, gap: 15, fontSize: 12, bgColor: '#0f172a', tileBgColor: '#334155', folderTileBgColor: '#1e293b' };
+        let currentEditingCoords = null, draggedCoords = null, activeFolderCoords = null, draggedFromFolder = null, tempBase64 = "", isEditingFolder = false;
+        let lastTilesData = null;
+
+        const winFolderSVG = `
+            <svg class="folder-icon-bg" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M4 4C2.89543 4 2 4.89543 2 6V18C2 19.1046 2.89543 20 4 20H20C21.1046 20 22 19.1046 22 18V8C22 6.89543 21.1046 6 20 6H12L10 4H4Z" fill="#ffca28"/>
+                <path d="M2 10V18C2 19.1046 2.89543 20 4 20H20C21.1046 20 22 19.1046 22 18V10H2Z" fill="#ffd54f"/>
+            </svg>`;
+
+        function init() {
+            document.getElementById('colsInput').value = config.cols;
+            document.getElementById('rowsInput').value = config.rows;
+            document.getElementById('gapInput').value = config.gap || 15;
+            document.getElementById('fontInput').value = config.fontSize || 12;
+            document.getElementById('bgInput').value = config.bgColor || '#0f172a';
+            document.getElementById('tileColorInput').value = config.tileBgColor || '#334155';
+            document.getElementById('folderTileColorInput').value = config.folderTileBgColor || '#1e293b';
+            document.body.style.backgroundColor = config.bgColor || '#0f172a';
+            checkOrphanTiles();
+            renderGrid();
+        }
+
+        function saveSnapshot() { lastTilesData = JSON.parse(JSON.stringify(tilesData)); }
+
+        function undo() {
+            if (lastTilesData) {
+                tilesData = JSON.parse(JSON.stringify(lastTilesData));
+                lastTilesData = null;
+                saveToLocal(false); renderGrid();
+                if (activeFolderCoords) openFolder(activeFolderCoords);
+                alert("Action annulée !");
+            } else { alert("Rien à annuler."); }
+        }
+
+        function checkOrphanTiles() {
+            let moved = false;
+            Object.keys(tilesData).forEach(key => {
+                const [r, c] = key.split('-').map(Number);
+                if (r >= config.rows || c >= config.cols) {
+                    const data = tilesData[key];
+                    delete tilesData[key];
+                    let found = false;
+                    for(let nr=0; nr<config.rows; nr++){
+                        for(let nc=0; nc<config.cols; nc++){
+                            if(!tilesData[`${nr}-${nc}`]) { tilesData[`${nr}-${nc}`] = data; found = true; moved = true; break; }
+                        }
+                        if(found) break;
+                    }
+                }
+            });
+            if(moved) saveToLocal(false);
+        }
+
+        function toggleMenu() { 
+            document.getElementById('sidebar').classList.toggle('open'); 
+            document.getElementById('overlay').classList.toggle('active'); 
+        }
+
+        function handleGlobalKey(e) {
+            if (e.key === "Enter" && document.getElementById('modal').style.display === 'flex') confirmEdit();
+            if (e.key === "Escape") { closeModal(); closeFolder(); }
+        }
+
+        function handleModalExternalClick() { closeModal(); }
+
+        function inputGridParams() {
+            config.cols = parseInt(document.getElementById('colsInput').value) || 1;
+            config.rows = parseInt(document.getElementById('rowsInput').value) || 1;
+            config.gap = parseInt(document.getElementById('gapInput').value) || 0;
+            config.fontSize = parseInt(document.getElementById('fontInput').value) || 12;
+            config.tileBgColor = document.getElementById('tileColorInput').value;
+            config.folderTileColorInput = document.getElementById('folderTileColorInput').value;
+            renderGrid();
+            saveToLocal(false);
+        }
+
+        function updateGridParams() {
+            config.bgColor = document.getElementById('bgInput').value;
+            document.body.style.backgroundColor = config.bgColor;
+            saveToLocal(false);
+        }
+
+        function renderGrid() {
+            const grid = document.getElementById('grid');
+            grid.innerHTML = '';
+            document.documentElement.style.setProperty('--cols', config.cols);
+            document.documentElement.style.setProperty('--rows', config.rows);
+            document.documentElement.style.setProperty('--gap', config.gap + 'px');
+            document.documentElement.style.setProperty('--font-size', config.fontSize + 'px');
+            document.documentElement.style.setProperty('--tile-bg', config.tileBgColor);
+            document.documentElement.style.setProperty('--folder-tile-bg', config.folderTileBgColor);
+            for (let r = 0; r < config.rows; r++) {
+                for (let c = 0; c < config.cols; c++) {
+                    const coords = `${r}-${c}`;
+                    grid.appendChild(createTile(coords, tilesData[coords], true));
+                }
+            }
+        }
+
+        function createTile(coords, data, isMain) {
+            const div = document.createElement('div');
+            div.className = 'tile' + (data ? (data.type === 'folder' ? ' folder' : '') : ' empty');
+            div.id = isMain ? `tile-${coords}` : `folder-tile-${coords}`;
+            if (data) {
+                div.draggable = true;
+                if (data.type === 'folder') {
+                    div.innerHTML = winFolderSVG; 
+                    if(data.img) div.innerHTML += `<img src="${data.img}">`;
+                    div.innerHTML += `<div class="tile-label">${data.name}</div>`;
+                    div.onclick = (e) => openFolder(coords, e.currentTarget);
+                } else {
+                    const icon = data.img || `https://www.google.com/s2/favicons?domain=${data.url}&sz=128`;
+                    div.innerHTML = `<img src="${icon}"><div class="tile-label">${data.name}</div>`;
+                    div.onclick = () => window.open(data.url, '_blank');
+                }
+            } else {
+                div.innerHTML = '<span>+</span>';
+                div.onclick = () => openModal(coords);
+            }
+            div.ondragstart = () => { draggedCoords = coords; draggedFromFolder = !isMain; div.classList.add('dragging'); };
+            div.ondragend = () => { div.classList.remove('dragging'); document.querySelectorAll('.tile').forEach(t=>t.classList.remove('drag-over')); };
+            div.ondragover = (e) => { e.preventDefault(); if(coords !== draggedCoords) div.classList.add('drag-over'); };
+            div.ondrop = (e) => { 
+                e.preventDefault(); 
+                e.stopPropagation(); 
+                isMain ? handleDropMain(coords) : handleDropFolder(coords); 
+            };
+            div.oncontextmenu = (e) => { e.preventDefault(); openModal(coords); };
+            return div;
+        }
+
+        function handleDropMain(to) {
+            saveSnapshot();
+            const source = draggedFromFolder ? tilesData[activeFolderCoords].items[draggedCoords] : tilesData[draggedCoords];
+            if (!source) return;
+            const target = tilesData[to];
+            if (target && target.type === 'folder') {
+                target.items.push(source);
+                draggedFromFolder ? tilesData[activeFolderCoords].items.splice(draggedCoords, 1) : delete tilesData[draggedCoords];
+            } else if (target && target !== source) {
+                tilesData[to] = { type:'folder', name: "Nouveau Dossier", items:[target, source], fConfig:{cols:3, rows:2, gap:10, fBgColor:'#1e293b'} };
+                draggedFromFolder ? tilesData[activeFolderCoords].items.splice(draggedCoords, 1) : delete tilesData[draggedCoords];
+            } else if (!target) {
+                tilesData[to] = source;
+                draggedFromFolder ? tilesData[activeFolderCoords].items.splice(draggedCoords, 1) : delete tilesData[draggedCoords];
+            }
+            saveToLocal(false); renderGrid();
+            if(draggedFromFolder) openFolder(activeFolderCoords);
+        }
+
+        function handleDropFolder(to) {
+            saveSnapshot();
+            const folder = tilesData[activeFolderCoords];
+            const toIdx = parseInt(to);
+
+            if (!draggedFromFolder) {
+                const source = JSON.parse(JSON.stringify(tilesData[draggedCoords]));
+                const targetInFolder = folder.items[toIdx] ? JSON.parse(JSON.stringify(folder.items[toIdx])) : null;
+                
+                folder.items[toIdx] = source;
+                if (targetInFolder) {
+                    tilesData[draggedCoords] = targetInFolder;
+                } else {
+                    delete tilesData[draggedCoords];
+                }
+                renderGrid();
+            } else {
+                const fromIdx = parseInt(draggedCoords);
+                const temp = folder.items[fromIdx];
+                folder.items[fromIdx] = folder.items[toIdx];
+                folder.items[toIdx] = temp;
+            }
+            saveToLocal(false); openFolder(activeFolderCoords);
+        }
+
+        function openModal(coords) {
+            currentEditingCoords = coords; 
+            tempBase64 = "";
+            document.getElementById('editImgFile').value = "";
+            document.getElementById('suggestions').style.display = 'none';
+            const data = (activeFolderCoords !== null) ? tilesData[activeFolderCoords].items[coords] : tilesData[coords];
+            isEditingFolder = data?.type === 'folder';
+            document.getElementById('modalTitle').innerText = isEditingFolder ? "Édition Dossier" : "Édition";
+            document.getElementById('urlGroup').style.display = isEditingFolder ? "none" : "block";
+            document.getElementById('editName').value = data?.name || '';
+            document.getElementById('editUrl').value = data?.url || '';
+            document.getElementById('editImg').value = data?.img || '';
+            const preview = document.getElementById('imgPreview');
+            if(data?.img) { preview.src = data.img; preview.style.display = "block"; } else { preview.style.display = "none"; }
+            document.getElementById('modal').style.display = 'flex';
+            if(!isEditingFolder) document.getElementById('editUrl').focus();
+        }
+
+        function confirmEdit() {
+            saveSnapshot();
+            const name = document.getElementById('editName').value;
+            let url = document.getElementById('editUrl').value;
+            const img = tempBase64 || document.getElementById('editImg').value;
+            if (activeFolderCoords !== null) {
+                if (url && !url.startsWith('http')) url = 'https://' + url;
+                tilesData[activeFolderCoords].items[currentEditingCoords] = { name, url, img };
+            } else {
+                const existing = tilesData[currentEditingCoords];
+                const type = (existing && existing.type === 'folder') ? 'folder' : (url ? 'link' : 'folder');
+                if (url && !url.startsWith('http')) url = 'https://' + url;
+                tilesData[currentEditingCoords] = { ...existing, name, url, img, type, items: existing?.items || [], fConfig: existing?.fConfig || {cols:3, rows:2, gap:10, fBgColor:'#1e293b'} };
+            }
+            saveToLocal(false); closeModal();
+            activeFolderCoords ? openFolder(activeFolderCoords) : renderGrid();
+        }
+
+        function searchGoogleImages() {
+            const query = document.getElementById('editName').value || document.getElementById('editUrl').value || "icon";
+            window.open(`https://www.google.com/search?q=${encodeURIComponent(query)}+logo+icon&tbm=isch`, '_blank');
+        }
+
+        function searchIcons() {
+            const container = document.getElementById('suggestions');
+            container.innerHTML = ''; container.style.display = 'grid';
+            let url = document.getElementById('editUrl').value;
+            if (!url) { alert("Saisissez une URL pour la recherche auto."); return; }
+            if (!url.startsWith('http')) url = 'https://' + url;
+            try {
+                const domain = new URL(url).hostname;
+                const apis = [`https://www.google.com/s2/favicons?domain=${domain}&sz=128`,`https://logo.clearbit.com/${domain}`,`https://icon.horse/icon/${domain}`];
+                apis.forEach(src => {
+                    const img = document.createElement('img'); img.src = src; img.className = 'suggestion-item';
+                    img.onclick = () => { document.getElementById('editImg').value = src; document.getElementById('imgPreview').src = src; document.getElementById('imgPreview').style.display = "block"; tempBase64 = ""; };
+                    img.onerror = () => img.remove();
+                    container.appendChild(img);
+                });
+            } catch(e) { alert("URL invalide"); }
+        }
+
+        function openFolder(coords, element) {
+            activeFolderCoords = coords;
+            const folder = tilesData[coords];
+            const popup = document.getElementById('folderPopup');
+            
+            document.getElementById('fCols').value = folder.fConfig.cols;
+            document.getElementById('fRows').value = folder.fConfig.rows;
+            document.getElementById('fGap').value = folder.fConfig.gap;
+            document.getElementById('fPopBg').value = folder.fConfig.fBgColor || '#1e293b';
+            
+            const fGrid = document.getElementById('folderGrid');
+            popup.style.backgroundColor = folder.fConfig.fBgColor;
+            fGrid.style.gridTemplateColumns = `repeat(${folder.fConfig.cols}, 120px)`;
+            fGrid.style.gridTemplateRows = `repeat(${folder.fConfig.rows}, 100px)`;
+            fGrid.style.gap = `${folder.fConfig.gap}px`;
+            fGrid.innerHTML = '';
+            for(let i=0; i < (folder.fConfig.cols * folder.fConfig.rows); i++) fGrid.appendChild(createTile(i, folder.items[i], false));
+            
+            document.getElementById('folderOverlay').style.display = 'block';
+
+            const tileRect = element ? element.getBoundingClientRect() : document.getElementById(`tile-${coords}`).getBoundingClientRect();
+            let top = tileRect.top + (tileRect.height / 2) - (popup.offsetHeight / 2);
+            let left = tileRect.left + (tileRect.width / 2) - (popup.offsetWidth / 2);
+
+            if (top < 10) top = 10;
+            if (left < 10) left = 10;
+            if (top + popup.offsetHeight > window.innerHeight) top = window.innerHeight - popup.offsetHeight - 10;
+            if (left + popup.offsetWidth > window.innerWidth) left = window.innerWidth - popup.offsetWidth - 10;
+
+            popup.style.top = top + "px";
+            popup.style.left = left + "px";
+        }
+
+        function updateFolderSettings() {
+            const folder = tilesData[activeFolderCoords];
+            folder.fConfig = {
+                cols: parseInt(document.getElementById('fCols').value) || 1,
+                rows: parseInt(document.getElementById('fRows').value) || 1,
+                gap: parseInt(document.getElementById('fGap').value) || 0,
+                fBgColor: document.getElementById('fPopBg').value
+            };
+            openFolder(activeFolderCoords);
+            saveToLocal(false);
+        }
+
+        function handleDropOut(e) {
+            if (!draggedFromFolder) return;
+            saveSnapshot();
+
+            const grid = document.getElementById('grid');
+            const rect = grid.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            const colWidth = rect.width / config.cols;
+            const rowHeight = rect.height / config.rows;
+            const targetCol = Math.floor(x / colWidth);
+            const targetRow = Math.floor(y / rowHeight);
+
+            const item = tilesData[activeFolderCoords].items.splice(draggedCoords, 1)[0];
+
+            let found = false;
+            for (let r = 0; r < Math.max(config.cols, config.rows); r++) {
+                for (let dr = -r; dr <= r; dr++) {
+                    for (let dc = -r; dc <= r; dc++) {
+                        const checkRow = targetRow + dr;
+                        const checkCol = targetCol + dc;
+                        const coords = `${checkRow}-${checkCol}`;
+                        
+                        if (checkRow >= 0 && checkRow < config.rows && checkCol >= 0 && checkCol < config.cols) {
+                            if (!tilesData[coords]) {
+                                tilesData[coords] = item;
+                                found = true;
+                                break;
+                            }
+                        }
+                    }
+                    if (found) break;
+                }
+                if (found) break;
+            }
+
+            if (!found) {
+                for (let r = 0; r < config.rows; r++) {
+                    for (let c = 0; c < config.cols; c++) {
+                        if (!tilesData[`${r}-${c}`]) {
+                            tilesData[`${r}-${c}`] = item;
+                            found = true; break;
+                        }
+                    }
+                    if (found) break;
+                }
+            }
+
+            saveToLocal(false);
+            renderGrid();
+            closeFolder();
+        }
+
+        function closeModal() { document.getElementById('modal').style.display = 'none'; isEditingFolder = false; }
+        function closeFolder() { document.getElementById('folderOverlay').style.display = 'none'; activeFolderCoords = null; }
+
+        function previewLocalImage(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = (e) => { tempBase64 = e.target.result; document.getElementById('imgPreview').src = tempBase64; document.getElementById('imgPreview').style.display = "block"; document.getElementById('editImg').value = ""; };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function deleteItem() {
+            saveSnapshot();
+            if(activeFolderCoords !== null) tilesData[activeFolderCoords].items[currentEditingCoords] = null;
+            else delete tilesData[currentEditingCoords];
+            saveToLocal(false); closeModal();
+            activeFolderCoords ? openFolder(activeFolderCoords) : renderGrid();
+        }
+
+        function saveToLocal(showAlert=false) { 
+            localStorage.setItem('sd_v2_data', JSON.stringify(tilesData)); 
+            localStorage.setItem('sd_v2_config', JSON.stringify(config)); 
+            if(showAlert) alert("Sauvegardé !"); 
+        }
+
+        function exportData() {
+            const now = new Date();
+            const dateStr = now.getFullYear().toString() + 
+                            (now.getMonth() + 1).toString().padStart(2, '0') + 
+                            now.getDate().toString().padStart(2, '0');
+            const timeStr = now.getHours().toString().padStart(2, '0') + 
+                            now.getMinutes().toString().padStart(2, '0') + 
+                            now.getSeconds().toString().padStart(2, '0');
+            
+            const fileName = `export_speed_dial_perso_${dateStr}_${timeStr}.json`;
+            const blob = new Blob([JSON.stringify({config, data: tilesData}, null, 4)], {type: 'application/json'});
+            const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = fileName; a.click();
+        }
+
+        function importData(e) { 
+            const r = new FileReader(); 
+            r.onload = (ev) => { const res = JSON.parse(ev.target.result); tilesData = res.data; config = res.config; saveToLocal(false); init(); }; 
+            r.readAsText(e.target.files[0]); 
+        }
+
+        init();
+    </script>
+</body>
+</html>
