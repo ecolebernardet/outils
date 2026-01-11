@@ -568,7 +568,26 @@ document.addEventListener('DOMContentLoaded', () => {
     listen('linkImgFile', 'change', (e) => previewLocalImage(e.target, 'linkPreview'));
     listen('folderImgFile', 'change', (e) => previewLocalImage(e.target, 'folderPreview'));
     
-    window.addEventListener('keydown', (e) => { 
-        if(e.key === "Escape") { closeAllModals(); closeFolder(); } 
-    });
+    // Remplace ton bloc keydown actuel par celui-ci :
+	window.addEventListener('keydown', (e) => { 
+    if(e.key === "Escape") { 
+        closeAllModals(); 
+        closeFolder(); 
+    } 
+    
+    if(e.key === "Enter") {
+        // 1. Priorité aux modales d'édition (Enregistre et Ferme)
+        if (document.getElementById('modalLink').style.display === 'flex') {
+            confirmEditLink();
+        }
+        else if (document.getElementById('modalFolder').style.display === 'flex') {
+            confirmEditFolder();
+        }
+        // 2. Si un dossier est ouvert (mais pas de modale), on le ferme
+        else if (document.getElementById('folderOverlay').style.display === 'block' || 
+                 document.getElementById('folderOverlay').style.display === 'flex') {
+            closeFolder();
+        }
+    }
+});
 });
