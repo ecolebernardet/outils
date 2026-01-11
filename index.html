@@ -359,7 +359,7 @@
     <div id="modalLink" class="overlay" style="z-index:4000; align-items:center; justify-content:center;" onclick="closeAllModals()">
         <div style="background:var(--sidebar-bg); padding:25px; border-radius:15px; width:400px; border:1px solid var(--accent);" onclick="event.stopPropagation()">
             <h3 style="color:var(--accent); margin-top:0">🔗 Édition Lien</h3>
-            <div class="control-group"><label>URL</label><input type="text" id="linkUrl" autofocus></div>
+            <div class="control-group"><label>URL</label><input type="text" id="linkUrl"></div>
             <div class="control-group"><label>Nom</label><input type="text" id="linkName"></div>
             <div class="control-group">
                 <label>Image de la tuile</label>
@@ -398,5 +398,18 @@
     </div>
 
     <script src="script.js"></script>
+    <script>
+        // Petit script auto-exécutant pour surveiller l'ouverture de la modale
+        const modalLink = document.getElementById('modalLink');
+        const linkUrlInput = document.getElementById('linkUrl');
+
+        const observer = new MutationObserver(() => {
+            if (modalLink.style.display === 'flex') {
+                setTimeout(() => linkUrlInput.focus(), 50);
+            }
+        });
+
+        observer.observe(modalLink, { attributes: true, attributeFilter: ['style'] });
+    </script>
 </body>
 </html>
