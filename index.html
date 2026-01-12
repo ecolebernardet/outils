@@ -2,458 +2,274 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Speed Dial Perso</title>
-<style>
-    :root {
-        --bg-main: #000000; --sidebar-bg: #1e293b; --tile-bg: #000000;
-        --accent: #38bdf8; --text: #f8fafc; --border: #475569;
-        --cols: 4; --rows: 4; --gap: 15px; --font-size: 12px;
-        --folder-tile-bg: #ffd43b;
-    }
-
-    body { margin: 0; background-color: var(--bg-main); color: var(--text); font-family: 'Segoe UI', sans-serif; overflow: hidden; transition: background-color 0.3s; }
-
-    /* --- STRUCTURE --- */
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>OutilsProfs</title>
     
-/* Configuration de la sidebar pour placer le bouton en bas */
-
-    .sidebar { display: flex; flex-direction: column; height: 100vh; max-height: 100vh;
-    justify-content: space-between;
-    box-sizing: border-box; position: fixed; top: 0; left: -250px; width: 250px; background: var(--sidebar-bg);
-    box-shadow: 5px 0 25px rgba(0,0,0,0.6); transition: 0.3s; z-index: 1000; padding: 10px 25px;
-    box-sizing: border-box; overflow-y: auto; }
-    .sidebar-content {
-    flex: 1; overflow-y: auto; padding-right: 10px;
-    }
-
-/* Le bouton reste fixe en bas */
-    .sidebar-footer {
-        padding: 20px 0;
-        border-top: 1px solid #333; /* Petite ligne de séparation discrète */
-        flex-shrink: 0;                 /* Empêche le bouton de s'écraser */
-        display: flex;
-        justify-content: center;
-    }
-
-    .sidebar.open { left: 0; }
-    .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none; z-index: 999; }
-    .overlay.active { display: block; }
-
-    .sidebar-content {
-        flex-grow: 1; /* Prend tout l'espace disponible */
-        overflow-y: auto; /* Permet de scroller si les réglages sont nombreux */
-    }
-
-
-/* Ton style personnalisé appliqué au bouton */
-.menu-text {
-    font-size: 1.0rem;
-    font-weight: bold;
-    color: var(--text);
-    background: #222;
-    padding: 10px 12px;
-    border-radius: 2px;
-    border: 1px solid #38bdf8;
-    cursor: pointer;
-    letter-spacing: 1px;
-    transition: all 0.2s ease;
-    user-select: none;
-    text-align: center;
-}
-
-.menu-text:hover {
-    color: var(--accent);
-    box-shadow: 0px 0px 10px rgba(200,200,200,1);
-    transform: translateX(0px); /* Petit effet de mouvement vers la droite */
-}
-
-    /* --- GRILLE & TUILES --- */
-    #grid {
-        transition: filter 0.3s ease; /* Pour que le flou apparaisse/disparaisse doucement */
-        will-change: filter;
-    }
-
-    /* Optionnel : assombrir un peu plus le fond du dossier pour le contraste */
-    #folderOverlay {
-        background: rgba(0, 0, 0, 0.4); /* Moins opaque puisque le flou fait le travail */
-    }
-
-    .grid-container { 
-        display: grid; 
-        grid-template-columns: repeat(var(--cols), 1fr); 
-        grid-template-rows: repeat(var(--rows), 1fr);
-        width: 100vw; 
-        height: calc(100vh - 100px); 
-        gap: var(--gap); 
-        padding: var(--gap); 
-        box-sizing: border-box; 
-    }
-
-    .tile { 
-        background: var(--tile-bg); border-radius: 12px; 
-        display: flex; flex-direction: column; align-items: center; justify-content: center; 
-        cursor: pointer; transition: 0.2s; overflow: hidden; position: relative; 
-    }
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     
-    .tile.empty { border: 1px dashed var(--border); background: transparent !important; opacity: 0.2; }
-    .tile.empty:hover { opacity: 0.5; }
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;800&display=swap');
+        
+        :root {
+            /* MODE SOMBRE (Par défaut) */
+            --bg-body: #121212;
+            --card-bg: #1e1e1e;
+            --text-main: #ffffff;
+            --text-muted: #a1a1aa;
+            --border-color: rgba(255, 255, 255, 0.08);
+            --shadow-color: rgba(0, 0, 0, 0.4);
+        }
 
-    .tile img { 
-        width: auto; height: 70%; max-width: 80%; 
-        object-fit: contain; pointer-events: none; 
-        filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3));
-        margin-bottom: 20px;
-    }
+        body.light-mode {
+            /* MODE CLAIR */
+            --bg-body: #eeeeee;
+            --card-bg: #ffffff;
+            --text-main: #111827;
+            --text-muted: #71717a;
+            --border-color: rgba(0, 0, 0, 0.05);
+            --shadow-color: rgba(0, 0, 0, 0.1);
+        }
 
-    .tile-label { 
-        position: absolute; bottom: 0; width: 100%; 
-        background: rgba(0,0,0,0); padding: 5px 0; 
-        text-align: center; font-size: var(--font-size); 
-        pointer-events: none; white-space: nowrap; 
-        overflow: hidden; text-overflow: ellipsis; z-index: 0;
-    }
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            background-color: var(--bg-body); 
+            color: var(--text-main);
+            transition: all 0.3s ease;
+            padding: calc(env(safe-area-inset-top) + 20px) 20px 40px;
+        }
 
-    .tile.folder { background: var(--folder-tile-bg); }
+        /* --- TUILES STYLE "INSCRIPTIONS" 3D --- */
+        .menu-card { 
+            position: relative;
+            background: var(--card-bg);
+            border-radius: 1.5rem;
+            border: 1px solid var(--border-color);
+            
+            /* Ombre 3D */
+            box-shadow: 0 10px 25px -5px var(--shadow-color), 
+                        0 8px 10px -6px var(--shadow-color);
+            
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+        }
+        
+        .menu-card:active { transform: scale(0.96); }
 
-/* Style lorsqu'une tuile est survolée pendant un Drag */
-.tile.drag-over {
-    border: 2px solid var(--accent) !important;
-    background: rgba(56, 189, 248, 0.2) !important; /* Un bleu léger transparent */
-    transform: scale(1.05);
-    transition: transform 0.1s ease;
-    z-index: 10;
-}
+        .icon-box {
+            width: 50px; height: 50px;
+            border-radius: 16px;
+            display: flex; align-items: center; justify-content: center;
+            background: rgba(128, 128, 128, 0.1);
+            margin-bottom: 8px;
+            font-size: 26px;
+            border: 1px solid var(--border-color);
+        }
 
-/* Style spécifique pour les dossiers qui vont fusionner ou recevoir */
-.tile.folder.drag-over {
-    border-color: #ffd43b !important;
-    background: rgba(255, 212, 59, 0.2) !important;
-}
+        .tile-subtitle {
+            color: var(--text-muted);
+            margin-top: 1px;
+            text-align: center;
+        }
 
-    .folder-icon-bg { 
-        position: absolute; width: 100%; height: 100%; 
-        top: -10%; left: 0%; z-index: 1; 
-        pointer-events: none; 
-    }
+        .drag-handle {
+            position: absolute;
+            top: 15px; right: 15px;
+            display: grid;
+            grid-template-columns: repeat(3, 3px);
+            gap: 3px;
+            cursor: grab;
+            opacity: 0.3;
+        }
 
-    .tile.folder .folder-thumb {
-        position: absolute;
-        z-index: 2;
-        width: 50%; height: 50%;
-        object-fit: contain;
-        top: 45%; 
-        left: 50%;
-        transform: translate(-50%, -50%);
-        border-radius: 0px;
-        filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
-    }
+        .drag-handle span {
+            width: 3px; height: 3px;
+            background-color: var(--text-muted);
+            border-radius: 50%;
+        }
 
-    /* --- RECHERCHE FOOTER --- */
-.search-footer {
-    position: fixed;
-    bottom: 0; left: 0;
-    width: 100vw; height: 90px;
-    background: #111111;
-    backdrop-filter: blur(10px);
-    border-top: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    justify-content: space-between; /* Aligne Gauche, Milieu, Droite */
-    padding: 0 25px;
-    box-sizing: border-box;
-    z-index: 100;
-}
+        .ui-btn {
+            width: 44px; height: 44px;
+            display: flex; align-items: center; justify-content: center;
+            border-radius: 12px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            box-shadow: 0 4px 6px var(--shadow-color);
+        }
 
-/* Style du bloc horloge à droite */
-#footerClock {
-    text-align: right;
-    line-height: 1.2;
-    margin-left: auto; /* Force le bloc à rester à droite */
-}
-
-#footerTime {
-    font-size: 1.4rem;
-    font-weight: bold;
-    color: var(--accent);
-    line-height: 1;
-}
-
-#footerDate {
-    font-size: 0.8rem;
-    color: var(--text);
-    text-transform: capitalize;
-}
-
-.footer-left {
-    min-width: 150px; /* Garde l'équilibre avec l'horloge à droite */
-    display: flex;
-    align-items: center;
-}
-
-/* Bloc milieu : aligne les barres horizontalement */
-.search-group {
-        display: flex;
-        flex-wrap: wrap;       /* Permet le passage à la ligne si besoin */
-        justify-content: center;
-        gap: 10px;             /* Espace réduit pour plus de compacité */
-        position: absolute;
-        left: 50%;
-        transform: translateX(-50%);
-        width: auto;
-        max-width: 60%;        /* Empêche de pousser l'horloge ou le menu */
-    }
-
-.search-box {
-        display: flex;
-        align-items: center;
-        background: #222;
-        padding: 5px 12px;
-        border-radius: 20px;
-        border: 1px solid #444;
-        flex-shrink: 1;        /* Permet à la boîte de réduire si l'espace manque */
-    }
-
-    .search-box:focus-within { border-color: var(--accent); box-shadow: 0 0 15px rgba(56, 189, 248, 0.3); }
-    .search-box img { width: 20px; height: 20px; margin-right: 12px; }
-    
-.search-box input {
-        background: transparent; 
-        border: none; 
-        color: white; 
-        margin-left: 8px; 
-        outline: none;
-        width: 100px;          /* Largeur de base plus petite pour l'empilement */
-        transition: width 0.3s ease;
-    }
-
-/* Élargissement automatique lors du clic (focus) */
-	.search-box input:focus {
-        width: 160px; 
-    }
-
-/* Optionnel : mettre en valeur la barre active */
-    .search-box:focus-within {
-        border-color: var(--accent);
-        background: #2a2a2a;
-        box-shadow: 0 0 10px rgba(56, 189, 248, 0.2);
-    }
-
-/* --- INTERFACE DOSSIER --- */
-#folderOverlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.4);
-    backdrop-filter: blur(2px);
-    display: none;
-    z-index: 2500;
-    align-items: center;
-    justify-content: center;
-    overflow: visible; /* Autorise la croix à être vue */
-}
-    
-#folderPopup {
-    background: var(--sidebar-bg);
-    border-radius: 20px;
-    border: 2px solid var(--accent);
-    padding: 20px;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
-    position: relative; 
-    max-height: 85vh;
-    display: flex;
-    flex-direction: column;
-    min-width: 150px;
-    overflow: visible; /* Crucial pour la croix */
-}
-    
-.folder-content {
-    display: grid;
-    gap: 10px;
-    overflow-y: auto; /* Seule cette zone scrolle */
-    overflow-x: hidden;
-    padding: 10px;
-    scrollbar-width: thin;
-    scrollbar-color: var(--accent) transparent;
-}
-
-    .folder-toolbar { display: flex; gap: 10px; padding: 5px 10px; background: rgba(255,255,255,0.05); border-radius: 10px; margin-bottom: 15px; align-items: center; opacity: 0.3; transition: 0.3s; }
-    .folder-toolbar:hover { opacity: 1; }
-    .folder-toolbar label { font-size: 9px; color: var(--accent); text-transform: uppercase; }
-    .folder-toolbar input { width: 45px; padding: 3px; font-size: 10px; background: rgba(0,0,0,0.3); border: 1px solid var(--border); color: white; border-radius: 3px; }
-    .folder-toolbar input[type="color"] { width: 40px; height: 25px; padding: 0; cursor: pointer; }
-
-
-
-#closeFolderBtn {
-    position: absolute;
-    top: -15px;
-    right: -15px;
-    width: 32px;
-    height: 32px;
-    background: #ef4444;
-    color: white;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    font-size: 22px;
-    font-weight: bold;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
-    z-index: 9999;
-    border: 2px solid white;
-	}
-
-    #closeFolderBtn:hover {
-    transform: scale(1.1);
-    background: #dc2626;
-	}
-
-    /* --- MODALES ÉDITION --- */
-    .control-group { margin-bottom: 12px; }
-    .control-group label { display: block; font-size: 10px; color: var(--accent); text-transform: uppercase; margin-bottom: 4px; }
-    input { width: 100%; padding: 8px; background: #0f172a; border: 1px solid var(--border); color: white; border-radius: 4px; box-sizing: border-box; }
-    input[type="color"] { height: 40px; width: 100%; cursor: pointer; padding: 2px; }
-    .btn { width: 100%; padding: 10px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; color: white; transition: 0.2s; }
-    .btn:hover { filter: brightness(1.3); color: black;}
-    .img-suggestions { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-top: 15px; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 10px; border: 1px solid var(--border); }
-    .suggestion-item { width: 100%; aspect-ratio: 1; object-fit: contain; cursor: pointer; background: white; border-radius: 6px; padding: 2px; }
-
-
-</style>
+        .header-avatar {
+            width: 42px; height: 42px;
+            border-radius: 12px;
+            border: 2px solid var(--card-bg);
+            box-shadow: 0 4px 10px var(--shadow-color);
+        }
+    </style>
 </head>
-<body>
-
-    <div class="overlay" id="overlay"></div>
-
-<nav class="sidebar" id="sidebar">
-    <div class="sidebar-content" style="flex-grow: 1; overflow-y: auto;">
-        <h2 style="color:var(--accent); margin-top:0">Paramètres</h2>
-        <div class="control-group"><label>Couleur de fond globale</label><input type="color" id="bgInput"></div>
-        <div class="control-group"><label>Couleur des tuiles (Lien)</label><input type="color" id="tileColorInput"></div>
-        <div class="control-group"><label>Couleur des tuiles (Dossier)</label><input type="color" id="folderTileColorInput"></div>
-        <div class="control-group"><label>Colonnes</label><input type="number" id="colsInput" min="1"></div>
-        <div class="control-group"><label>Lignes</label><input type="number" id="rowsInput" min="1"></div>
-        <div class="control-group"><label>Espacement (px)</label><input type="number" id="gapInput" min="0"></div>
-        <div class="control-group"><label>Taille police (px)</label><input type="number" id="fontInput" min="6"></div>
-        
-        <hr style="border:0; border-top:1px solid var(--border); margin: 10px 0;">
-        
-        <button class="btn" style="background:#5D9948; margin-top:10px" id="btn-export">📤 EXPORTER CONFIG (fichier.json)</button>
-        <button class="btn" style="background:#f59e0b; margin-top:15px" id="btn-trigger-import">📥 IMPORTER CONFIG  (fichier.json)</button>
-        <button class="btn" style="background:#D14747; margin-top:20px" id="btn-undo">↩ ANNULER</button>
-        <input type="file" id="importFile" style="display:none">
-    </div>
-
-    <div class="sidebar-footer" style="margin-top: 30px; display: flex; justify-content: center; padding-bottom: 15px;">
-        <div id="btn-close-sidebar" class="menu-text">FERMER</div>
-    </div>
-</nav>
-
-    <main class="grid-container" id="grid"></main>
-
-<footer class="search-footer" id="search-footer">
-    <div class="footer-left">
-    <div id="btn-menu" class="menu-text" onclick="toggleSidebar()">Paramètres</div>
-</div>
-
-    <div class="search-group">
-    <div class="search-box">
-        <img src="https://www.google.com/favicon.ico" alt="G">
-        <input type="text" placeholder="Google" onkeypress="if(event.key==='Enter') window.open('https://www.google.com/search?q='+encodeURIComponent(this.value), '_blank')">
-    </div>
-    <div class="search-box">
-        <img src="https://www.gstatic.com/images/branding/product/1x/photos_96dp.png" alt="GI" style="width:16px; height:16px;">
-        <input type="text" placeholder="Google Images" onkeypress="if(event.key==='Enter') window.open('https://www.google.com/search?tbm=isch&q='+encodeURIComponent(this.value), '_blank')">
-    </div>
-    <div class="search-box">
-        <img src="https://www.youtube.com/favicon.ico" alt="Y">
-        <input type="text" placeholder="YouTube" onkeypress="if(event.key==='Enter') window.open('https://www.youtube.com/results?search_query='+encodeURIComponent(this.value), '_blank')">
-    </div>
-    <div class="search-box">
-        <img src="https://www.amazon.fr/favicon.ico" alt="A">
-        <input type="text" placeholder="Amazon" onkeypress="if(event.key==='Enter') window.open('https://www.amazon.fr/s?k='+encodeURIComponent(this.value), '_blank')">
-    </div>
-    <div class="search-box">
-        <img src="https://icons.duckduckgo.com/ip3/duckduckgo.com.ico" alt="D">
-        <input type="text" placeholder="DuckDuckGo" onkeypress="if(event.key==='Enter') window.open('https://duckduckgo.com/?q='+encodeURIComponent(this.value), '_blank')">
-    </div>
-</div>
-    
-    <div id="footerClock">
-        <div id="footerTime"></div>
-        <div id="footerDate"></div>
-    </div>
-</footer>
-
-    <div id="folderOverlay">
-        <div id="folderPopup">
-            <div id="closeFolderBtn" onclick="closeFolder()">&times;</div>
-
-            <div class="folder-toolbar">
-                <label>Colonnes</label><input type="number" id="fCols" min="1">
-                <label>Lignes</label><input type="number" id="fRows" min="1">
-                <label>Espace</label><input type="number" id="fGap" min="0">
-                <label>Fond</label><input type="color" id="fPopBg">
-            </div>
-            <div class="folder-content" id="folderGrid"></div>
-        </div>
-    </div>
-
-    <div id="modalLink" class="overlay" style="z-index:4000; align-items:center; justify-content:center;" onclick="closeAllModals()">
-        <div style="background:var(--sidebar-bg); padding:25px; border-radius:15px; width:400px; border:1px solid var(--accent);" onclick="event.stopPropagation()">
-            <h3 style="color:var(--accent); margin-top:0">🔗 Édition Lien</h3>
-            <div class="control-group"><label>URL</label><input type="text" id="linkUrl"></div>
-            <div class="control-group"><label>Nom</label><input type="text" id="linkName"></div>
-            <div class="control-group">
-                <label>Image de la tuile</label>
-                <div style="display: flex; gap: 5px; margin-bottom: 10px;">
-                    <input type="file" id="linkImgFile" accept="image/*" style="font-size: 10px; flex: 1; width: 40%;">
-                    <button class="btn" style="background:var(--accent); width: auto; font-size: 10px; padding: 5px 10px;" onclick="searchIcons()">AUTO</button>
-                    <button class="btn" style="background:#ea4335; width: auto; font-size: 10px; padding: 5px 10px;" onclick="searchGoogleImages('link')">GOOGLE</button>
-                </div>
-                <input type="text" id="linkImg" placeholder="Lien direct de l'image">
-                <div id="linkSuggestions" class="img-suggestions" style="display:none"></div>
-                <center><img id="linkPreview" style="max-width:80px; margin-top:10px; display:none; border-radius:8px;"></center>
-            </div>
-            <button class="btn" style="background:#22c55e; margin-bottom:10px" onclick="confirmEditLink()">Valider</button>
-            <button class="btn" style="background:#ef4444; margin-bottom:10px" onclick="deleteItem()">Supprimer</button>
-            <button class="btn" style="background:transparent; border:1px solid var(--border)" onclick="closeAllModals()">Annuler</button>
-        </div>
-    </div>
-
-    <div id="modalFolder" class="overlay" style="z-index:4000; align-items:center; justify-content:center;" onclick="closeAllModals()">
-        <div style="background:var(--sidebar-bg); padding:25px; border-radius:15px; width:400px; border:1px solid #ffd43b;" onclick="event.stopPropagation()">
-            <h3 style="color:#ffd43b; margin-top:0">📂 Édition Dossier</h3>
-            <div class="control-group"><label>Nom du dossier</label><input type="text" id="folderName"></div>
-            <div class="control-group">
-                <label>Image du dossier (optionnel)</label>
-                <div style="display: flex; gap: 5px; margin-bottom: 10px;">
-                    <input type="file" id="folderImgFile" accept="image/*" style="font-size: 10px; flex: 1;">
-                    <button class="btn" style="background:#ea4335; width: auto; font-size: 10px; padding: 5px 10px;" onclick="searchGoogleImages('folder')">GOOGLE</button>
-                </div>
-                <input type="text" id="folderImg" placeholder="Lien direct de l'image">
-                <center><img id="folderPreview" style="max-width:80px; margin-top:10px; display:none; border-radius:8px;"></center>
-            </div>
-            <button class="btn" style="background:#22c55e; margin-bottom:10px" onclick="confirmEditFolder()">Valider</button>
-            <button class="btn" style="background:#ef4444; margin-bottom:10px" onclick="deleteItem()">Supprimer</button>
-            <button class="btn" style="background:transparent; border:1px solid var(--border)" onclick="closeAllModals()">Annuler</button>
-        </div>
-    </div>
-
-    <script src="script.js"></script>
+<body class="flex flex-col items-center">
     <script>
-        // Petit script auto-exécutant pour surveiller l'ouverture de la modale
-        const modalLink = document.getElementById('modalLink');
-        const linkUrlInput = document.getElementById('linkUrl');
+        if (localStorage.getItem('theme_mode') === 'light') {
+            document.body.classList.add('light-mode');
+        }
+    </script>
+    <div class="w-full max-w-[360px]">
+        <header class="flex justify-between items-center mb-8 px-1">
+            <button onclick="goToSettings()" class="ui-btn active:scale-90">
+                <svg xmlns="http://www.w3.org/2000/center" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+            </button>
+            <h1 class="text-[15px] font-black tracking-[0.5em] uppercase opacity-90">Outils Profs</h1>
+            <img src="outilsprofs_icone.png" alt="Avatar" class="header-avatar">
+        </header>
 
-        const observer = new MutationObserver(() => {
-            if (modalLink.style.display === 'flex') {
-                setTimeout(() => linkUrlInput.focus(), 50);
+        <nav id="grid-menu" class="grid grid-cols-2 gap-5">
+            <div data-id="inscr" class="menu-card p-4">
+                <div class="drag-handle"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+                <a href="maclasse.html" class="flex flex-col items-center text-center">
+                    <div class="icon-box">📝</div>
+                    <h2 class="font-bold text-[12px] uppercase tracking-wider">Ma classe</h2>
+                    <span class="tile-subtitle text-[9px] font-semibold">enregistrement & édition</span>
+                </a>
+            </div>
+
+            <div data-id="liens" class="menu-card p-4">
+                <div class="drag-handle"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+                <a href="liens.html" class="flex flex-col items-center text-center">
+                    <div class="icon-box">🔗</div>
+                    <h2 class="font-bold text-[12px] uppercase tracking-wider">Liens</h2>
+                    <span class="tile-subtitle text-[9px] font-semibold">bibliothèque de favoris</span>
+                </a>
+            </div>
+
+            <div data-id="h108" class="menu-card p-4">
+                <div class="drag-handle"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+                <a href="108heures.html" class="flex flex-col items-center text-center">
+                    <div class="icon-box">⏱️</div>
+                    <h2 class="font-bold text-[12px] uppercase tracking-wider">108 heures</h2>
+                    <span class="tile-subtitle text-[9px] font-semibold">suivi des réunions</span>
+                </a>
+            </div>
+
+            <div data-id="memos" class="menu-card p-4">
+                <div class="drag-handle"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+                <a href="memos.html" class="flex flex-col items-center text-center">
+                    <div class="icon-box">📒</div>
+                    <h2 class="font-bold text-[12px] uppercase tracking-wider">Mémos</h2>
+                    <span class="tile-subtitle text-[9px] font-semibold">pense-bêtes</span>
+                </a>
+            </div>
+
+            <div data-id="tirage" class="menu-card p-4">
+                <div class="drag-handle"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+                <a href="tirage.html" class="flex flex-col items-center text-center">
+                    <div class="icon-box">🎲</div>
+                    <h2 class="font-bold text-[12px] uppercase tracking-wider">Tirage</h2>
+                    <span class="tile-subtitle text-[9px] font-semibold">nom au hasard</span>
+                </a>
+            </div>
+
+            <div data-id="equipes" class="menu-card p-4">
+                <div class="drag-handle"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+                <a href="equipes.html" class="flex flex-col items-center text-center">
+                    <div class="icon-box">👥</div>
+                    <h2 class="font-bold text-[12px] uppercase tracking-wider">Équipes</h2>
+                    <span class="tile-subtitle text-[9px] font-semibold">groupes équilibrés</span>
+                </a>
+            </div>
+
+            <div data-id="obs" class="menu-card p-4">
+                <div class="drag-handle"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+                <a href="observations.html" class="flex flex-col items-center text-center">
+                    <div class="icon-box">✏️</div>
+                    <h2 class="font-bold text-[12px] uppercase tracking-wider">Observations</h2>
+                    <span class="tile-subtitle text-[9px] font-semibold">suivi des élèves</span>
+                </a>
+            </div>
+
+            <div data-id="compt" class="menu-card p-4">
+                <div class="drag-handle"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+                <a href="compteur.html" class="flex flex-col items-center text-center">
+                    <div class="icon-box">🚥</div>
+                    <h2 class="font-bold text-[12px] uppercase tracking-wider">Compteur</h2>
+                    <span class="tile-subtitle text-[9px] font-semibold">suivi du comportement</span>
+                </a>
+            </div>
+        </nav>
+    </div>
+
+<script>
+
+function goToSettings() {
+    // Redirection immédiate sans animation
+    window.location.href = 'parametres.html';
+}
+
+    // 1. GESTION DU MODE SOMBRE / CLAIR
+    if (localStorage.getItem('theme_mode') === 'light') {
+        document.body.classList.add('light-mode');
+    }
+
+    const colorMap = {
+        'red': '#ef4444', 'orange': '#f97316', 'amber': '#f59e0b', 'yellow': '#eab308',
+        'lime': '#84cc16', 'green': '#22c55e', 'emerald': '#10b981', 'teal': '#14b8a6',
+        'cyan': '#06b6d4', 'sky': '#0ea5e9', 'blue': '#3b82f6', 'indigo': '#6366f1',
+        'violet': '#8b5cf6', 'purple': '#a855f7', 'fuchsia': '#d946ef', 'pink': '#ec4899',
+        'rose': '#f43f5e'
+    };
+
+    // 2. APPLICATION DES COULEURS DE TUILES
+    function applyColors() {
+        const isLight = document.body.classList.contains('light-mode');
+        const defaultColors = {
+            inscr: 'lime', h108: 'orange', liens: 'indigo', tirage: 'yellow', 
+            equipes: 'rose', memos: 'purple', obs: 'green', compt: 'sky'
+        };
+        const prefs = JSON.parse(localStorage.getItem('theme_tuiles')) || defaultColors;
+
+        document.querySelectorAll('.menu-card').forEach(el => {
+            const id = el.getAttribute('data-id');
+            const colorName = prefs[id] || 'blue';
+            const hexColor = colorMap[colorName];
+            
+            const iconBox = el.querySelector('.icon-box');
+            const title = el.querySelector('h2');
+
+            if (iconBox) {
+                iconBox.style.backgroundColor = `${hexColor}15`; 
+                iconBox.style.color = hexColor;
+                iconBox.style.borderColor = `${hexColor}30`;
+                if (!isLight) {
+                    iconBox.style.boxShadow = `0 0 15px ${hexColor}20`;
+                } else {
+                    iconBox.style.boxShadow = 'none';
+                }
+            }
+            if (title) {
+                title.style.color = hexColor;
             }
         });
+    }
 
-        observer.observe(modalLink, { attributes: true, attributeFilter: ['style'] });
-    </script>
+    applyColors();
+
+    // 3. GESTION DE L'ORDRE (SORTABLE)
+    const gridMenu = document.getElementById('grid-menu');
+    const savedOrder = JSON.parse(localStorage.getItem('menu_order'));
+    if (savedOrder) {
+        savedOrder.forEach(id => {
+            const tile = document.querySelector(`[data-id="${id}"]`);
+            if (tile) gridMenu.appendChild(tile);
+        });
+    }
+
+    new Sortable(gridMenu, {
+        handle: '.drag-handle',
+        animation: 200,
+        ghostClass: 'opacity-0',
+        onEnd: function() {
+            const order = Array.from(gridMenu.children).map(child => child.getAttribute('data-id'));
+            localStorage.setItem('menu_order', JSON.stringify(order));
+        }
+    });
+</script>
 </body>
 </html>
