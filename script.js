@@ -24,6 +24,8 @@ let lastTilesData = null;
 const winFolderSVG = `<svg class="folder-icon-bg" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 4C2.89543 4 2 4.89543 2 6V18C2 19.1046 2.89543 20 4 20H20C21.1046 20 22 19.1046 22 18V8C22 6.89543 21.1046 6 20 6H12L10 4H4Z" fill="#ffca28"/><path d="M2 10V18C2 19.1046 2.89543 20 4 20H20C21.1046 20 22 19.1046 22 18V10H2Z" fill="#ffd54f"/></svg>`;
 
 // 2. FONCTIONS UI & UTILITAIRES
+
+
 function toggleMenu() {
     document.getElementById('sidebar').classList.toggle('open');
     document.getElementById('overlay').classList.toggle('active');
@@ -219,7 +221,7 @@ function openFolder(coords) {
     const overlay = document.getElementById('folderOverlay');
     const fGrid = document.getElementById('folderGrid');
     const fPopup = document.getElementById('folderPopup');
-    const mainGrid = document.getElementById('grid'); // Pour l'effet de flou
+    const mainGrid = document.getElementById('grid');
     
     // 1. Mise à jour des réglages
     document.getElementById('fCols').value = folder.fConfig.cols;
@@ -227,29 +229,62 @@ function openFolder(coords) {
     document.getElementById('fGap').value = folder.fConfig.gap;
     document.getElementById('fPopBg').value = folder.fConfig.fBgColor;
     
+    // --- LOGIQUE DE CALCUL DYNAMIQUE ---
+    const itemsKeys = Object.keys(folder.items || {});
+    let maxR = folder.fConfig.rows - 1;
+    itemsKeys.forEach(key => {
+        const [c, r] = key.split('-').map(Number);
+        if (r > maxR) maxR = r;
+    });
+    const displayRows = maxR + 1;
+
     // 2. Configuration de la grille
+    fGrid.style.display = 'grid';
     fGrid.style.gridTemplateColumns = `repeat(${folder.fConfig.cols}, 120px)`;
+    fGrid.style.gridTemplateRows = `repeat(${displayRows}, 1fr)`;
     fGrid.style.gap = `${folder.fConfig.gap}px`;
     fPopup.style.backgroundColor = folder.fConfig.fBgColor;
     fGrid.innerHTML = '';
     
     // 3. Positionnement dynamique
+    overlay.style.display = 'block'; // On l'affiche d'abord pour pouvoir calculer sa taille
+    
     const originTile = document.getElementById(`tile-${coords}`);
     if (originTile) {
         const rect = originTile.getBoundingClientRect();
-        overlay.style.display = 'block'; 
         fPopup.style.position = 'absolute';
         
         let posX = rect.left + window.scrollX;
         let posY = rect.top + window.scrollY;
 
-        const estimatedWidth = (folder.fConfig.cols * 120) + (folder.fConfig.cols * folder.fConfig.gap) + 40;
-        if (posX + estimatedWidth > window.innerWidth) {
-            posX = window.innerWidth - estimatedWidth - 20;
+        // --- CALCUL DE TAILLE RÉEL ---
+        // On calcule la hauteur théorique : (lignes * 130px) + toolbar (50px) + padding (40px)
+        const estimatedWidth = (folder.fConfig.cols * 120) + ((folder.fConfig.cols - 1) * folder.fConfig.gap) + 40;
+        let estimatedHeight = (displayRows * 130) + 90; 
+        
+        // On plafonne l'estimation à la hauteur max du CSS (85vh)
+        const maxHeightPx = window.innerHeight * 0.85;
+        if (estimatedHeight > maxHeightPx) estimatedHeight = maxHeightPx;
+
+        // --- AJUSTEMENT HORIZONTAL ---
+        if (posX + estimatedWidth > window.innerWidth - 30) {
+            posX = window.innerWidth - estimatedWidth - 30;
+        }
+        
+        // --- AJUSTEMENT VERTICAL (L'ANTI-DÉBORDEMENT BAS) ---
+        const footerHeight = 100; // Marge pour votre footer
+        const bottomLimit = window.innerHeight - footerHeight;
+
+        if (posY + estimatedHeight > bottomLimit) {
+            // On remonte le dossier pour que son bas arrive à la limite
+            posY = bottomLimit - estimatedHeight;
         }
 
-        fPopup.style.left = `${Math.max(10, posX)}px`;
-        fPopup.style.top = `${Math.max(10, posY)}px`;
+        // --- SÉCURITÉ HAUT ---
+        if (posY < 30) posY = 30;
+
+        fPopup.style.left = `${Math.max(20, posX)}px`;
+        fPopup.style.top = `${posY}px`;
         fPopup.style.transformOrigin = '0 0'; 
     } else {
         overlay.style.display = 'flex';
@@ -259,14 +294,14 @@ function openFolder(coords) {
 
     // 4. Remplissage
     if (!folder.items) folder.items = {};
-    for(let r=0; r < folder.fConfig.rows; r++) {
+    for(let r=0; r < displayRows; r++) {
         for(let c=0; c < folder.fConfig.cols; c++) {
             let fCoords = `${c}-${r}`;
             fGrid.appendChild(createTile(fCoords, folder.items[fCoords], false));
         }
     }
 
-    // 5. Effet de flou sur l'arrière-plan
+    // 5. Effet de flou
     if(mainGrid) mainGrid.style.filter = 'blur(3px)';
     if(mainGrid) mainGrid.style.transition = 'filter 0.5s';
 
@@ -333,16 +368,26 @@ function handleDropMain(to) {
     } else if (target.type === 'folder') {
         if (!target.items) target.items = {};
         let found = false;
-        for(let r=0; r<target.fConfig.rows && !found; r++){
-            for(let c=0; c<target.fConfig.cols && !found; c++){
-                if(!target.items[`${c}-${r}`]) { target.items[`${c}-${r}`] = source; found = true; }
+        // On cherche une place vide. Si le dossier est plein selon fConfig, 
+        // on continue de chercher plus bas pour ne pas perdre la tuile.
+        let r = 0;
+        while (!found) {
+            for(let c=0; c < target.fConfig.cols; c++) {
+                if(!target.items[`${c}-${r}`]) { 
+                    target.items[`${c}-${r}`] = source; 
+                    found = true; 
+                    break; 
+                }
             }
+            r++;
+            if (r > 100) break; // Sécurité anti-boucle infinie
         }
     } else if (target !== source) {
+        // Création d'un dossier par défaut en 4x4 pour avoir de la place
         tilesData[to] = {
             type: 'folder', name: "Nouveau Dossier",
             items: {"0-0": target, "1-0": source},
-            fConfig: { cols: 3, rows: 2, gap: 10, fBgColor: '#1e293b' }
+            fConfig: { cols: 4, rows: 4, gap: 10, fBgColor: '#1e293b' }
         };
     }
     
