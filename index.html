@@ -4,413 +4,297 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Speed Dial Perso</title>
-	<link rel="manifest" href="manifest.json">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <link rel="manifest" href="manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <style>
+        :root {
+            --bg-main: #000000; --sidebar-bg: #1e293b; --tile-bg: #000000;
+            --accent: #38bdf8; --text: #f8fafc; --border: #475569;
+            --cols: 4; --rows: 4; --gap: 15px; --font-size: 12px;
+            --folder-tile-bg: #ffd43b;
+        }
 
-<script>
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('service-worker.js');
-  }
-</script>
-<style>
-    :root {
-        --bg-main: #000000; --sidebar-bg: #1e293b; --tile-bg: #000000;
-        --accent: #38bdf8; --text: #f8fafc; --border: #475569;
-        --cols: 4; --rows: 4; --gap: 15px; --font-size: 12px;
-        --folder-tile-bg: #ffd43b;
-    }
+        body { margin: 0; background-color: var(--bg-main); color: var(--text); font-family: 'Segoe UI', sans-serif; overflow: hidden; transition: background-color 0.3s; }
 
-    body { margin: 0; background-color: var(--bg-main); color: var(--text); font-family: 'Segoe UI', sans-serif; overflow: hidden; transition: background-color 0.3s; }
+        /* --- STRUCTURE --- */
+        .sidebar { display: flex; flex-direction: column; height: 100vh; max-height: 100vh;
+        justify-content: space-between;
+        box-sizing: border-box; position: fixed; top: 0; left: -250px; width: 250px; background: var(--sidebar-bg);
+        box-shadow: 5px 0 25px rgba(0,0,0,0.6); transition: 0.3s; z-index: 1000; padding: 10px 25px;
+        overflow-y: auto; }
+        
+        .sidebar-content { flex: 1; overflow-y: auto; padding-right: 10px; }
 
-    /* --- STRUCTURE --- */
-    
-/* Configuration de la sidebar pour placer le bouton en bas */
+        .sidebar-footer {
+            padding: 20px 0;
+            border-top: 1px solid #333;
+            flex-shrink: 0;
+            display: flex;
+            justify-content: center;
+        }
 
-    .sidebar { display: flex; flex-direction: column; height: 100vh; max-height: 100vh;
-    justify-content: space-between;
-    box-sizing: border-box; position: fixed; top: 0; left: -250px; width: 250px; background: var(--sidebar-bg);
-    box-shadow: 5px 0 25px rgba(0,0,0,0.6); transition: 0.3s; z-index: 1000; padding: 10px 25px;
-    box-sizing: border-box; overflow-y: auto; }
-    .sidebar-content {
-    flex: 1; overflow-y: auto; padding-right: 10px;
-    }
+        .sidebar.open { left: 0; }
+        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none; z-index: 999; }
+        .overlay.active { display: block; }
 
-/* Le bouton reste fixe en bas */
-    .sidebar-footer {
-        padding: 20px 0;
-        border-top: 1px solid #333; /* Petite ligne de séparation discrète */
-        flex-shrink: 0;                 /* Empêche le bouton de s'écraser */
-        display: flex;
-        justify-content: center;
-    }
+        .menu-text {
+            font-size: 1.0rem; font-weight: bold; color: var(--text); background: #222;
+            padding: 10px 12px; border-radius: 2px; border: 1px solid #38bdf8;
+            cursor: pointer; letter-spacing: 1px; transition: all 0.2s ease;
+            user-select: none; text-align: center;
+        }
 
-    .sidebar.open { left: 0; }
-    .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none; z-index: 999; }
-    .overlay.active { display: block; }
+        .menu-text:hover { color: var(--accent); box-shadow: 0px 0px 10px rgba(200,200,200,1); }
 
-    .sidebar-content {
-        flex-grow: 1; /* Prend tout l'espace disponible */
-        overflow-y: auto; /* Permet de scroller si les réglages sont nombreux */
-    }
+        /* --- GRILLE & TUILES --- */
+        #grid { transition: filter 0.3s ease; will-change: filter; }
 
+        .grid-container { 
+            display: grid; 
+            grid-template-columns: repeat(var(--cols), 1fr); 
+            grid-template-rows: repeat(var(--rows), 1fr);
+            width: 100vw; height: calc(100vh - 100px); 
+            gap: var(--gap); padding: var(--gap); box-sizing: border-box; 
+        }
 
-/* Ton style personnalisé appliqué au bouton */
-.menu-text {
-    font-size: 1.0rem;
-    font-weight: bold;
-    color: var(--text);
-    background: #222;
-    padding: 10px 12px;
-    border-radius: 2px;
-    border: 1px solid #38bdf8;
-    cursor: pointer;
-    letter-spacing: 1px;
-    transition: all 0.2s ease;
-    user-select: none;
-    text-align: center;
-}
+        .tile { 
+            background: var(--tile-bg); border-radius: 12px; 
+            display: flex; flex-direction: column; align-items: center; justify-content: center; 
+            cursor: pointer; transition: 0.2s; overflow: hidden; position: relative; 
+        }
+        
+        .tile.empty { border: 1px dashed var(--border); background: transparent !important; opacity: 0.2; }
+        .tile.empty:hover { opacity: 0.5; }
 
-.menu-text:hover {
-    color: var(--accent);
-    box-shadow: 0px 0px 10px rgba(200,200,200,1);
-    transform: translateX(0px); /* Petit effet de mouvement vers la droite */
-}
+        .tile img { 
+            width: auto; height: 70%; max-width: 80%; 
+            object-fit: contain; pointer-events: none; 
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3));
+            margin-bottom: 20px;
+        }
 
-    /* --- GRILLE & TUILES --- */
-    #grid {
-        transition: filter 0.3s ease; /* Pour que le flou apparaisse/disparaisse doucement */
-        will-change: filter;
-    }
+        .tile-label { 
+            position: absolute; bottom: 0; width: 100%; 
+            background: rgba(0,0,0,0); padding: 5px 0; 
+            text-align: center; font-size: var(--font-size); 
+            pointer-events: none; white-space: nowrap; 
+            overflow: hidden; text-overflow: ellipsis; z-index: 0;
+        }
 
-    /* Optionnel : assombrir un peu plus le fond du dossier pour le contraste */
-    #folderOverlay {
-        background: rgba(0, 0, 0, 0.4); /* Moins opaque puisque le flou fait le travail */
-    }
+        .tile.folder { background: var(--folder-tile-bg); }
 
-    .grid-container { 
-        display: grid; 
-        grid-template-columns: repeat(var(--cols), 1fr); 
-        grid-template-rows: repeat(var(--rows), 1fr);
-        width: 100vw; 
-        height: calc(100vh - 100px); 
-        gap: var(--gap); 
-        padding: var(--gap); 
-        box-sizing: border-box; 
-    }
+        .tile.drag-over {
+            border: 2px solid var(--accent) !important;
+            background: rgba(56, 189, 248, 0.2) !important;
+            transform: scale(1.05); transition: transform 0.1s ease; z-index: 10;
+        }
 
-    .tile { 
-        background: var(--tile-bg); border-radius: 12px; 
-        display: flex; flex-direction: column; align-items: center; justify-content: center; 
-        cursor: pointer; transition: 0.2s; overflow: hidden; position: relative; 
-    }
-    
-    .tile.empty { border: 1px dashed var(--border); background: transparent !important; opacity: 0.2; }
-    .tile.empty:hover { opacity: 0.5; }
+        .tile.folder.drag-over { border-color: #ffd43b !important; background: rgba(255, 212, 59, 0.2) !important; }
 
-    .tile img { 
-        width: auto; height: 70%; max-width: 80%; 
-        object-fit: contain; pointer-events: none; 
-        filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3));
-        margin-bottom: 20px;
-    }
+        .folder-icon-bg { position: absolute; width: 100%; height: 100%; top: -10%; left: 0%; z-index: 1; pointer-events: none; }
 
-    .tile-label { 
-        position: absolute; bottom: 0; width: 100%; 
-        background: rgba(0,0,0,0); padding: 5px 0; 
-        text-align: center; font-size: var(--font-size); 
-        pointer-events: none; white-space: nowrap; 
-        overflow: hidden; text-overflow: ellipsis; z-index: 0;
-    }
+        .tile.folder .folder-thumb {
+            position: absolute; z-index: 2; width: 50%; height: 50%;
+            object-fit: contain; top: 45%; left: 50%;
+            transform: translate(-50%, -50%); filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+        }
 
-    .tile.folder { background: var(--folder-tile-bg); }
+        /* --- RECHERCHE FOOTER --- */
+        .search-footer {
+            position: fixed; bottom: 0; left: 0; width: 100vw; height: 90px;
+            background: #111111; backdrop-filter: blur(10px); border-top: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 25px; box-sizing: border-box; z-index: 100;
+        }
 
-/* Style lorsqu'une tuile est survolée pendant un Drag */
-.tile.drag-over {
-    border: 2px solid var(--accent) !important;
-    background: rgba(56, 189, 248, 0.2) !important; /* Un bleu léger transparent */
-    transform: scale(1.05);
-    transition: transform 0.1s ease;
-    z-index: 10;
-}
+        #footerClock { text-align: right; line-height: 1.2; margin-left: auto; }
+        #footerTime { font-size: 1.4rem; font-weight: bold; color: var(--accent); line-height: 1; }
+        #footerDate { font-size: 0.8rem; color: var(--text); text-transform: capitalize; }
+        .footer-left { min-width: 150px; display: flex; align-items: center; }
 
-/* Style spécifique pour les dossiers qui vont fusionner ou recevoir */
-.tile.folder.drag-over {
-    border-color: #ffd43b !important;
-    background: rgba(255, 212, 59, 0.2) !important;
-}
+        .search-group {
+            display: flex; flex-wrap: wrap; justify-content: center; gap: 10px;
+            position: absolute; left: 50%; transform: translateX(-50%);
+            width: auto; max-width: 60%;
+        }
 
-    .folder-icon-bg { 
-        position: absolute; width: 100%; height: 100%; 
-        top: -10%; left: 0%; z-index: 1; 
-        pointer-events: none; 
-    }
+        .search-box {
+            display: flex; align-items: center; background: #222; padding: 5px 12px;
+            border-radius: 20px; border: 1px solid #444; flex-shrink: 1;
+        }
 
-    .tile.folder .folder-thumb {
-        position: absolute;
-        z-index: 2;
-        width: 50%; height: 50%;
-        object-fit: contain;
-        top: 45%; 
-        left: 50%;
-        transform: translate(-50%, -50%);
-        border-radius: 0px;
-        filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
-    }
+        .search-box:focus-within { border-color: var(--accent); box-shadow: 0 0 15px rgba(56, 189, 248, 0.3); background: #2a2a2a; }
+        .search-box img { width: 20px; height: 20px; margin-right: 12px; }
+        
+        .search-box input {
+            background: transparent; border: none; color: white; margin-left: 8px; 
+            outline: none; width: 100px; transition: width 0.3s ease;
+        }
+        .search-box input:focus { width: 160px; }
 
-    /* --- RECHERCHE FOOTER --- */
-.search-footer {
-    position: fixed;
-    bottom: 0; left: 0;
-    width: 100vw; height: 90px;
-    background: #111111;
-    backdrop-filter: blur(10px);
-    border-top: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    justify-content: space-between; /* Aligne Gauche, Milieu, Droite */
-    padding: 0 25px;
-    box-sizing: border-box;
-    z-index: 100;
-}
-
-/* Style du bloc horloge à droite */
-#footerClock {
-    text-align: right;
-    line-height: 1.2;
-    margin-left: auto; /* Force le bloc à rester à droite */
-}
-
-#footerTime {
-    font-size: 1.4rem;
-    font-weight: bold;
-    color: var(--accent);
-    line-height: 1;
-}
-
-#footerDate {
-    font-size: 0.8rem;
-    color: var(--text);
-    text-transform: capitalize;
-}
-
-.footer-left {
-    min-width: 150px; /* Garde l'équilibre avec l'horloge à droite */
-    display: flex;
-    align-items: center;
-}
-
-/* Bloc milieu : aligne les barres horizontalement */
-.search-group {
-        display: flex;
-        flex-wrap: wrap;       /* Permet le passage à la ligne si besoin */
-        justify-content: center;
-        gap: 10px;             /* Espace réduit pour plus de compacité */
-        position: absolute;
-        left: 50%;
-        transform: translateX(-50%);
-        width: auto;
-        max-width: 60%;        /* Empêche de pousser l'horloge ou le menu */
-    }
-
-.search-box {
-        display: flex;
-        align-items: center;
-        background: #222;
-        padding: 5px 12px;
-        border-radius: 20px;
-        border: 1px solid #444;
-        flex-shrink: 1;        /* Permet à la boîte de réduire si l'espace manque */
-    }
-
-    .search-box:focus-within { border-color: var(--accent); box-shadow: 0 0 15px rgba(56, 189, 248, 0.3); }
-    .search-box img { width: 20px; height: 20px; margin-right: 12px; }
-    
-.search-box input {
-        background: transparent; 
-        border: none; 
-        color: white; 
-        margin-left: 8px; 
-        outline: none;
-        width: 100px;          /* Largeur de base plus petite pour l'empilement */
-        transition: width 0.3s ease;
-    }
-
-/* Élargissement automatique lors du clic (focus) */
-	.search-box input:focus {
-        width: 160px; 
-    }
-
-/* Optionnel : mettre en valeur la barre active */
-    .search-box:focus-within {
-        border-color: var(--accent);
-        background: #2a2a2a;
-        box-shadow: 0 0 10px rgba(56, 189, 248, 0.2);
-    }
-
-/* --- INTERFACE DOSSIER --- */
-#folderOverlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.4);
+        /* --- INTERFACE DOSSIER --- */
+        #folderOverlay {
+    position: fixed; 
+    inset: 0; 
+    background: rgba(0, 0, 0, 0.4); 
     backdrop-filter: blur(2px);
-    display: none;
-    z-index: 2500;
-    align-items: center;
+    display: none; 
+    z-index: 2500; 
+    align-items: flex-start; /* Changé de center à flex-start pour mieux gérer le top fixe */
     justify-content: center;
-    overflow: visible; /* Autorise la croix à être vue */
+    overflow-y: auto; /* Permet de scroller si le dossier est très grand */
+    padding: 20px 0;
 }
-    
-#folderPopup {
-    background: var(--sidebar-bg);
-    border-radius: 20px;
-    border: 2px solid var(--accent);
-    padding: 20px;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
-    position: relative; 
-    max-height: 85vh;
-    display: flex;
-    flex-direction: column;
-    min-width: 150px;
-    overflow: visible; /* Crucial pour la croix */
-}
-    
-.folder-content {
-    display: grid;
-    gap: 10px;
-    overflow-y: auto; /* Seule cette zone scrolle */
-    overflow-x: hidden;
-    padding: 10px;
-    scrollbar-width: thin;
-    scrollbar-color: var(--accent) transparent;
-}
+         
+@media (max-width: 600px) {
+    #folderPopup { 
+        max-width: 90vw !important; 
+        margin-top: 10vh; /* Remplace le top fixe pour plus de souplesse */
+        position: relative !important; /* Re-passe en relatif pour le scroll de l'overlay */
+        left: auto !important;
+        top: auto !important;
+    }
+}		 
+        #folderPopup {
+            background: var(--sidebar-bg); border-radius: 20px; border: 2px solid var(--accent);
+            padding: 12px; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+            position: relative; max-height: 85vh; display: flex; flex-direction: column;
+            min-width: 120px; overflow: visible;
+        }
+            
+        .folder-content {
+            display: grid; gap: 8px; overflow-y: auto; overflow-x: hidden;
+            padding: 5px; scrollbar-width: thin; scrollbar-color: var(--accent) transparent;
+        }
 
-    .folder-toolbar { display: flex; gap: 10px; padding: 5px 10px; background: rgba(255,255,255,0.05); border-radius: 10px; margin-bottom: 15px; align-items: center; opacity: 0.3; transition: 0.3s; }
-    .folder-toolbar:hover { opacity: 1; }
-    .folder-toolbar label { font-size: 9px; color: var(--accent); text-transform: uppercase; }
-    .folder-toolbar input { width: 45px; padding: 3px; font-size: 10px; background: rgba(0,0,0,0.3); border: 1px solid var(--border); color: white; border-radius: 3px; }
-    .folder-toolbar input[type="color"] { width: 40px; height: 25px; padding: 0; cursor: pointer; }
+        .folder-toolbar { display: flex; gap: 10px; padding: 5px 10px; background: rgba(255,255,255,0.05); border-radius: 10px; margin-bottom: 15px; align-items: center; opacity: 0.3; transition: 0.3s; }
+        .folder-toolbar:hover { opacity: 1; }
+        .folder-toolbar label { font-size: 9px; color: var(--accent); text-transform: uppercase; }
+        .folder-toolbar input { width: 45px; padding: 3px; font-size: 10px; background: rgba(0,0,0,0.3); border: 1px solid var(--border); color: white; border-radius: 3px; }
+        .folder-toolbar input[type="color"] { width: 40px; height: 25px; padding: 0; cursor: pointer; }
 
+        #closeFolderBtn {
+            position: absolute; top: -15px; right: -15px; width: 32px; height: 32px;
+            background: #ef4444; color: white; border-radius: 50%; display: flex;
+            align-items: center; justify-content: center; cursor: pointer;
+            font-size: 22px; font-weight: bold; box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+            z-index: 9999; border: 2px solid white;
+        }
+        #closeFolderBtn:hover { transform: scale(1.1); background: #dc2626; }
 
+/* --- CORRECTIF MOBILE SÉVÈRE --- */
+        @media (max-width: 600px) {
+            /* On réduit la taille des tuiles de la grille principale aussi */
+            .tile img { margin-bottom: 5px; max-height: 50%; }
+            .tile-label { font-size: 10px; }
 
-#closeFolderBtn {
-    position: absolute;
-    top: -15px;
-    right: -15px;
-    width: 32px;
-    height: 32px;
-    background: #ef4444;
-    color: white;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    font-size: 22px;
-    font-weight: bold;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
-    z-index: 9999;
-    border: 2px solid white;
-	}
+            #folderPopup { 
+                padding: 10px; 
+                border-radius: 15px; 
+                max-width: 90vw !important; /* Force la largeur à ne pas dépasser l'écran */
+                left: 5vw !important;        /* Centre horizontalement */
+                top: 15vh !important;       /* Position fixe en haut */
+                transform: none !important;
+                position: fixed !important;  /* Fixe pour éviter les problèmes de scroll */
+            }
 
-    #closeFolderBtn:hover {
-    transform: scale(1.1);
-    background: #dc2626;
-	}
+            .folder-content { 
+                gap: 5px; 
+                padding: 5px;
+                grid-template-columns: repeat(auto-fit, 60px) !important; /* Force des petites colonnes */
+                justify-content: center;
+            }
 
-    /* --- MODALES ÉDITION --- */
-    .control-group { margin-bottom: 12px; }
-    .control-group label { display: block; font-size: 10px; color: var(--accent); text-transform: uppercase; margin-bottom: 4px; }
-    input { width: 100%; padding: 8px; background: #0f172a; border: 1px solid var(--border); color: white; border-radius: 4px; box-sizing: border-box; }
-    input[type="color"] { height: 40px; width: 100%; cursor: pointer; padding: 2px; }
-    .btn { width: 100%; padding: 10px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; color: white; transition: 0.2s; }
-    .btn:hover { filter: brightness(1.3); color: black;}
-    .img-suggestions { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-top: 15px; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 10px; border: 1px solid var(--border); }
-    .suggestion-item { width: 100%; aspect-ratio: 1; object-fit: contain; cursor: pointer; background: white; border-radius: 6px; padding: 2px; }
+            .folder-toolbar { display: none; } /* On cache les réglages sur mobile pour gagner de la place */
+            
+            #folderGrid .tile { width: 60px; height: 70px; }
+            #folderGrid .tile img { max-height: 40px; margin-bottom: 2px; }
+            #folderGrid .tile-label { font-size: 8px; }
+        }
 
-
-</style>
+        /* --- MODALES ÉDITION --- */
+        .control-group { margin-bottom: 12px; }
+        .control-group label { display: block; font-size: 10px; color: var(--accent); text-transform: uppercase; margin-bottom: 4px; }
+        input { width: 100%; padding: 8px; background: #0f172a; border: 1px solid var(--border); color: white; border-radius: 4px; box-sizing: border-box; }
+        input[type="color"] { height: 40px; width: 100%; cursor: pointer; padding: 2px; }
+        .btn { width: 100%; padding: 10px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; color: white; transition: 0.2s; }
+        .btn:hover { filter: brightness(1.3); color: black;}
+        .img-suggestions { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-top: 15px; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 10px; border: 1px solid var(--border); }
+        .suggestion-item { width: 100%; aspect-ratio: 1; object-fit: contain; cursor: pointer; background: white; border-radius: 6px; padding: 2px; }
+    </style>
 </head>
 <body>
 
     <div class="overlay" id="overlay"></div>
 
-<nav class="sidebar" id="sidebar">
-    <div class="sidebar-content" style="flex-grow: 1; overflow-y: auto;">
-        <h2 style="color:var(--accent); margin-top:0">Paramètres</h2>
-        <div class="control-group"><label>Couleur de fond globale</label><input type="color" id="bgInput"></div>
-        <div class="control-group"><label>Couleur des tuiles (Lien)</label><input type="color" id="tileColorInput"></div>
-        <div class="control-group"><label>Couleur des tuiles (Dossier)</label><input type="color" id="folderTileColorInput"></div>
-        <div class="control-group"><label>Colonnes</label><input type="number" id="colsInput" min="1"></div>
-        <div class="control-group"><label>Lignes</label><input type="number" id="rowsInput" min="1"></div>
-        <div class="control-group"><label>Espacement (px)</label><input type="number" id="gapInput" min="0"></div>
-        <div class="control-group"><label>Taille police (px)</label><input type="number" id="fontInput" min="6"></div>
-        
-        <hr style="border:0; border-top:1px solid var(--border); margin: 10px 0;">
-        
-        <button class="btn" style="background:#5D9948; margin-top:10px" id="btn-export">📤 EXPORTER CONFIG (fichier.json)</button>
-        <button class="btn" style="background:#f59e0b; margin-top:15px" id="btn-trigger-import">📥 IMPORTER CONFIG  (fichier.json)</button>
-        <button class="btn" style="background:#D14747; margin-top:20px" id="btn-undo">↩ ANNULER</button>
-        <input type="file" id="importFile" style="display:none">
-    </div>
+    <nav class="sidebar" id="sidebar">
+        <div class="sidebar-content">
+            <h2 style="color:var(--accent); margin-top:0">Paramètres</h2>
+            <div class="control-group"><label>Couleur de fond globale</label><input type="color" id="bgInput"></div>
+            <div class="control-group"><label>Couleur des tuiles (Lien)</label><input type="color" id="tileColorInput"></div>
+            <div class="control-group"><label>Couleur des tuiles (Dossier)</label><input type="color" id="folderTileColorInput"></div>
+            <div class="control-group"><label>Colonnes</label><input type="number" id="colsInput" min="1"></div>
+            <div class="control-group"><label>Lignes</label><input type="number" id="rowsInput" min="1"></div>
+            <div class="control-group"><label>Espacement (px)</label><input type="number" id="gapInput" min="0"></div>
+            <div class="control-group"><label>Taille police (px)</label><input type="number" id="fontInput" min="6"></div>
+            
+            <hr style="border:0; border-top:1px solid var(--border); margin: 10px 0;">
+            
+            <button class="btn" style="background:#5D9948; margin-top:10px" id="btn-export">📤 EXPORTER CONFIG</button>
+            <button class="btn" style="background:#f59e0b; margin-top:15px" id="btn-trigger-import">📥 IMPORTER CONFIG</button>
+            <button class="btn" style="background:#D14747; margin-top:20px" id="btn-undo">↩ ANNULER</button>
+            <input type="file" id="importFile" style="display:none">
+        </div>
 
-    <div class="sidebar-footer" style="margin-top: 30px; display: flex; justify-content: center; padding-bottom: 15px;">
-        <div id="btn-close-sidebar" class="menu-text">FERMER</div>
-    </div>
-</nav>
+        <div class="sidebar-footer">
+            <div id="btn-close-sidebar" class="menu-text">FERMER</div>
+        </div>
+    </nav>
 
     <main class="grid-container" id="grid"></main>
 
-<footer class="search-footer" id="search-footer">
-    <div class="footer-left">
-    <div id="btn-menu" class="menu-text" onclick="toggleSidebar()">Paramètres</div>
-</div>
+    <footer class="search-footer" id="search-footer">
+        <div class="footer-left">
+            <div id="btn-menu" class="menu-text">Paramètres</div>
+        </div>
 
-    <div class="search-group">
-    <div class="search-box">
-        <img src="https://www.google.com/favicon.ico" alt="G">
-        <input type="text" placeholder="Google" onkeypress="if(event.key==='Enter') window.open('https://www.google.com/search?q='+encodeURIComponent(this.value), '_blank')">
-    </div>
-    <div class="search-box">
-        <img src="https://www.gstatic.com/images/branding/product/1x/photos_96dp.png" alt="GI" style="width:16px; height:16px;">
-        <input type="text" placeholder="Google Images" onkeypress="if(event.key==='Enter') window.open('https://www.google.com/search?tbm=isch&q='+encodeURIComponent(this.value), '_blank')">
-    </div>
-    <div class="search-box">
-        <img src="https://www.youtube.com/favicon.ico" alt="Y">
-        <input type="text" placeholder="YouTube" onkeypress="if(event.key==='Enter') window.open('https://www.youtube.com/results?search_query='+encodeURIComponent(this.value), '_blank')">
-    </div>
-    <div class="search-box">
-        <img src="https://www.amazon.fr/favicon.ico" alt="A">
-        <input type="text" placeholder="Amazon" onkeypress="if(event.key==='Enter') window.open('https://www.amazon.fr/s?k='+encodeURIComponent(this.value), '_blank')">
-    </div>
-    <div class="search-box">
-        <img src="https://icons.duckduckgo.com/ip3/duckduckgo.com.ico" alt="D">
-        <input type="text" placeholder="DuckDuckGo" onkeypress="if(event.key==='Enter') window.open('https://duckduckgo.com/?q='+encodeURIComponent(this.value), '_blank')">
-    </div>
-</div>
-    
-    <div id="footerClock">
-        <div id="footerTime"></div>
-        <div id="footerDate"></div>
-    </div>
-</footer>
+        <div class="search-group">
+            <div class="search-box">
+                <img src="https://www.google.com/favicon.ico" alt="G">
+                <input type="text" class="search-input" data-url="https://www.google.com/search?q=" placeholder="Google">
+            </div>
+            <div class="search-box">
+                <img src="https://www.gstatic.com/images/branding/product/1x/photos_96dp.png" alt="GI" style="width:16px; height:16px;">
+                <input type="text" class="search-input" data-url="https://www.google.com/search?tbm=isch&q=" placeholder="Images">
+            </div>
+            <div class="search-box">
+                <img src="https://icons.duckduckgo.com/ip3/duckduckgo.com.ico" alt="D">
+                <input type="text" class="search-input" data-url="https://duckduckgo.com/?q=" placeholder="Duck">
+            </div>
+        </div>
+        
+        <div id="footerClock">
+            <div id="footerTime"></div>
+            <div id="footerDate"></div>
+        </div>
+    </footer>
 
     <div id="folderOverlay">
         <div id="folderPopup">
-            <div id="closeFolderBtn" onclick="closeFolder()">&times;</div>
-
+            <div id="closeFolderBtn">&times;</div>
             <div class="folder-toolbar">
-                <label>Colonnes</label><input type="number" id="fCols" min="1">
-                <label>Lignes</label><input type="number" id="fRows" min="1">
-                <label>Espace</label><input type="number" id="fGap" min="0">
+                <label>Cols</label><input type="number" id="fCols" min="1">
+                <label>Rows</label><input type="number" id="fRows" min="1">
+                <label>Gap</label><input type="number" id="fGap" min="0">
                 <label>Fond</label><input type="color" id="fPopBg">
             </div>
             <div class="folder-content" id="folderGrid"></div>
         </div>
     </div>
 
-    <div id="modalLink" class="overlay" style="z-index:4000; align-items:center; justify-content:center;" onclick="closeAllModals()">
-        <div style="background:var(--sidebar-bg); padding:25px; border-radius:15px; width:400px; border:1px solid var(--accent);" onclick="event.stopPropagation()">
+    <div id="modalLink" class="overlay" style="z-index:4000; align-items:center; justify-content:center;">
+        <div style="background:var(--sidebar-bg); padding:25px; border-radius:15px; width:400px; border:1px solid var(--accent);" class="modal-stop-prop">
             <h3 style="color:var(--accent); margin-top:0">🔗 Édition Lien</h3>
             <div class="control-group"><label>URL</label><input type="text" id="linkUrl"></div>
             <div class="control-group"><label>Nom</label><input type="text" id="linkName"></div>
@@ -418,51 +302,38 @@
                 <label>Image de la tuile</label>
                 <div style="display: flex; gap: 5px; margin-bottom: 10px;">
                     <input type="file" id="linkImgFile" accept="image/*" style="font-size: 10px; flex: 1; width: 40%;">
-                    <button class="btn" style="background:var(--accent); width: auto; font-size: 10px; padding: 5px 10px;" onclick="searchIcons()">AUTO</button>
-                    <button class="btn" style="background:#ea4335; width: auto; font-size: 10px; padding: 5px 10px;" onclick="searchGoogleImages('link')">GOOGLE</button>
+                    <button class="btn" id="btn-auto-icon" style="background:var(--accent); width: auto; font-size: 10px; padding: 5px 10px;">AUTO</button>
+                    <button class="btn btn-google-search" data-type="link" style="background:#ea4335; width: auto; font-size: 10px; padding: 5px 10px;">GOOGLE</button>
                 </div>
                 <input type="text" id="linkImg" placeholder="Lien direct de l'image">
                 <div id="linkSuggestions" class="img-suggestions" style="display:none"></div>
                 <center><img id="linkPreview" style="max-width:80px; margin-top:10px; display:none; border-radius:8px;"></center>
             </div>
-            <button class="btn" style="background:#22c55e; margin-bottom:10px" onclick="confirmEditLink()">Valider</button>
-            <button class="btn" style="background:#ef4444; margin-bottom:10px" onclick="deleteItem()">Supprimer</button>
-            <button class="btn" style="background:transparent; border:1px solid var(--border)" onclick="closeAllModals()">Annuler</button>
+            <button class="btn" id="btn-confirm-link" style="background:#22c55e; margin-bottom:10px">Valider</button>
+            <button class="btn btn-delete-item" style="background:#ef4444; margin-bottom:10px">Supprimer</button>
+            <button class="btn btn-close-modals" style="background:transparent; border:1px solid var(--border)">Annuler</button>
         </div>
     </div>
 
-    <div id="modalFolder" class="overlay" style="z-index:4000; align-items:center; justify-content:center;" onclick="closeAllModals()">
-        <div style="background:var(--sidebar-bg); padding:25px; border-radius:15px; width:400px; border:1px solid #ffd43b;" onclick="event.stopPropagation()">
+    <div id="modalFolder" class="overlay" style="z-index:4000; align-items:center; justify-content:center;">
+        <div style="background:var(--sidebar-bg); padding:25px; border-radius:15px; width:400px; border:1px solid #ffd43b;" class="modal-stop-prop">
             <h3 style="color:#ffd43b; margin-top:0">📂 Édition Dossier</h3>
             <div class="control-group"><label>Nom du dossier</label><input type="text" id="folderName"></div>
             <div class="control-group">
                 <label>Image du dossier (optionnel)</label>
                 <div style="display: flex; gap: 5px; margin-bottom: 10px;">
                     <input type="file" id="folderImgFile" accept="image/*" style="font-size: 10px; flex: 1;">
-                    <button class="btn" style="background:#ea4335; width: auto; font-size: 10px; padding: 5px 10px;" onclick="searchGoogleImages('folder')">GOOGLE</button>
+                    <button class="btn btn-google-search" data-type="folder" style="background:#ea4335; width: auto; font-size: 10px; padding: 5px 10px;">GOOGLE</button>
                 </div>
                 <input type="text" id="folderImg" placeholder="Lien direct de l'image">
                 <center><img id="folderPreview" style="max-width:80px; margin-top:10px; display:none; border-radius:8px;"></center>
             </div>
-            <button class="btn" style="background:#22c55e; margin-bottom:10px" onclick="confirmEditFolder()">Valider</button>
-            <button class="btn" style="background:#ef4444; margin-bottom:10px" onclick="deleteItem()">Supprimer</button>
-            <button class="btn" style="background:transparent; border:1px solid var(--border)" onclick="closeAllModals()">Annuler</button>
+            <button class="btn" id="btn-confirm-folder" style="background:#22c55e; margin-bottom:10px">Valider</button>
+            <button class="btn btn-delete-item" style="background:#ef4444; margin-bottom:10px">Supprimer</button>
+            <button class="btn btn-close-modals" style="background:transparent; border:1px solid var(--border)">Annuler</button>
         </div>
     </div>
 
     <script src="script.js"></script>
-    <script>
-        // Petit script auto-exécutant pour surveiller l'ouverture de la modale
-        const modalLink = document.getElementById('modalLink');
-        const linkUrlInput = document.getElementById('linkUrl');
-
-        const observer = new MutationObserver(() => {
-            if (modalLink.style.display === 'flex') {
-                setTimeout(() => linkUrlInput.focus(), 50);
-            }
-        });
-
-        observer.observe(modalLink, { attributes: true, attributeFilter: ['style'] });
-    </script>
 </body>
 </html>

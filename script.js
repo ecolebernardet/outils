@@ -5,7 +5,6 @@ let config = {
     bgColor: '#000000', tileBgColor: '#000000', folderTileBgColor: '#ffd43b' 
 };
 
-// Lecture sécurisée du localStorage
 try {
     tilesData = JSON.parse(localStorage.getItem('sd_v2_data')) || {};
     const savedConfig = JSON.parse(localStorage.getItem('sd_v2_config'));
@@ -24,8 +23,6 @@ let lastTilesData = null;
 const winFolderSVG = `<svg class="folder-icon-bg" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 4C2.89543 4 2 4.89543 2 6V18C2 19.1046 2.89543 20 4 20H20C21.1046 20 22 19.1046 22 18V8C22 6.89543 21.1046 6 20 6H12L10 4H4Z" fill="#ffca28"/><path d="M2 10V18C2 19.1046 2.89543 20 4 20H20C21.1046 20 22 19.1046 22 18V10H2Z" fill="#ffd54f"/></svg>`;
 
 // 2. FONCTIONS UI & UTILITAIRES
-
-
 function toggleMenu() {
     document.getElementById('sidebar').classList.toggle('open');
     document.getElementById('overlay').classList.toggle('active');
@@ -121,47 +118,30 @@ function renderGrid() {
 
 function createTile(coords, data, isMain) {
     const div = document.createElement('div');
-    // On applique les classes de base
     div.className = 'tile' + (data ? (data.type === 'folder' ? ' folder' : '') : ' empty');
     div.id = isMain ? `tile-${coords}` : `folder-tile-${coords}`;
     
     if (data) {
         div.draggable = true;
         if (data.type === 'folder') {
-            // Structure du dossier : Fond SVG + Miniature optionnelle + Label
             div.innerHTML = winFolderSVG;
             if(data.img) div.innerHTML += `<img src="${data.img}" class="folder-thumb">`;
             div.innerHTML += `<div class="tile-label">${data.name}</div>`;
-            
-            // Clic pour ouvrir le dossier avec animation et flou
-            div.addEventListener('click', (e) => { 
-                e.stopPropagation(); 
-                openFolder(coords); 
-            });
+            div.addEventListener('click', (e) => { e.stopPropagation(); openFolder(coords); });
         } else {
-            // Structure d'un lien : Image (ou favicon par défaut) + Label
             const icon = data.img || `https://www.google.com/s2/favicons?domain=${data.url}&sz=128`;
             div.innerHTML = `<img src="${icon}"><div class="tile-label">${data.name}</div>`;
-            
-            // Clic pour ouvrir le lien
-            div.addEventListener('click', (e) => { 
-                e.stopPropagation(); 
-                window.open(data.url, '_blank'); 
-            });
+            div.addEventListener('click', (e) => { e.stopPropagation(); window.open(data.url, '_blank'); });
         }
     } else {
-        // Logique de la tuile vide (Système de "+" au premier clic)
         div.innerHTML = ''; 
         div.addEventListener('click', (e) => {
             e.stopPropagation();
             if (div.innerHTML === '') {
-                // On nettoie les autres tuiles qui auraient un "+" actif
                 document.querySelectorAll('.tile.empty').forEach(t => t.innerHTML = '');
-                // On affiche le "+"
                 div.innerHTML = '<span style="font-size:40px; color:var(--accent); font-weight:bold; pointer-events:none;">+</span>';
                 div.style.opacity = "1";
             } else {
-                // Deuxième clic : on ouvre la modale d'ajout
                 openModal(coords);
                 div.innerHTML = ''; 
                 div.style.opacity = "";
@@ -169,53 +149,19 @@ function createTile(coords, data, isMain) {
         });
     }
 
-    // Menu contextuel (clic droit) pour éditer
-    div.addEventListener('contextmenu', (e) => { 
-        if (data) { 
-            e.preventDefault(); 
-            openModal(coords); 
-        }
-    });
-
-    // --- GESTION DU DRAG & DROP AVEC FEEDBACK VISUEL ---
-    div.addEventListener('dragstart', (e) => { 
-        draggedCoords = coords; 
-        draggedFromFolder = !isMain; 
-        div.classList.add('dragging'); 
-        // Effet de transparence pendant le transport
-        e.dataTransfer.setData('text/plain', coords);
-    });
-    
-    div.addEventListener('dragend', () => { 
-        div.classList.remove('dragging'); 
-        document.querySelectorAll('.tile').forEach(t => t.classList.remove('drag-over')); 
-    });
-    
-    div.addEventListener('dragover', (e) => { 
-        e.preventDefault(); 
-        // On illumine la tuile seulement si ce n'est pas celle qu'on déplace
-        if(coords !== draggedCoords) {
-            div.classList.add('drag-over'); 
-        }
-    });
-
-    div.addEventListener('dragleave', () => {
-        div.classList.remove('drag-over');
-    });
-    
-    div.addEventListener('drop', (e) => { 
-        e.preventDefault(); 
-        e.stopPropagation(); 
-        div.classList.remove('drag-over'); 
-        // On redirige vers la bonne logique selon si on est dans la grille ou un dossier
-        isMain ? handleDropMain(coords) : handleDropFolder(coords); 
-    });
+    div.addEventListener('contextmenu', (e) => { if (data) { e.preventDefault(); openModal(coords); } });
+    div.addEventListener('dragstart', (e) => { draggedCoords = coords; draggedFromFolder = !isMain; div.classList.add('dragging'); e.dataTransfer.setData('text/plain', coords); });
+    div.addEventListener('dragend', () => { div.classList.remove('dragging'); document.querySelectorAll('.tile').forEach(t => t.classList.remove('drag-over')); });
+    div.addEventListener('dragover', (e) => { e.preventDefault(); if(coords !== draggedCoords) div.classList.add('drag-over'); });
+    div.addEventListener('dragleave', () => { div.classList.remove('drag-over'); });
+    div.addEventListener('drop', (e) => { e.preventDefault(); e.stopPropagation(); div.classList.remove('drag-over'); isMain ? handleDropMain(coords) : handleDropFolder(coords); });
 
     return div;
 }
-// 5. LOGIQUE DOSSIER (OUVERTURE SUR L'ICÔNE)
-// --- FONCTION D'OUVERTURE DU DOSSIER ---
+
+// 5. LOGIQUE DOSSIER (VERSION RÉDUITE & MOBILE)
 function openFolder(coords) {
+    // 1. Initialisation et Sécurité
     activeFolderCoords = coords;
     const folder = tilesData[coords];
     const overlay = document.getElementById('folderOverlay');
@@ -223,76 +169,61 @@ function openFolder(coords) {
     const fPopup = document.getElementById('folderPopup');
     const mainGrid = document.getElementById('grid');
     
-    // 1. Mise à jour des réglages
+    if (!folder) return;
+
+    // 2. Nettoyage forcé des styles résiduels du dossier précédent
+    fPopup.style.opacity = "1";
+    fPopup.style.transform = "none";
+    fPopup.style.display = "flex";
+    fPopup.style.flexDirection = "column";
+
+    // 3. Configuration de la Grille
     document.getElementById('fCols').value = folder.fConfig.cols;
     document.getElementById('fRows').value = folder.fConfig.rows;
     document.getElementById('fGap').value = folder.fConfig.gap;
     document.getElementById('fPopBg').value = folder.fConfig.fBgColor;
     
-    // --- LOGIQUE DE CALCUL DYNAMIQUE ---
     const itemsKeys = Object.keys(folder.items || {});
     let maxR = folder.fConfig.rows - 1;
-    itemsKeys.forEach(key => {
-        const [c, r] = key.split('-').map(Number);
-        if (r > maxR) maxR = r;
-    });
-    const displayRows = maxR + 1;
+    itemsKeys.forEach(key => { const [c, r] = key.split('-').map(Number); if (r > maxR) maxR = r; });
+    const displayRows = Math.max(folder.fConfig.rows, maxR + 1);
 
-    // 2. Configuration de la grille
+    const isMobile = window.innerWidth < 600;
+    const colWidth = isMobile ? 60 : 100;
+    const rowHeight = isMobile ? 70 : 110;
+
     fGrid.style.display = 'grid';
-    fGrid.style.gridTemplateColumns = `repeat(${folder.fConfig.cols}, 120px)`;
-    fGrid.style.gridTemplateRows = `repeat(${displayRows}, 1fr)`;
+    fGrid.style.gridTemplateColumns = `repeat(${folder.fConfig.cols}, ${colWidth}px)`;
     fGrid.style.gap = `${folder.fConfig.gap}px`;
     fPopup.style.backgroundColor = folder.fConfig.fBgColor;
     fGrid.innerHTML = '';
     
-    // 3. Positionnement dynamique
-    overlay.style.display = 'block'; // On l'affiche d'abord pour pouvoir calculer sa taille
-    
-    const originTile = document.getElementById(`tile-${coords}`);
-    if (originTile) {
-        const rect = originTile.getBoundingClientRect();
-        fPopup.style.position = 'absolute';
-        
-        let posX = rect.left + window.scrollX;
-        let posY = rect.top + window.scrollY;
-
-        // --- CALCUL DE TAILLE RÉEL ---
-        // On calcule la hauteur théorique : (lignes * 130px) + toolbar (50px) + padding (40px)
-        const estimatedWidth = (folder.fConfig.cols * 120) + ((folder.fConfig.cols - 1) * folder.fConfig.gap) + 40;
-        let estimatedHeight = (displayRows * 130) + 90; 
-        
-        // On plafonne l'estimation à la hauteur max du CSS (85vh)
-        const maxHeightPx = window.innerHeight * 0.85;
-        if (estimatedHeight > maxHeightPx) estimatedHeight = maxHeightPx;
-
-        // --- AJUSTEMENT HORIZONTAL ---
-        if (posX + estimatedWidth > window.innerWidth - 30) {
-            posX = window.innerWidth - estimatedWidth - 30;
-        }
-        
-        // --- AJUSTEMENT VERTICAL (L'ANTI-DÉBORDEMENT BAS) ---
-        const footerHeight = 100; // Marge pour votre footer
-        const bottomLimit = window.innerHeight - footerHeight;
-
-        if (posY + estimatedHeight > bottomLimit) {
-            // On remonte le dossier pour que son bas arrive à la limite
-            posY = bottomLimit - estimatedHeight;
-        }
-
-        // --- SÉCURITÉ HAUT ---
-        if (posY < 30) posY = 30;
-
-        fPopup.style.left = `${Math.max(20, posX)}px`;
-        fPopup.style.top = `${posY}px`;
-        fPopup.style.transformOrigin = '0 0'; 
+    // 4. Positionnement
+    if (isMobile) {
+        fPopup.style.position = "relative";
+        fPopup.style.left = "auto";
+        fPopup.style.top = "auto";
+        fPopup.style.margin = "10vh auto";
     } else {
-        overlay.style.display = 'flex';
-        fPopup.style.position = 'relative';
-        fPopup.style.transformOrigin = 'center';
+        const originTile = document.getElementById(`tile-${coords}`);
+        if (originTile) {
+            const rect = originTile.getBoundingClientRect();
+            fPopup.style.position = 'absolute';
+            let posX = rect.left + window.scrollX;
+            let posY = rect.top + window.scrollY;
+            
+            const estimatedWidth = (folder.fConfig.cols * colWidth) + ((folder.fConfig.cols - 1) * folder.fConfig.gap) + 30;
+            const estimatedHeight = (displayRows * rowHeight) + 80;
+
+            if (posX + estimatedWidth > window.innerWidth - 30) posX = window.innerWidth - estimatedWidth - 30;
+            if (posY + estimatedHeight > window.innerHeight - 100) posY = window.innerHeight - estimatedHeight - 100;
+            
+            fPopup.style.left = `${Math.max(20, posX)}px`;
+            fPopup.style.top = `${Math.max(30, posY)}px`;
+        }
     }
 
-    // 4. Remplissage
+    // 5. Remplissage
     if (!folder.items) folder.items = {};
     for(let r=0; r < displayRows; r++) {
         for(let c=0; c < folder.fConfig.cols; c++) {
@@ -301,46 +232,35 @@ function openFolder(coords) {
         }
     }
 
-    // 5. Effet de flou
+    // 6. Affichage et Animation
+    overlay.style.display = 'flex'; 
     if(mainGrid) mainGrid.style.filter = 'blur(3px)';
-    if(mainGrid) mainGrid.style.transition = 'filter 0.5s';
-
-    // 6. Animation Zoom
+    
     fPopup.animate([
-        { transform: 'scale(0.2)', opacity: 0 },
+        { transform: 'scale(0.9)', opacity: 0 },
         { transform: 'scale(1)', opacity: 1 }
-    ], {
-        duration: 300,
-        easing: 'cubic-bezier(0.2, 0.8, 0.2, 1)',
-        fill: 'forwards'
-    });
+    ], { duration: 200, easing: 'ease-out', fill: 'forwards' });
 }
 
-// --- FONCTION DE FERMETURE DU DOSSIER ---
 function closeFolder() { 
     const fPopup = document.getElementById('folderPopup');
     const overlay = document.getElementById('folderOverlay');
     const mainGrid = document.getElementById('grid');
+    
+    if (!overlay || overlay.style.display === 'none') return;
 
-    if (overlay.style.display === 'none' || !activeFolderCoords) return;
-
-    // Retrait du flou
-    if(mainGrid) mainGrid.style.filter = 'none';
-
-    // Animation de sortie
-    const animation = fPopup.animate([
+    const anim = fPopup.animate([
         { transform: 'scale(1)', opacity: 1 },
-        { transform: 'scale(0.2)', opacity: 0 }
-    ], {
-        duration: 200,
-        easing: 'ease-in',
-        fill: 'forwards'
-    });
+        { transform: 'scale(0.9)', opacity: 0 }
+    ], { duration: 150, easing: 'ease-in', fill: 'forwards' });
 
-    animation.onfinish = () => {
-        overlay.style.display = 'none'; 
+    anim.onfinish = () => {
+        overlay.style.display = 'none';
+        if(mainGrid) mainGrid.style.filter = 'none';
         activeFolderCoords = null;
-        fPopup.style.transform = 'scale(1)'; 
+        // On nettoie les styles d'animation pour la prochaine ouverture
+        fPopup.style.opacity = "1";
+        fPopup.style.transform = "none";
     };
 }
 
@@ -362,38 +282,26 @@ function handleDropMain(to) {
     const source = draggedFromFolder ? tilesData[activeFolderCoords].items[draggedCoords] : tilesData[draggedCoords];
     if (!source) return;
     const target = tilesData[to];
-    
     if (!target) {
         tilesData[to] = source;
     } else if (target.type === 'folder') {
         if (!target.items) target.items = {};
-        let found = false;
-        // On cherche une place vide. Si le dossier est plein selon fConfig, 
-        // on continue de chercher plus bas pour ne pas perdre la tuile.
-        let r = 0;
+        let found = false, r = 0;
         while (!found) {
             for(let c=0; c < target.fConfig.cols; c++) {
-                if(!target.items[`${c}-${r}`]) { 
-                    target.items[`${c}-${r}`] = source; 
-                    found = true; 
-                    break; 
-                }
+                if(!target.items[`${c}-${r}`]) { target.items[`${c}-${r}`] = source; found = true; break; }
             }
-            r++;
-            if (r > 100) break; // Sécurité anti-boucle infinie
+            r++; if (r > 100) break;
         }
     } else if (target !== source) {
-        // Création d'un dossier par défaut en 4x4 pour avoir de la place
         tilesData[to] = {
             type: 'folder', name: "Nouveau Dossier",
             items: {"0-0": target, "1-0": source},
             fConfig: { cols: 4, rows: 4, gap: 10, fBgColor: '#1e293b' }
         };
     }
-    
     if (draggedFromFolder) delete tilesData[activeFolderCoords].items[draggedCoords];
     else if (to !== draggedCoords) delete tilesData[draggedCoords];
-    
     saveToLocal(); renderGrid();
     if(draggedFromFolder) openFolder(activeFolderCoords);
 }
@@ -430,12 +338,8 @@ function openModal(coords) {
     currentEditingCoords = coords;
     tempBase64 = "";
     const data = (activeFolderCoords !== null) ? tilesData[activeFolderCoords].items[coords] : tilesData[coords];
-    
-    if (data?.type === 'folder') {
-        openFolderModal(data);
-    } else {
-        openLinkModal(data);
-    }
+    if (data?.type === 'folder') openFolderModal(data);
+    else openLinkModal(data);
 }
 
 function openLinkModal(data) {
@@ -468,13 +372,10 @@ function confirmEditLink() {
     let url = document.getElementById('linkUrl').value;
     const img = tempBase64 || document.getElementById('linkImg').value;
     if (url && !url.startsWith('http')) url = 'https://' + url;
-
     const targetStore = (activeFolderCoords !== null) ? tilesData[activeFolderCoords].items : tilesData;
     targetStore[currentEditingCoords] = { name, url, img, type: 'link' };
-
     saveToLocal(); closeAllModals();
-    if (activeFolderCoords !== null) openFolder(activeFolderCoords);
-    else renderGrid();
+    if (activeFolderCoords !== null) openFolder(activeFolderCoords); else renderGrid();
 }
 
 function confirmEditFolder() {
@@ -495,8 +396,7 @@ function deleteItem() {
     if (activeFolderCoords !== null) delete tilesData[activeFolderCoords].items[currentEditingCoords];
     else delete tilesData[currentEditingCoords];
     saveToLocal(); closeAllModals();
-    if (activeFolderCoords !== null) openFolder(activeFolderCoords);
-    else renderGrid();
+    if (activeFolderCoords !== null) openFolder(activeFolderCoords); else renderGrid();
 }
 
 // 8. RECHERCHE & MÉDIAS
@@ -507,17 +407,15 @@ function searchIcons() {
     container.innerHTML = ''; container.style.display = 'grid';
     try {
         const domain = new URL(url.startsWith('http') ? url : 'https://'+url).hostname;
-        const apis = [`https://logo.clearbit.com/${domain}`, `https://icon.horse/icon/${domain}`];
-        apis.forEach(src => {
-            const img = document.createElement('img');
-            img.src = src; img.className = 'suggestion-item';
-            img.onclick = () => { 
-                document.getElementById('linkImg').value = src; 
-                const prev = document.getElementById('linkPreview');
-                prev.src = src; prev.style.display = "block";
-            };
-            container.appendChild(img);
-        });
+        const src = `https://icon.horse/icon/${domain}`;
+        const img = document.createElement('img');
+        img.src = src; img.className = 'suggestion-item';
+        img.onclick = () => { 
+            document.getElementById('linkImg').value = src; 
+            const prev = document.getElementById('linkPreview');
+            prev.src = src; prev.style.display = "block";
+        };
+        container.appendChild(img);
     } catch(e) {}
 }
 
@@ -538,26 +436,17 @@ function searchGoogleImages(type) {
     window.open(`https://www.google.com/search?q=${encodeURIComponent(query)}+icon&tbm=isch`, '_blank');
 }
 
-// 9. IMPORT/EXPORT
-// 8. IMPORT/EXPORT
+// 9. IMPORT/EXPORT & HORLOGE
 function exportData() {
-    const now = new Date();
-    const dateStr = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}`;
-    const timeStr = `${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}${String(now.getSeconds()).padStart(2, '0')}`;
-    const fileName = `export_speed_dial_perso_${dateStr}_${timeStr}.json`;
     const blob = new Blob([JSON.stringify({config, data: tilesData})], {type: 'application/json'});
-    const a = document.createElement('a'); 
-    a.href = URL.createObjectURL(blob); 
-    a.download = fileName; 
-    a.click();
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `speed_dial_export.json`; a.click();
 }
 
 function importData(e) {
     const r = new FileReader();
     r.onload = (ev) => { 
         const res = JSON.parse(ev.target.result); 
-        tilesData = res.data; config = res.config; 
-        saveToLocal(); location.reload(); 
+        tilesData = res.data; config = res.config; saveToLocal(); location.reload(); 
     };
     r.readAsText(e.target.files[0]);
 }
@@ -566,31 +455,21 @@ function updateFooterClock() {
     const timeEl = document.getElementById('footerTime');
     const dateEl = document.getElementById('footerDate');
     if (!timeEl || !dateEl) return;
-
     const now = new Date();
-
-    // Heure format : 23:10
-    timeEl.textContent = now.toLocaleTimeString('fr-FR', { 
-        hour: '2-digit', 
-        minute: '2-digit' 
-    });
-
-    // Date format : Samedi 10 janvier
-    const options = { weekday: 'long', day: 'numeric', month: 'long' };
-    dateEl.textContent = now.toLocaleDateString('fr-FR', options);
+    timeEl.textContent = now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+    dateEl.textContent = now.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
 }
-
-// Lancement immédiat et actualisation toutes les secondes
-updateFooterClock();
-setInterval(updateFooterClock, 1000);
 
 // 10. LISTENERS
 document.addEventListener('DOMContentLoaded', () => {
     init();
+    updateFooterClock();
+    setInterval(updateFooterClock, 1000);
+
     const listen = (id, evt, fn) => { const el = document.getElementById(id); if(el) el.addEventListener(evt, fn); };
     
     listen('btn-menu', 'click', toggleMenu);
-	listen('btn-close-sidebar', 'click', toggleMenu);
+    listen('btn-close-sidebar', 'click', toggleMenu);
     listen('overlay', 'click', toggleMenu);
     listen('bgInput', 'input', updateGridParams);
     listen('tileColorInput', 'input', inputGridParams);
@@ -607,32 +486,32 @@ document.addEventListener('DOMContentLoaded', () => {
     listen('fRows', 'input', updateFolderSettings);
     listen('fGap', 'input', updateFolderSettings);
     listen('fPopBg', 'input', updateFolderSettings);
+    listen('closeFolderBtn', 'click', closeFolder);
     listen('folderOverlay', 'click', (e) => { if(e.target.id === 'folderOverlay') closeFolder(); });
     listen('folderOverlay', 'drop', handleDropOut);
     listen('folderOverlay', 'dragover', (e) => e.preventDefault());
     listen('linkImgFile', 'change', (e) => previewLocalImage(e.target, 'linkPreview'));
     listen('folderImgFile', 'change', (e) => previewLocalImage(e.target, 'folderPreview'));
-    
-    // Remplace ton bloc keydown actuel par celui-ci :
-	window.addEventListener('keydown', (e) => { 
-    if(e.key === "Escape") { 
-        closeAllModals(); 
-        closeFolder(); 
-    } 
-    
-    if(e.key === "Enter") {
-        // 1. Priorité aux modales d'édition (Enregistre et Ferme)
-        if (document.getElementById('modalLink').style.display === 'flex') {
-            confirmEditLink();
+    listen('btn-auto-icon', 'click', searchIcons);
+    listen('btn-confirm-link', 'click', confirmEditLink);
+    listen('btn-confirm-folder', 'click', confirmEditFolder);
+
+    document.querySelectorAll('.btn-close-modals').forEach(btn => btn.addEventListener('click', closeAllModals));
+    document.querySelectorAll('.btn-delete-item').forEach(btn => btn.addEventListener('click', deleteItem));
+    document.querySelectorAll('.btn-google-search').forEach(btn => btn.addEventListener('click', () => searchGoogleImages(btn.dataset.type)));
+    document.querySelectorAll('.modal-stop-prop').forEach(modal => modal.addEventListener('click', (e) => e.stopPropagation()));
+
+    document.querySelectorAll('.search-input').forEach(input => {
+        input.addEventListener('keydown', (e) => {
+            if(e.key === 'Enter') window.open(input.dataset.url + encodeURIComponent(input.value), '_blank');
+        });
+    });
+
+    window.addEventListener('keydown', (e) => { 
+        if(e.key === "Escape") { closeAllModals(); closeFolder(); } 
+        if(e.key === "Enter") {
+            if (document.getElementById('modalLink').style.display === 'flex') confirmEditLink();
+            else if (document.getElementById('modalFolder').style.display === 'flex') confirmEditFolder();
         }
-        else if (document.getElementById('modalFolder').style.display === 'flex') {
-            confirmEditFolder();
-        }
-        // 2. Si un dossier est ouvert (mais pas de modale), on le ferme
-        else if (document.getElementById('folderOverlay').style.display === 'block' || 
-                 document.getElementById('folderOverlay').style.display === 'flex') {
-            closeFolder();
-        }
-    }
-});
+    });
 });
