@@ -618,4 +618,9 @@ document.addEventListener('DOMContentLoaded', () => {
             else if (document.getElementById('modalFolder').style.display === 'flex') confirmEditFolder();
         }
     });
+	if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./sw.js')
+        .then(() => console.log("Service Worker OK"))
+        .catch(err => console.log("Erreur SW:", err));
+}
 });
