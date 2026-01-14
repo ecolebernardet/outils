@@ -103,9 +103,13 @@ function init() {
 function renderGrid() {
     const grid = document.getElementById('grid');
     if(!grid) return;
-    grid.innerHTML = '';
 
+    // --- CORRECTIF VIVALDI MOBILE ---
     const isMobile = window.innerWidth <= 768;
+    document.body.setAttribute('data-mobile', isMobile ? "true" : "false");
+    // --------------------------------
+
+    grid.innerHTML = '';
     const currentCols = isMobile ? 3 : config.cols;
 
     // Calcul dynamique du nombre de lignes pour ne jamais avoir de vide ou de manque
