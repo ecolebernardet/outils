@@ -174,7 +174,13 @@ function openFolder(coords) {
     
     if (!folder) return;
 
-    if (window.innerWidth < 600) document.body.style.overflow = 'hidden';
+    // Reset des styles d'animation précédents pour éviter le blocage
+    fPopup.style.opacity = "1";
+    fPopup.style.transform = "none";
+
+    if (window.innerWidth < 600) {
+        document.body.style.overflow = 'hidden';
+    }
 
     fPopup.style.display = "flex";
     fPopup.style.flexDirection = "column";
@@ -193,6 +199,7 @@ function openFolder(coords) {
     const colWidth = isMobile ? 80 : 100;
 
     fGrid.style.display = 'grid';
+    // Sur mobile on force 3 colonnes pour garantir la visibilité
     fGrid.style.gridTemplateColumns = isMobile ? `repeat(3, 1fr)` : `repeat(${folder.fConfig.cols}, ${colWidth}px)`;
     fGrid.style.gap = `${folder.fConfig.gap}px`;
     fPopup.style.backgroundColor = folder.fConfig.fBgColor;
@@ -209,10 +216,27 @@ function openFolder(coords) {
         if (originTile) {
             const rect = originTile.getBoundingClientRect();
             fPopup.style.position = 'absolute';
-            let posX = rect.left;
-            let posY = rect.top;
+            fPopup.style.width = "auto";
+            
+            // Calcul des dimensions estimées pour anticiper le débordement
+            const estimatedWidth = (folder.fConfig.cols * colWidth) + ((folder.fConfig.cols - 1) * folder.fConfig.gap) + 30;
+            const estimatedHeight = (displayRows * (isMobile ? 70 : 110)) + 80;
+
+            let posX = rect.left + window.scrollX;
+            let posY = rect.top + window.scrollY;
+
+            // Ajustement horizontal (ne pas dépasser à droite)
+            if (posX + estimatedWidth > window.innerWidth - 20) {
+                posX = window.innerWidth - estimatedWidth - 20;
+            }
+
+            // Ajustement vertical (si en bas de page, on ouvre vers le haut)
+            if (posY + estimatedHeight > window.innerHeight - 100) {
+                posY = window.innerHeight - estimatedHeight - 100;
+            }
+
             fPopup.style.left = `${Math.max(20, posX)}px`;
-            fPopup.style.top = `${Math.max(30, posY)}px`;
+            fPopup.style.top = `${Math.max(20, posY)}px`;
         }
     }
 
@@ -226,6 +250,12 @@ function openFolder(coords) {
 
     overlay.style.display = 'flex'; 
     if(mainGrid) mainGrid.style.filter = 'blur(3px)';
+    
+    // Animation d'entrée simplifiée sans "fill: forwards" qui bloque l'état CSS
+    fPopup.animate([
+        { transform: 'scale(0.9)', opacity: 0 },
+        { transform: 'scale(1)', opacity: 1 }
+    ], { duration: 200, easing: 'ease-out' });
 }
 
 function closeFolder() { 
@@ -240,12 +270,15 @@ function closeFolder() {
     const anim = fPopup.animate([
         { transform: 'scale(1)', opacity: 1 },
         { transform: 'scale(0.9)', opacity: 0 }
-    ], { duration: 150, easing: 'ease-in', fill: 'forwards' });
+    ], { duration: 150, easing: 'ease-in' });
 
     anim.onfinish = () => {
         overlay.style.display = 'none';
         if(mainGrid) mainGrid.style.filter = 'none';
         activeFolderCoords = null;
+        // On nettoie les styles pour la prochaine ouverture
+        fPopup.style.opacity = "1";
+        fPopup.style.transform = "none";
     };
 }
 
