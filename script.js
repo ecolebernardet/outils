@@ -36,6 +36,9 @@ function updateGridParams() {
 }
 
 function inputGridParams() {
+    const oldCols = config.cols;
+    const oldRows = config.rows;
+    
     config.cols = parseInt(document.getElementById('colsInput').value) || 1;
     config.rows = parseInt(document.getElementById('rowsInput').value) || 1;
     config.gap = parseInt(document.getElementById('gapInput').value) || 0;
@@ -43,6 +46,45 @@ function inputGridParams() {
     config.fontFamily = document.getElementById('fontFamilyInput').value;
     config.tileBgColor = document.getElementById('tileColorInput').value;
     config.folderTileBgColor = document.getElementById('folderTileColorInput').value;
+
+    if (config.cols < oldCols || config.rows < oldRows) {
+        saveSnapshot();
+        const itemsToRelocate = [];
+
+        // Identifier les tuiles qui sortent des nouvelles limites
+        Object.keys(tilesData).forEach(coords => {
+            const [c, r] = coords.split('-').map(Number);
+            if (c >= config.cols || r >= config.rows) {
+                itemsToRelocate.push({ data: tilesData[coords], oldC: c, oldR: r });
+                delete tilesData[coords];
+            }
+        });
+
+        // Replacer les tuiles selon la distance la plus courte
+        itemsToRelocate.forEach(item => {
+            let bestCoords = null;
+            let minDistance = Infinity;
+
+            for (let r = 0; r < config.rows; r++) {
+                for (let c = 0; c < config.cols; c++) {
+                    let newCoords = `${c}-${r}`;
+                    if (!tilesData[newCoords]) {
+                        // Calcul de distance euclidienne : √((x2-x1)² + (y2-y1)²)
+                        let dist = Math.sqrt(Math.pow(c - item.oldC, 2) + Math.pow(r - item.oldR, 2));
+                        if (dist < minDistance) {
+                            minDistance = dist;
+                            bestCoords = newCoords;
+                        }
+                    }
+                }
+            }
+
+            if (bestCoords) {
+                tilesData[bestCoords] = item.data;
+            }
+        });
+    }
+
     renderGrid();
     saveToLocal();
 }
@@ -142,18 +184,40 @@ function createTile(coords, data, isMain) {
         div.addEventListener('click', (e) => {
             e.stopPropagation();
             if (div.innerHTML === '') {
-                document.querySelectorAll('.tile.empty').forEach(t => t.innerHTML = '');
+                document.querySelectorAll('.choice-menu').forEach(m => m.remove());
+                document.querySelectorAll('.tile.empty').forEach(t => { t.innerHTML = ''; t.style.opacity = ""; });
                 div.innerHTML = '<span style="font-size:40px; color:var(--accent); font-weight:bold; pointer-events:none;">+</span>';
                 div.style.opacity = "1";
-            } else {
-                openModal(coords);
-                div.innerHTML = ''; 
-                div.style.opacity = "";
+            } 
+            else if (!div.querySelector('.choice-menu')) {
+                div.innerHTML = `
+                    <div class="choice-menu" style="display:flex; flex-direction:column; gap:8px; width:100%; height:100%; align-items:center; justify-content:center; background:rgba(0,0,0,0.85); border-radius:12px; position:absolute; top:0; left:0; z-index:100;">
+                        <button class="menu-btn" data-action="link" style="background:var(--accent); border:none; color:black; border-radius:4px; padding:4px 8px; font-weight:bold; cursor:pointer; font-size:10px; width:80%;">🔗 LIEN</button>
+                        <button class="menu-btn" data-action="folder" style="background:#ffca28; border:none; color:black; border-radius:4px; padding:4px 8px; font-weight:bold; cursor:pointer; font-size:10px; width:80%;">📂 DOSSIER</button>
+                    </div>
+                `;
+                
+                div.querySelectorAll('.menu-btn').forEach(btn => {
+                    btn.addEventListener('click', (ev) => {
+                        ev.stopPropagation();
+                        if(btn.dataset.action === 'link') openModal(coords);
+                        else createEmptyFolder(coords);
+                        renderGrid();
+                    });
+                });
             }
         });
     }
 
-    div.addEventListener('contextmenu', (e) => { if (data) { e.preventDefault(); openModal(coords); } });
+    div.addEventListener('contextmenu', (e) => { 
+    if (data) { 
+        e.preventDefault();
+        e.stopPropagation();
+        openTileActionsModal(coords);
+    }
+});
+
+    // Logique de Drag & Drop (inchangée)
     div.addEventListener('dragstart', (e) => { draggedCoords = coords; draggedFromFolder = !isMain; div.classList.add('dragging'); e.dataTransfer.setData('text/plain', coords); });
     div.addEventListener('dragend', () => { div.classList.remove('dragging'); document.querySelectorAll('.tile').forEach(t => t.classList.remove('drag-over')); });
     div.addEventListener('dragover', (e) => { e.preventDefault(); if(coords !== draggedCoords) div.classList.add('drag-over'); });
@@ -161,6 +225,51 @@ function createTile(coords, data, isMain) {
     div.addEventListener('drop', (e) => { e.preventDefault(); e.stopPropagation(); div.classList.remove('drag-over'); isMain ? handleDropMain(coords) : handleDropFolder(coords); });
 
     return div;
+}
+
+function duplicateItem(coords) {
+    saveSnapshot(); //
+    
+    const isInsideFolder = (activeFolderCoords !== null); //
+    const targetStore = isInsideFolder ? tilesData[activeFolderCoords].items : tilesData; //
+    const sourceData = targetStore[coords]; //
+
+    if (!sourceData) return; //
+
+    const [srcC, srcR] = coords.split('-').map(Number); //
+
+    // Copie profonde pour éviter de lier les références (surtout pour les dossiers)
+    const newData = JSON.parse(JSON.stringify(sourceData)); //
+    if (newData.name) newData.name += " (copie)"; //
+
+    const maxCols = isInsideFolder ? (tilesData[activeFolderCoords].fConfig.cols) : config.cols; //
+    const maxRows = isInsideFolder ? 50 : config.rows + 10; //
+
+    let bestCoords = null;
+    let minDistance = Infinity;
+
+    // Correction des variables r et c dans les boucles
+    for (let r = 0; r < maxRows; r++) { //
+        for (let c = 0; c < maxCols; c++) { //
+            let targetCoords = `${c}-${r}`; //
+            if (!targetStore[targetCoords]) { //
+                // Calcul de la distance euclidienne
+                let dist = Math.sqrt(Math.pow(c - srcC, 2) + Math.pow(r - srcR, 2)); //
+                if (dist < minDistance) { //
+                    minDistance = dist; //
+                    bestCoords = targetCoords; //
+                }
+            }
+        }
+    }
+
+    if (bestCoords) { //
+        targetStore[bestCoords] = newData; //
+        saveToLocal(); //
+        if (isInsideFolder) openFolder(activeFolderCoords); else renderGrid(); //
+    } else {
+        alert("Plus de place disponible pour dupliquer !"); //
+    }
 }
 
 // 5. LOGIQUE DOSSIER
@@ -199,10 +308,14 @@ function openFolder(coords) {
     const colWidth = isMobile ? 80 : 100;
 
     fGrid.style.display = 'grid';
-    fGrid.style.gridTemplateColumns = isMobile ? `repeat(3, 1fr)` : `repeat(${folder.fConfig.cols}, ${colWidth}px)`;
-    fGrid.style.gap = `${folder.fConfig.gap}px`;
-    fPopup.style.backgroundColor = folder.fConfig.fBgColor;
-    fGrid.innerHTML = '';
+fGrid.style.gridTemplateColumns = isMobile ? `repeat(3, 1fr)` : `repeat(${folder.fConfig.cols}, ${colWidth}px)`;
+fGrid.style.gap = `${folder.fConfig.gap}px`;
+fPopup.style.backgroundColor = folder.fConfig.fBgColor;
+
+// AJOUT DE CES LIGNES POUR FORCER LE SCROLL DANS LE SCRIPT
+fGrid.style.overflowY = 'auto'; 
+fGrid.style.maxHeight = 'calc(80vh - 100px)'; // Réserve de la place pour la toolbar et le bouton fermer
+fGrid.innerHTML = '';
     
     if (isMobile) {
         fPopup.style.position = "fixed";
@@ -370,6 +483,28 @@ function handleDropOut(e) {
 }
 
 // 7. ÉDITION
+
+function createEmptyFolder(coords) {
+    saveSnapshot();
+    const targetStore = (activeFolderCoords !== null) ? tilesData[activeFolderCoords].items : tilesData;
+    
+    targetStore[coords] = {
+        type: 'folder',
+        name: "Nouveau Dossier",
+        img: "",
+        items: {},
+        fConfig: { cols: 4, rows: 4, gap: 10, fBgColor: '#1e293b' }
+    };
+    
+    saveToLocal();
+    if (activeFolderCoords !== null) {
+        openFolder(activeFolderCoords);
+    } else {
+        renderGrid();
+    }
+    openModal(coords); // Ouvre la modale pour renommer le dossier immédiatement
+}
+
 function openModal(coords) {
     currentEditingCoords = coords;
     tempBase64 = "";
@@ -434,6 +569,65 @@ function deleteItem() {
     saveToLocal(); closeAllModals();
     if (activeFolderCoords !== null) openFolder(activeFolderCoords); else renderGrid();
 }
+
+function openTileActionsModal(coords) {
+    currentEditingCoords = coords;
+
+    const anchorEl = document.getElementById(`tile-${coords}`) || document.getElementById(`folder-tile-${coords}`);
+    if (!anchorEl) return;
+
+    const modal = document.getElementById('modalTileActions');
+    const box = modal.querySelector('.modal-actions');
+
+    // On affiche d'abord pour pouvoir mesurer les dimensions
+    modal.style.display = 'block';
+    modal.classList.add('active');
+
+    // Positionnement absolu indispensable pour le calcul
+    box.style.position = 'fixed'; 
+
+    const rect = anchorEl.getBoundingClientRect();
+    
+    // On attend le prochain frame pour mesurer la largeur/hauteur réelle de la modale
+    requestAnimationFrame(() => {
+        const bw = box.offsetWidth;
+        const bh = box.offsetHeight;
+        const vw = window.innerWidth;
+        const vh = window.innerHeight;
+        const margin = 10;
+
+        // Tentative de placement à droite de la tuile
+        let x = rect.right + 10;
+        let y = rect.top;
+
+        // Si ça dépasse à droite, on place à gauche de la tuile
+        if (x + bw > vw - margin) {
+            x = rect.left - bw - 10;
+        }
+
+        // Si ça dépasse en bas, on aligne le bas de la modale avec le bas de la tuile
+        if (y + bh > vh - margin) {
+            y = vh - bh - margin;
+        }
+
+        // Sécurités minimales
+        if (x < margin) x = margin;
+        if (y < margin) y = margin;
+
+        box.style.left = `${x}px`;
+        box.style.top = `${y}px`;
+        box.style.margin = "0"; // Évite les décalages dus aux CSS existants
+    });
+}
+
+
+function closeTileActionsModal() {
+    const modal = document.getElementById('modalTileActions');
+    modal.classList.remove('active');
+    modal.style.display = 'none';
+}
+
+
 
 // 8. RECHERCHE & MÉDIAS
 function searchIcons() {
@@ -559,6 +753,29 @@ document.addEventListener('DOMContentLoaded', () => {
         if(el) el.addEventListener(evt, fn); 
     };
     
+	// Fermer les modales d'édition au clic sur l'overlay (fond semi-transparent)
+    listen('modalLink', 'click', (e) => {
+        if (e.target.id === 'modalLink') closeAllModals();
+    });
+
+    listen('modalFolder', 'click', (e) => {
+        if (e.target.id === 'modalFolder') closeAllModals();
+    });
+	
+    // Fermer les menus de choix (création ou duplication) si on clique ailleurs
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.choice-menu')) {
+            document.querySelectorAll('.choice-menu').forEach(m => m.remove());
+            // Réinitialise l'apparence des tuiles vides qui affichaient le "+"
+            document.querySelectorAll('.tile.empty').forEach(t => {
+                if (t.innerHTML !== '') {
+                    t.innerHTML = '';
+                    t.style.opacity = "";
+                }
+            });
+        }
+    });
+
     // Import bookmarks
     listen('btn-import-bookmarks', 'click', () => {
         const input = document.createElement('input');
@@ -611,8 +828,36 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+document.querySelectorAll('#modalTileActions .action-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        const action = btn.dataset.action;
+        closeTileActionsModal();
+
+        if (action === 'edit') openModal(currentEditingCoords);
+        if (action === 'duplicate') duplicateItem(currentEditingCoords);
+        if (action === 'delete') {
+            if (confirm("Voulez-vous vraiment supprimer cet élément ?")) {
+                deleteItem();
+            }
+        }
+    });
+});
+
+document.getElementById('modalTileActions')
+    .addEventListener('click', closeTileActionsModal);
+
+
     window.addEventListener('keydown', (e) => { 
-        if(e.key === "Escape") { closeAllModals(); closeFolder(); } 
+        if(e.key === "Escape") { 
+            closeAllModals(); 
+            closeFolder(); 
+            // Ferme aussi les menus contextuels ouverts
+            document.querySelectorAll('.choice-menu').forEach(m => m.remove());
+            document.querySelectorAll('.tile.empty').forEach(t => {
+                t.innerHTML = '';
+                t.style.opacity = "";
+            });
+        } 
         if(e.key === "Enter") {
             if (document.getElementById('modalLink').style.display === 'flex') confirmEditLink();
             else if (document.getElementById('modalFolder').style.display === 'flex') confirmEditFolder();
